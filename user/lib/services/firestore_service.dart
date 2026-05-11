@@ -37,10 +37,20 @@ class FirestoreService {
   Future<void> ensureUserProfile({
     required String uid,
     required String email,
+    String? name,
+    String? matricNumber,
+    String? faculty,
+    String? department,
+    String? level,
   }) async {
     await _db.collection('users').doc(uid).set({
       'uid': uid,
       'email': email,
+      'name': name,
+      'matricNumber': matricNumber,
+      'faculty': faculty,
+      'department': department,
+      'level': level,
       'updatedAt': FieldValue.serverTimestamp(),
     }, SetOptions(merge: true));
   }

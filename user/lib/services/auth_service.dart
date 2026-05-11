@@ -14,5 +14,9 @@ class AuthService {
     await _auth.createUserWithEmailAndPassword(email: email.trim(), password: password.trim());
   }
 
+  Future<void> sendPasswordResetEmail({required String email}) async {
+    await _auth.sendPasswordResetEmail(email: email.trim());
+  }
+
   Future<void> signOut() => _auth.signOut();
 }
