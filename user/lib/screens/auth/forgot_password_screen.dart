@@ -123,7 +123,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           const SizedBox(
             width: double.infinity,
             child: Text(
-              'Enter your university email and we will send you a reset link to regain access.',
+              'Enter your email and we will send you a reset link to regain access.',
               textAlign: TextAlign.center,
               style: TextStyle(color: Color(AppColors.textSecondary), height: 1.4),
             ),

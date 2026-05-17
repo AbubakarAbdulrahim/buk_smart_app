@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../services/auth_service.dart';
-import '../auth/login_screen.dart';
+import '../auth/onboarding_screen.dart';
 import '../home/app_shell.dart';
 
 class AuthGate extends StatelessWidget {
@@ -18,7 +18,7 @@ class AuthGate extends StatelessWidget {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Scaffold(body: Center(child: CircularProgressIndicator()));
         }
-        if (snapshot.data == null) return const LoginScreen();
+        if (snapshot.data == null) return const OnboardingScreen();
         return const AppShell();
       },
     );

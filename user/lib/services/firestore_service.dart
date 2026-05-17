@@ -41,6 +41,7 @@ class FirestoreService {
     String? matricNumber,
     String? faculty,
     String? department,
+    String? program,
     String? level,
   }) async {
     await _db.collection('users').doc(uid).set({
@@ -50,6 +51,7 @@ class FirestoreService {
       'matricNumber': matricNumber,
       'faculty': faculty,
       'department': department,
+      'program': program,
       'level': level,
       'updatedAt': FieldValue.serverTimestamp(),
     }, SetOptions(merge: true));
