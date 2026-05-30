@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "com.example" "\0"
-            VALUE "FileDescription", "user" "\0"
+            VALUE "FileDescription", "SmartBUK" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "user" "\0"
+            VALUE "InternalName", "SmartBUK" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2026 com.example. All rights reserved." "\0"
-            VALUE "OriginalFilename", "user.exe" "\0"
-            VALUE "ProductName", "user" "\0"
+            VALUE "OriginalFilename", "SmartBUK.exe" "\0"
+            VALUE "ProductName", "SmartBUK" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

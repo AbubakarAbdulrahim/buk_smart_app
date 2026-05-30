@@ -8,6 +8,7 @@ import '../../models/incident.dart';
 import '../../services/auth_service.dart';
 import '../../services/firestore_service.dart';
 import '../../widgets/app_widgets.dart';
+import '../../widgets/success_modal.dart';
 
 class ReportIncidentScreen extends StatefulWidget {
   const ReportIncidentScreen({super.key});
@@ -57,7 +58,13 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
         createdAt: DateTime.now(),
       ));
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Report submitted successfully')));
+      await showSuccessModal(
+        context: context,
+        title: 'Report Submitted',
+        message: 'Your report has been submitted successfully. The smartBUK team will review it and take the necessary action.',
+        buttonLabel: 'Done',
+      );
+      if (!mounted) return;
       setState(() {
         _step = 0;
         _desc.clear();

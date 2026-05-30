@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'core/routes/app_routes.dart';
 import 'core/theme/app_theme.dart';
-import 'screens/common/splash_screen.dart';
 
 class BukSmartApp extends StatelessWidget {
   const BukSmartApp({super.key});
@@ -11,7 +11,8 @@ class BukSmartApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
-      home: const SplashScreen(),
+      initialRoute: AppRoutes.splash,
+      onGenerateRoute: AppRoutes.onGenerateRoute,
     );
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/routes/app_routes.dart';
 import '../../core/theme/app_colors.dart';
 import '../../models/incident.dart';
 import '../../models/lost_found_item.dart';
@@ -41,9 +42,9 @@ class ProfileScreen extends StatelessWidget {
           const SizedBox(height: 16),
           const AppSectionHeader(title: 'Account'),
           const SizedBox(height: 8),
-          _Tile(label: 'My Reports', icon: Icons.description_outlined, onTap: user == null ? null : () => Navigator.push(context, MaterialPageRoute(builder: (_) => _MyReportsScreen(uid: user.uid)))),
+          _Tile(label: 'My Reports', icon: Icons.description_outlined, onTap: user == null ? null : () => Navigator.pushNamed(context, AppRoutes.myReports, arguments: user.uid)),
           const SizedBox(height: 8),
-          _Tile(label: 'My Lost & Found Posts', icon: Icons.search_rounded, onTap: user == null ? null : () => Navigator.push(context, MaterialPageRoute(builder: (_) => _MyLostFoundScreen(uid: user.uid)))),
+          _Tile(label: 'My Lost & Found Posts', icon: Icons.search_rounded, onTap: user == null ? null : () => Navigator.pushNamed(context, AppRoutes.myLostFound, arguments: user.uid)),
           const SizedBox(height: 8),
           const _Tile(label: 'Settings', icon: Icons.settings_outlined),
           const SizedBox(height: 16),
@@ -112,8 +113,8 @@ class _Tile extends StatelessWidget {
   }
 }
 
-class _MyReportsScreen extends StatelessWidget {
-  const _MyReportsScreen({required this.uid});
+class MyReportsScreen extends StatelessWidget {
+  const MyReportsScreen({super.key, required this.uid});
 
   final String uid;
 
@@ -154,8 +155,8 @@ class _MyReportsScreen extends StatelessWidget {
   }
 }
 
-class _MyLostFoundScreen extends StatelessWidget {
-  const _MyLostFoundScreen({required this.uid});
+class MyLostFoundScreen extends StatelessWidget {
+  const MyLostFoundScreen({super.key, required this.uid});
 
   final String uid;
 

@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../../core/theme/app_colors.dart';
-import 'auth_gate.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -37,15 +36,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     );
     _timer = Timer(const Duration(seconds: 5), () {
       if (!mounted) return;
-      Navigator.of(context).pushReplacement(
-        PageRouteBuilder<void>(
-          pageBuilder: (_, __, ___) => const AuthGate(),
-          transitionsBuilder: (_, animation, __, child) {
-            return FadeTransition(opacity: animation, child: child);
-          },
-          transitionDuration: const Duration(milliseconds: 320),
-        ),
-      );
+      Navigator.of(context).pushReplacementNamed('/auth-gate');
     });
   }
 

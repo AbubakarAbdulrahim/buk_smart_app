@@ -3,12 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/constants/app_strings.dart';
+import '../../core/routes/app_routes.dart';
 import '../../core/utils/validators.dart';
 import '../../services/auth_service.dart';
 import '../../services/firestore_service.dart';
 import '../../widgets/app_widgets.dart';
-import 'forgot_password_screen.dart';
-import 'register_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -154,12 +153,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     alignment: Alignment.centerRight,
                     child: TextButton(
                       onPressed: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => ForgotPasswordScreen(
-                              initialEmail: _email.text.trim().isEmpty ? null : _email.text.trim(),
-                            ),
-                          ),
+                        Navigator.of(context).pushNamed(
+                          AppRoutes.forgotPassword,
+                          arguments: _email.text.trim().isEmpty ? null : _email.text.trim(),
                         );
                       },
                       child: const Text('Forgot password?'),
@@ -174,9 +170,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   Center(
                     child: TextButton(
                       onPressed: () {
-                        Navigator.of(context).pushReplacement(
-                          MaterialPageRoute(builder: (_) => const RegisterScreen()),
-                        );
+                        Navigator.of(context).pushReplacementNamed(AppRoutes.register);
                       },
                       child: const Text('Don\'t have an account? Register'),
                     ),

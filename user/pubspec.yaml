@@ -1,4 +1,4 @@
-name: SmartBUK
+name: smartbuk
 description: "A new Flutter project."
 
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -35,6 +35,8 @@ flutter:
   assets:
     - assets/images/buk_logo.png
     - assets/images/buk_senate.jpg
+    - assets/images/buk_student.jpg
+    - assets/images/buk_student.jpg
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

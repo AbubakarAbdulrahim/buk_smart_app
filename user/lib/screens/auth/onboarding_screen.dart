@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../core/routes/app_routes.dart';
 import '../../core/theme/app_colors.dart';
-import 'login_screen.dart';
-import 'register_screen.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -22,7 +21,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       subtitle: 'Access courses, results, payments, timetable, and campus updates all in one place.',
     ),
     _OnboardingSlide(
-      imageAsset: 'assets/images/buk_senate.jpg',
+      imageAsset: 'assets/images/buk_student.jpg',
       title: 'Easy Course Registration',
       subtitle: 'Register courses and manage your academic activities seamlessly.',
     ),
@@ -46,15 +45,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   void _openLogin() {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const LoginScreen()),
-    );
+    Navigator.of(context).pushNamed(AppRoutes.login);
   }
 
   void _openRegister() {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const RegisterScreen()),
-    );
+    Navigator.of(context).pushNamed(AppRoutes.register);
   }
 
   @override

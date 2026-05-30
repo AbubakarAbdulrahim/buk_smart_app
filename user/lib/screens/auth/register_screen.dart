@@ -3,12 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/constants/app_strings.dart';
+import '../../core/routes/app_routes.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/utils/validators.dart';
 import '../../services/auth_service.dart';
 import '../../services/firestore_service.dart';
 import '../../widgets/app_widgets.dart';
-import 'login_screen.dart';
+import '../../widgets/success_modal.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -33,10 +34,29 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool _hideConfirmPassword = true;
 
   static const List<String> _faculties = <String>[
-    'Faculty of Computer Science',
+    'Faculty of Agriculture',
+    'Faculty of Allied Health Sciences',
+    'Faculty of Basic Clinical Sciences',
+    'Faculty of Basic Medical Sciences',
+    'Faculty of Clinical Sciences',
+    'Faculty of Communications',
+    'Faculty of Computing',
+    'Faculty of Continuing And Special Education',
+    'Faculty of Dentistry',
+    'Faculty of Earth and Environmental',
+    'Faculty of Economics And Management Sciences',
+    'Faculty of Educational Foundation',
     'Faculty of Engineering',
+    'Faculty of History And Development Studies',
+    'Faculty of Islamic Studies And Sharia',
+    'Faculty of Languages, Linguistics And Theatre Arts',
+    'Faculty of Law',
+    'Faculty of Life Sciences',
+    'Faculty of Pharmaceutical Sciences',
+    'Faculty of Physical Sciences',
+    'Faculty of Science And Technology Education',
     'Faculty of Social Sciences',
-    'Faculty of Arts',
+    'Faculty of Veterinary Medicine'
   ];
 
   static const List<String> _departments = <String>[
@@ -98,6 +118,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
           level: _selectedLevel,
         );
       }
+      if (!mounted) return;
+      await showSuccessModal(
+        context: context,
+        title: 'Registration Successful',
+        message: 'Your SmartBUK account has been created successfully. Welcome to your campus super app.',
+        buttonLabel: 'Continue',
+      );
       if (!mounted) return;
       Navigator.of(context).popUntil((route) => route.isFirst);
     } on FirebaseAuthException catch (e) {
@@ -332,9 +359,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   Center(
                     child: TextButton(
                       onPressed: () {
-                        Navigator.of(context).pushReplacement(
-                          MaterialPageRoute(builder: (_) => const LoginScreen()),
-                        );
+                        Navigator.of(context).pushReplacementNamed(AppRoutes.login);
                       },
                       child: const Text('Already have an account? Login'),
                     ),

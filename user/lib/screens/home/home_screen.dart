@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../../core/routes/app_routes.dart';
 import '../../core/theme/app_colors.dart';
 import '../../widgets/app_widgets.dart';
-import '../chatbot/chatbot_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -84,7 +84,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
                 IconButton(
-                  onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ChatbotScreen())),
+                  onPressed: () => Navigator.pushNamed(context, AppRoutes.chatbot),
                   icon: const Icon(Icons.notifications_active_outlined),
                 ),
               ],
