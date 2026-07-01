@@ -26,7 +26,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       subtitle: 'Register courses and manage your academic activities seamlessly.',
     ),
     _OnboardingSlide(
-      imageAsset: 'assets/images/buk_senate.jpg',
+      imageAsset: 'assets/images/buk_square.jpg',
       title: 'Stay Connected',
       subtitle: 'Get announcements, schedules, and important university updates instantly.',
     ),

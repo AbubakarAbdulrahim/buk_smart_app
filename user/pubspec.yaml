@@ -36,7 +36,7 @@ flutter:
     - assets/images/buk_logo.png
     - assets/images/buk_senate.jpg
     - assets/images/buk_student.jpg
-    - assets/images/buk_student.jpg
+    - assets/images/buk_square.jpg
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
