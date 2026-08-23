@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/constants/app_strings.dart';
@@ -104,7 +105,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               radius: 34,
               backgroundColor: Color(0x120085D0),
               child: Icon(
-                Icons.lock_reset_rounded,
+                PhosphorIconsRegular.key,
                 color: Color(AppColors.primaryDeeper),
                 size: 30,
               ),
@@ -137,7 +138,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             validator: Validators.email,
             decoration: const InputDecoration(
               hintText: 'student@buk.edu.ng',
-              prefixIcon: Icon(Icons.mail_outline_rounded),
+              prefixIcon: Icon(PhosphorIconsRegular.envelope),
             ),
           ),
           const SizedBox(height: 22),
@@ -160,7 +161,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             radius: 34,
             backgroundColor: Color(0x120085D0),
             child: Icon(
-              Icons.mark_email_read_rounded,
+              PhosphorIconsRegular.envelope,
               color: Color(AppColors.primaryDeeper),
               size: 30,
             ),

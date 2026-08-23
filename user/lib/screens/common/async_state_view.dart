@@ -11,12 +11,14 @@ class AsyncStateView extends StatelessWidget {
     required this.child,
     this.errorMessage,
     this.emptyMessage = 'No data available',
+    this.emptyWidget,
   });
 
   final ConnectionState connectionState;
   final bool hasError;
   final bool isEmpty;
   final Widget child;
+  final Widget? emptyWidget;
   final String? errorMessage;
   final String emptyMessage;
 
@@ -34,7 +36,9 @@ class AsyncStateView extends StatelessWidget {
         ),
       );
     }
-    if (isEmpty) return Center(child: Text(emptyMessage));
+    if (isEmpty) {
+      return emptyWidget ?? Center(child: Text(emptyMessage));
+    }
     return child;
   }
 }

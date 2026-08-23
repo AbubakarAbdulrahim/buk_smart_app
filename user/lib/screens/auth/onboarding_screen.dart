@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../../core/routes/app_routes.dart';
@@ -13,6 +14,7 @@ class OnboardingScreen extends StatefulWidget {
 class _OnboardingScreenState extends State<OnboardingScreen> {
   final _onboardingController = PageController();
   int _currentOnboardingPage = 0;
+  Timer? _onboardingTimer;
 
   static const List<_OnboardingSlide> _onboardingSlides = <_OnboardingSlide>[
     _OnboardingSlide(
@@ -33,7 +35,26 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    _startAutoSlide();
+  }
+
+  void _startAutoSlide() {
+    _onboardingTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
+      if (!mounted) return;
+      final next = (_currentOnboardingPage + 1) % _onboardingSlides.length;
+      _onboardingController.animateToPage(
+        next,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    });
+  }
+
+  @override
   void dispose() {
+    _onboardingTimer?.cancel();
     _onboardingController.dispose();
     super.dispose();
   }

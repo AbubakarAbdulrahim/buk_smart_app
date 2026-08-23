@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:user/screens/auth/login_screen.dart';
+import 'package:smartbuk/screens/auth/login_screen.dart';
 
 void main() {
   testWidgets('Login screen renders core fields', (tester) async {

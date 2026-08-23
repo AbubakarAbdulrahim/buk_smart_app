@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:user/models/incident.dart';
-import 'package:user/models/lost_found_item.dart';
+import 'package:smartbuk/models/incident.dart';
+import 'package:smartbuk/models/lost_found_item.dart';
 
 void main() {
   test('Incident parses firestore timestamp', () {

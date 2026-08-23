@@ -1,7 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/constants/app_data.dart';
 import '../../core/constants/app_strings.dart';
 import '../../core/routes/app_routes.dart';
 import '../../core/theme/app_colors.dart';
@@ -32,46 +34,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool _loading = false;
   bool _hidePassword = true;
   bool _hideConfirmPassword = true;
-
-  static const List<String> _faculties = <String>[
-    'Faculty of Agriculture',
-    'Faculty of Allied Health Sciences',
-    'Faculty of Basic Clinical Sciences',
-    'Faculty of Basic Medical Sciences',
-    'Faculty of Clinical Sciences',
-    'Faculty of Communications',
-    'Faculty of Computing',
-    'Faculty of Continuing And Special Education',
-    'Faculty of Dentistry',
-    'Faculty of Earth and Environmental',
-    'Faculty of Economics And Management Sciences',
-    'Faculty of Educational Foundation',
-    'Faculty of Engineering',
-    'Faculty of History And Development Studies',
-    'Faculty of Islamic Studies And Sharia',
-    'Faculty of Languages, Linguistics And Theatre Arts',
-    'Faculty of Law',
-    'Faculty of Life Sciences',
-    'Faculty of Pharmaceutical Sciences',
-    'Faculty of Physical Sciences',
-    'Faculty of Science And Technology Education',
-    'Faculty of Social Sciences',
-    'Faculty of Veterinary Medicine'
-  ];
-
-  static const List<String> _departments = <String>[
-    'Computer Science',
-    'Information Technology',
-    'Software Engineering',
-    'Cyber Security',
-  ];
-
-  static const List<String> _programs = <String>[
-    'B.Sc. Computer Science',
-    'B.Sc. Information Technology',
-    'B.Sc. Software Engineering',
-    'B.Sc. Cyber Security',
-  ];
 
   static const List<String> _levels = <String>[
     '100 Level',
@@ -177,7 +139,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       radius: 34,
                       backgroundColor: Color(0x120085D0),
                       child: Icon(
-                        Icons.person_add_alt_1_rounded,
+                        PhosphorIconsRegular.userPlus,
                         color: Color(AppColors.primaryDeeper),
                         size: 30,
                       ),
@@ -209,7 +171,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     validator: (value) => Validators.requiredField(value, 'Name'),
                     decoration: const InputDecoration(
                       hintText: 'Enter your full name',
-                      prefixIcon: Icon(Icons.person_outline_rounded),
+                      prefixIcon: Icon(PhosphorIconsRegular.user),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -221,7 +183,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     validator: Validators.email,
                     decoration: const InputDecoration(
                       hintText: 'student@gmail.com',
-                      prefixIcon: Icon(Icons.mail_outline_rounded),
+                      prefixIcon: Icon(PhosphorIconsRegular.envelope),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -233,10 +195,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     validator: Validators.password,
                     decoration: InputDecoration(
                       hintText: 'Create password',
-                      prefixIcon: const Icon(Icons.lock_outline_rounded),
+                      prefixIcon: const Icon(PhosphorIconsRegular.lock),
                       suffixIcon: IconButton(
                         onPressed: () => setState(() => _hidePassword = !_hidePassword),
-                        icon: Icon(_hidePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined),
+                        icon: Icon(_hidePassword ? PhosphorIconsRegular.eye : PhosphorIconsRegular.eyeSlash),
                       ),
                     ),
                   ),
@@ -254,10 +216,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     },
                     decoration: InputDecoration(
                       hintText: 'Confirm password',
-                      prefixIcon: const Icon(Icons.lock_outline_rounded),
+                      prefixIcon: const Icon(PhosphorIconsRegular.lock),
                       suffixIcon: IconButton(
                         onPressed: () => setState(() => _hideConfirmPassword = !_hideConfirmPassword),
-                        icon: Icon(_hideConfirmPassword ? Icons.visibility_outlined : Icons.visibility_off_outlined),
+                        icon: Icon(_hideConfirmPassword ? PhosphorIconsRegular.eye : PhosphorIconsRegular.eyeSlash),
                       ),
                     ),
                   ),
@@ -269,72 +231,85 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     validator: (value) => Validators.requiredField(value, 'Matric Number'),
                     decoration: const InputDecoration(
                       hintText: 'Enter your matric number',
-                      prefixIcon: Icon(Icons.badge_outlined),
+                      prefixIcon: Icon(PhosphorIconsRegular.creditCard),
                     ),
                   ),
                   const SizedBox(height: 16),
                   const Text('Faculty', style: TextStyle(fontWeight: FontWeight.w600)),
                   const SizedBox(height: 8),
                   DropdownButtonFormField<String>(
+                    isExpanded: true,
                     value: _selectedFaculty,
                     validator: (value) => value == null || value.isEmpty ? 'Faculty is required' : null,
                     decoration: const InputDecoration(
-                      hintText: 'Select your faculty',
-                      prefixIcon: Icon(Icons.account_balance_outlined),
+                       hintText: 'Select your faculty',
+                       prefixIcon: Icon(PhosphorIconsRegular.bank),
                     ),
-                    items: _faculties
+                    items: AppData.faculties
                         .map((faculty) => DropdownMenuItem<String>(
                               value: faculty,
                               child: Text(faculty),
                             ))
                         .toList(),
-                    onChanged: (value) => setState(() => _selectedFaculty = value),
+                    onChanged: (value) => setState(() {
+                      _selectedFaculty = value;
+                      _selectedDepartment = null;
+                      _selectedProgram = null;
+                    }),
                   ),
                   const SizedBox(height: 16),
                   const Text('Department', style: TextStyle(fontWeight: FontWeight.w600)),
                   const SizedBox(height: 8),
                   DropdownButtonFormField<String>(
+                    isExpanded: true,
                     value: _selectedDepartment,
                     validator: (value) => value == null || value.isEmpty ? 'Department is required' : null,
-                    decoration: const InputDecoration(
-                      hintText: 'Select your department',
-                      prefixIcon: Icon(Icons.apartment_rounded),
+                    decoration: InputDecoration(
+                      hintText: _selectedFaculty == null ? 'Select faculty first' : 'Select your department',
+                      prefixIcon: const Icon(PhosphorIconsRegular.building),
                     ),
-                    items: _departments
+                    items: AppData.departmentsFor(_selectedFaculty)
                         .map((department) => DropdownMenuItem<String>(
                               value: department,
                               child: Text(department),
                             ))
                         .toList(),
-                    onChanged: (value) => setState(() => _selectedDepartment = value),
+                    onChanged: _selectedFaculty == null
+                        ? null
+                        : (value) => setState(() {
+                              _selectedDepartment = value;
+                              _selectedProgram = null;
+                            }),
                   ),
                   const SizedBox(height: 16),
                   const Text('Program', style: TextStyle(fontWeight: FontWeight.w600)),
                   const SizedBox(height: 8),
                   DropdownButtonFormField<String>(
+                    isExpanded: true,
                     value: _selectedProgram,
                     validator: (value) => value == null || value.isEmpty ? 'Program is required' : null,
-                    decoration: const InputDecoration(
-                      hintText: 'Select your program',
-                      prefixIcon: Icon(Icons.menu_book_outlined),
+                    decoration: InputDecoration(
+                      hintText: _selectedDepartment == null ? 'Select department first' : 'Select your program',
+                      prefixIcon: const Icon(PhosphorIconsRegular.bookOpen),
                     ),
-                    items: _programs
+                    items: AppData.programsFor(_selectedFaculty, _selectedDepartment)
                         .map((program) => DropdownMenuItem<String>(
                               value: program,
                               child: Text(program),
                             ))
                         .toList(),
-                    onChanged: (value) => setState(() => _selectedProgram = value),
+                    onChanged: _selectedDepartment == null ? null : (value) => setState(() => _selectedProgram = value),
                   ),
                   const SizedBox(height: 16),
                   const Text('Level', style: TextStyle(fontWeight: FontWeight.w600)),
                   const SizedBox(height: 8),
                   DropdownButtonFormField<String>(
+                    isExpanded: true,
                     value: _selectedLevel,
                     validator: (value) => value == null || value.isEmpty ? 'Level is required' : null,
                     decoration: const InputDecoration(
                       hintText: 'Select your level',
-                      prefixIcon: Icon(Icons.school_outlined),
+                      prefixIcon: Icon(PhosphorIconsRegular.graduationCap),
                     ),
                     items: _levels
                         .map((level) => DropdownMenuItem<String>(

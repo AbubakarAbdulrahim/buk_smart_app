@@ -21,10 +21,24 @@ dependencies:
   intl: ^0.20.2
   provider: ^6.1.2
   firebase_messaging: ^15.2.5
+  phosphor_flutter: ^2.1.0
+  google_fonts: ^6.2.1
+  flutter_map: ^8.0.0
+  latlong2: ^0.9.1
+  url_launcher: ^6.3.0
+  http: ^1.2.2
+  cached_network_image: ^3.4.1
+  crypto: ^3.0.3
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  flutter_launcher_icons: "^0.13.1"
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/icon/bukapp_logo.png"
 
   flutter_lints: ^5.0.0
 
@@ -37,6 +51,7 @@ flutter:
     - assets/images/buk_senate.jpg
     - assets/images/buk_student.jpg
     - assets/images/buk_square.jpg
+    - assets/icon/bukapp_logo.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

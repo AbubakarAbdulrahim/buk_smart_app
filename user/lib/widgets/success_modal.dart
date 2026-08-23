@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '../core/theme/app_colors.dart';
 
@@ -96,7 +97,7 @@ class _SuccessModalContent extends StatelessWidget {
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(
-                      Icons.check_rounded,
+                      PhosphorIconsRegular.check,
                       color: Colors.white,
                       size: 34,
                     ),

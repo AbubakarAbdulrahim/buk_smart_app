@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '../core/theme/app_colors.dart';
 
@@ -55,8 +56,9 @@ class SectionCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(AppColors.card),
         borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(AppColors.border), width: 1.0),
         boxShadow: const [
-          BoxShadow(color: Color(0x0F0B1A2B), blurRadius: 24, offset: Offset(0, 10)),
+          BoxShadow(color: Color(0x060B1A2B), blurRadius: 16, offset: Offset(0, 6)),
         ],
       ),
       child: child,
@@ -133,6 +135,158 @@ class AppInput extends StatelessWidget {
       maxLines: maxLines,
       obscureText: obscure,
       decoration: InputDecoration(hintText: hint, suffixIcon: suffix),
+    );
+  }
+}
+
+class QuickActionCard extends StatefulWidget {
+  const QuickActionCard({
+    super.key,
+    required this.title,
+    required this.description,
+    required this.icon,
+    required this.accentColor,
+    required this.onTap,
+  });
+
+  final String title;
+  final String description;
+  final IconData icon;
+  final Color accentColor;
+  final VoidCallback onTap;
+
+  @override
+  State<QuickActionCard> createState() => _QuickActionCardState();
+}
+
+class _QuickActionCardState extends State<QuickActionCard> {
+  bool _isPressed = false;
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final active = _isPressed || _isHovered;
+
+    final startColor = widget.accentColor;
+    final endColor = Color.alphaBlend(Colors.black.withOpacity(0.18), widget.accentColor);
+
+    return Listener(
+      onPointerDown: (_) => setState(() => _isPressed = true),
+      onPointerUp: (_) => setState(() => _isPressed = false),
+      onPointerCancel: (_) => setState(() => _isPressed = false),
+      child: MouseRegion(
+        onEnter: (_) => setState(() => _isHovered = true),
+        onExit: (_) => setState(() => _isHovered = false),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOutCubic,
+          transform: Matrix4.identity()..translate(0.0, active ? -4.0 : 0.0),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [startColor, endColor],
+            ),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: active 
+                  ? Colors.white.withOpacity(0.4) 
+                  : Colors.transparent,
+              width: 1.5,
+            ),
+            boxShadow: [
+              if (active)
+                BoxShadow(
+                  color: widget.accentColor.withOpacity(0.35),
+                  blurRadius: 16,
+                  offset: const Offset(0, 8),
+                )
+              else
+                BoxShadow(
+                  color: widget.accentColor.withOpacity(0.18),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+            ],
+          ),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(20),
+              onTap: widget.onTap,
+              splashColor: Colors.white.withOpacity(0.1),
+              highlightColor: Colors.white.withOpacity(0.05),
+              child: Stack(
+                clipBehavior: Clip.antiAlias,
+                children: [
+                  // Large service icon in the bottom-right corner with low-opacity decorative background
+                  Positioned(
+                    right: -12,
+                    bottom: -12,
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.04),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        widget.icon,
+                        size: 76,
+                        color: Colors.white.withOpacity(0.07),
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(18),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Top-left translucent icon container
+                        Container(
+                          width: 36,
+                          height: 36,
+                          margin: const EdgeInsets.only(bottom: 12),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.18),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Icon(
+                            widget.icon,
+                            size: 18,
+                            color: Colors.white,
+                          ),
+                        ),
+                        Text(
+                          widget.title,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w800,
+                            fontSize: 15,
+                            color: Colors.white,
+                            letterSpacing: -0.2,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Expanded(
+                          child: Text(
+                            widget.description,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: Colors.white.withOpacity(0.85),
+                              fontSize: 11.5,
+                              height: 1.3,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

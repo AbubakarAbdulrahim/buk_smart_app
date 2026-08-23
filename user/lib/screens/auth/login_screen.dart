@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/constants/app_strings.dart';
@@ -129,7 +130,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     validator: Validators.email,
                     decoration: const InputDecoration(
                       hintText: 'student@gmail.com',
-                      prefixIcon: Icon(Icons.mail_outline_rounded),
+                      prefixIcon: Icon(PhosphorIconsRegular.envelope),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -141,10 +142,10 @@ class _LoginScreenState extends State<LoginScreen> {
                     validator: Validators.password,
                     decoration: InputDecoration(
                       hintText: 'Enter your password',
-                      prefixIcon: const Icon(Icons.lock_outline_rounded),
+                      prefixIcon: const Icon(PhosphorIconsRegular.lock),
                       suffixIcon: IconButton(
                         onPressed: () => setState(() => _hidePassword = !_hidePassword),
-                        icon: Icon(_hidePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined),
+                        icon: Icon(_hidePassword ? PhosphorIconsRegular.eye : PhosphorIconsRegular.eyeSlash),
                       ),
                     ),
                   ),

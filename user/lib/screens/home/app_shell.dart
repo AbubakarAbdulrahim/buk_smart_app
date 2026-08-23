@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '../../core/theme/app_colors.dart';
+import '../../widgets/smart_ai_fab.dart';
 import '../lost_found/lost_found_screen.dart';
+import '../map/map_screen.dart';
 import '../profile/profile_screen.dart';
-import '../report/report_incident_screen.dart';
 import '../resources/resources_screen.dart';
 import 'home_screen.dart';
 
@@ -20,7 +22,7 @@ class _AppShellState extends State<AppShell> {
 
   late final List<Widget> _screens = const [
     HomeScreen(),
-    ReportIncidentScreen(),
+    MapScreen(),
     LostFoundScreen(),
     ResourcesScreen(),
     ProfileScreen(),
@@ -30,6 +32,7 @@ class _AppShellState extends State<AppShell> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: _screens[_index],
+      floatingActionButton: const SmartAiFab(),
       bottomNavigationBar: NavigationBarTheme(
         data: NavigationBarThemeData(
           indicatorColor: const Color(0x1F0085D0),
@@ -51,11 +54,11 @@ class _AppShellState extends State<AppShell> {
             setState(() => _index = i);
           },
           destinations: const [
-            NavigationDestination(icon: Icon(Icons.home_filled), selectedIcon: Icon(Icons.home_filled), label: 'Home'),
-            NavigationDestination(icon: Icon(Icons.report_gmailerrorred_rounded), selectedIcon: Icon(Icons.report_rounded), label: 'Report'),
-            NavigationDestination(icon: Icon(Icons.manage_search_rounded), selectedIcon: Icon(Icons.manage_search_rounded), label: 'Lost & Found'),
-            NavigationDestination(icon: Icon(Icons.library_books_outlined), selectedIcon: Icon(Icons.library_books_rounded), label: 'Resources'),
-            NavigationDestination(icon: Icon(Icons.account_circle_outlined), selectedIcon: Icon(Icons.account_circle_rounded), label: 'Profile'),
+            NavigationDestination(icon: Icon(PhosphorIconsRegular.house), selectedIcon: Icon(PhosphorIconsRegular.house), label: 'Home'),
+            NavigationDestination(icon: Icon(PhosphorIconsRegular.mapTrifold), selectedIcon: Icon(PhosphorIconsRegular.mapTrifold), label: 'Map'),
+            NavigationDestination(icon: Icon(PhosphorIconsRegular.magnifyingGlass), selectedIcon: Icon(PhosphorIconsRegular.magnifyingGlass), label: 'Lost & Found'),
+            NavigationDestination(icon: Icon(PhosphorIconsRegular.bookOpen), selectedIcon: Icon(PhosphorIconsRegular.bookOpen), label: 'Resources'),
+            NavigationDestination(icon: Icon(PhosphorIconsRegular.user), selectedIcon: Icon(PhosphorIconsRegular.user), label: 'Profile'),
           ],
         ),
       ),
