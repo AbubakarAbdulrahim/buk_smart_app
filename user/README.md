@@ -80,10 +80,26 @@ Navigation runs through a bottom-nav `AppShell` (Home, Map, Lost & Found, Resour
    flutter pub get
    ```
 2. Set up your own Firebase project (Authentication, Firestore, Cloud Messaging, Storage) and generate your own `firebase_options.dart` via `flutterfire configure`.
-3. Run with your own Gemini key passed at build/run time — this project already does this the right way, so just supply your key:
-   ```
-   flutter run --dart-define=GEMINI_API_KEY=your_key_here
-   ```
+3. Configure your Gemini API key for the Smart AI Assistant (choose any of the following options):
+   - **Option A (Recommended with .env)**:
+     Copy `.env.example` to `.env` in `user/`:
+     ```bash
+     cp .env.example .env
+     ```
+     Paste your key in `.env`: `GEMINI_API_KEY=your_key_here`.
+     Then run:
+     ```bash
+     flutter run --dart-define-from-file=.env
+     ```
+     *(If using VS Code, simply press F5 or select "SmartBUK (User App)" from the Run menu — it automatically loads `.env`!)*
+
+   - **Option B (Direct CLI flag)**:
+     ```bash
+     flutter run --dart-define=GEMINI_API_KEY=your_key_here
+     ```
+
+   - **Option C (In-App)**:
+     Launch the app directly and open Smart AI. Tap the key icon at the top right to paste and save your key locally on your device.
 
 ## Project background
 

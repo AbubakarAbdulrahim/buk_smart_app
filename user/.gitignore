@@ -43,3 +43,12 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Generated files
+**/generated_plugin_registrant.cc, **/generated_plugins.cmake, **/GeneratedPluginRegistrant.swift.
+
+# Environment variables & secrets
+.env
+*.env
+.env.*
+!.env.example
