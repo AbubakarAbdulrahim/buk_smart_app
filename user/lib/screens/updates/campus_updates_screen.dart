@@ -37,19 +37,15 @@ class _CampusUpdatesScreenState extends State<CampusUpdatesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
         leading: IconButton(
-          icon: const Icon(PhosphorIconsRegular.arrowLeft, color: Color(AppColors.textPrimary)),
+          icon: const Icon(PhosphorIconsRegular.arrowLeft),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
           'Campus Updates',
           style: TextStyle(
             fontWeight: FontWeight.w800,
-            color: Color(AppColors.textPrimary),
             fontSize: 19,
             letterSpacing: -0.5,
           ),
@@ -76,16 +72,22 @@ class _CampusUpdatesScreenState extends State<CampusUpdatesScreen> {
                 child: Container(
                   height: 50,
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: Theme.of(context).cardColor,
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: const Color(0xFFEFF1F4)),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Color(0x040D1B2D),
-                        blurRadius: 10,
-                        offset: Offset(0, 4),
-                      ),
-                    ],
+                    border: Border.all(
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? const Color(AppColors.darkBorder)
+                          : const Color(AppColors.border),
+                    ),
+                    boxShadow: Theme.of(context).brightness == Brightness.dark
+                        ? []
+                        : const [
+                            BoxShadow(
+                              color: Color(0x040D1B2D),
+                              blurRadius: 10,
+                              offset: Offset(0, 4),
+                            ),
+                          ],
                   ),
                   child: TextField(
                     controller: _searchController,
@@ -94,23 +96,38 @@ class _CampusUpdatesScreenState extends State<CampusUpdatesScreen> {
                         _searchQuery = val;
                       });
                     },
-                    style: const TextStyle(fontSize: 14),
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? const Color(AppColors.darkTextPrimary)
+                          : const Color(AppColors.textPrimary),
+                    ),
                     decoration: InputDecoration(
                       filled: true,
                       fillColor: Colors.transparent,
                       hintText: 'Search updates, events or announcements...',
-                      hintStyle: const TextStyle(
-                        color: Color(0xFF94A3B8),
+                      hintStyle: TextStyle(
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? const Color(AppColors.darkTextSecondary)
+                            : const Color(0xFF94A3B8),
                         fontSize: 13.5,
                       ),
-                      prefixIcon: const Icon(
+                      prefixIcon: Icon(
                         PhosphorIconsRegular.magnifyingGlass,
-                        color: Color(0xFF94A3B8),
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? const Color(AppColors.darkTextSecondary)
+                            : const Color(0xFF94A3B8),
                         size: 18,
                       ),
                       suffixIcon: _searchQuery.isNotEmpty
                           ? IconButton(
-                              icon: const Icon(PhosphorIconsRegular.xCircle, color: Color(0xFF94A3B8), size: 18),
+                              icon: Icon(
+                                PhosphorIconsRegular.xCircle,
+                                color: Theme.of(context).brightness == Brightness.dark
+                                    ? const Color(AppColors.darkTextSecondary)
+                                    : const Color(0xFF94A3B8),
+                                size: 18,
+                              ),
                               onPressed: () {
                                 _searchController.clear();
                                 setState(() {
@@ -136,6 +153,7 @@ class _CampusUpdatesScreenState extends State<CampusUpdatesScreen> {
                   itemBuilder: (context, index) {
                     final category = _categories[index];
                     final isSelected = _selectedCategory == category;
+                    final isDark = Theme.of(context).brightness == Brightness.dark;
                     return GestureDetector(
                       onTap: () {
                         setState(() {
@@ -146,10 +164,12 @@ class _CampusUpdatesScreenState extends State<CampusUpdatesScreen> {
                         margin: const EdgeInsets.only(right: 8),
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                         decoration: BoxDecoration(
-                          color: isSelected ? const Color(AppColors.primary) : Colors.white,
+                          color: isSelected ? const Color(AppColors.primary) : Theme.of(context).cardColor,
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: isSelected ? Colors.transparent : const Color(0xFFEFF1F4),
+                            color: isSelected
+                                ? Colors.transparent
+                                : (isDark ? const Color(AppColors.darkBorder) : const Color(AppColors.border)),
                           ),
                           boxShadow: isSelected
                               ? [
@@ -165,7 +185,9 @@ class _CampusUpdatesScreenState extends State<CampusUpdatesScreen> {
                           child: Text(
                             category,
                             style: TextStyle(
-                              color: isSelected ? Colors.white : const Color(AppColors.textSecondary),
+                              color: isSelected
+                                  ? Colors.white
+                                  : (isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary)),
                               fontWeight: FontWeight.bold,
                               fontSize: 12,
                             ),
@@ -186,6 +208,7 @@ class _CampusUpdatesScreenState extends State<CampusUpdatesScreen> {
                         itemCount: allFiltered.length,
                         itemBuilder: (context, index) {
                           final update = allFiltered[index];
+                          final isDark = Theme.of(context).brightness == Brightness.dark;
                           // Render the first item as a beautiful featured card (if not searching)
                           if (index == 0 && _searchQuery.isEmpty) {
                             return _buildFeaturedCard(update);
@@ -196,14 +219,14 @@ class _CampusUpdatesScreenState extends State<CampusUpdatesScreen> {
                             return Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Padding(
-                                  padding: EdgeInsets.fromLTRB(18, 16, 16, 8),
+                                Padding(
+                                  padding: const EdgeInsets.fromLTRB(18, 16, 16, 8),
                                   child: Text(
                                     'Recent Updates',
                                     style: TextStyle(
                                       fontSize: 14.5,
                                       fontWeight: FontWeight.w800,
-                                      color: Color(AppColors.textPrimary),
+                                      color: isDark ? const Color(AppColors.darkTextPrimary) : const Color(AppColors.textPrimary),
                                     ),
                                   ),
                                 ),
@@ -388,22 +411,29 @@ class _CampusUpdatesScreenState extends State<CampusUpdatesScreen> {
 
   // Renders beautiful, optimized item cards in the feed list
   Widget _buildFeedCard(CampusUpdate update) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final readingTime = '${update.content.split(' ').length ~/ 150 + 1} min read';
     final totalReactions = update.reactions.values.fold(0, (sum, val) => sum + val);
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFEFF1F4)),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x040D1B2D),
-            blurRadius: 10,
-            offset: Offset(0, 4),
-          ),
-        ],
+        border: Border.all(
+          color: isDark
+              ? const Color(AppColors.darkBorder)
+              : const Color(AppColors.border),
+        ),
+        boxShadow: isDark
+            ? []
+            : const [
+                BoxShadow(
+                  color: Color(0x040D1B2D),
+                  blurRadius: 10,
+                  offset: Offset(0, 4),
+                ),
+              ],
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(18),
@@ -434,8 +464,8 @@ class _CampusUpdatesScreenState extends State<CampusUpdatesScreen> {
                     const Spacer(),
                     Text(
                       readingTime,
-                      style: const TextStyle(
-                        color: Color(AppColors.textSecondary),
+                      style: TextStyle(
+                        color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary),
                         fontSize: 10.5,
                         fontWeight: FontWeight.w600,
                       ),
@@ -445,10 +475,10 @@ class _CampusUpdatesScreenState extends State<CampusUpdatesScreen> {
                 const SizedBox(height: 12),
                 Text(
                   update.title,
-                  style: const TextStyle(
-                    color: Color(AppColors.textPrimary),
+                  style: TextStyle(
                     fontWeight: FontWeight.w700,
                     fontSize: 15,
+                    color: isDark ? const Color(AppColors.darkTextPrimary) : const Color(AppColors.textPrimary),
                     height: 1.3,
                   ),
                 ),
@@ -457,27 +487,32 @@ class _CampusUpdatesScreenState extends State<CampusUpdatesScreen> {
                   update.subtitle,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: Color(AppColors.textSecondary),
+                  style: TextStyle(
+                    color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary),
                     fontSize: 12,
                     height: 1.4,
                   ),
                 ),
                 const SizedBox(height: 16),
-                const Divider(color: Color(0xFFEFF1F4), height: 1),
+                Divider(
+                  color: isDark
+                      ? const Color(AppColors.darkBorder)
+                      : const Color(0xFFEFF1F4),
+                  height: 1,
+                ),
                 const SizedBox(height: 10),
                 Row(
                   children: [
-                    const Icon(
+                    Icon(
                       PhosphorIconsRegular.calendarBlank,
-                      color: Color(AppColors.textSecondary),
+                      color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary),
                       size: 13,
                     ),
                     const SizedBox(width: 4),
                     Text(
                       update.date,
-                      style: const TextStyle(
-                        color: Color(AppColors.textSecondary),
+                      style: TextStyle(
+                        color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary),
                         fontSize: 11,
                         fontWeight: FontWeight.w500,
                       ),
@@ -487,7 +522,9 @@ class _CampusUpdatesScreenState extends State<CampusUpdatesScreen> {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFF8FAFC),
+                          color: isDark
+                              ? const Color(AppColors.darkCardSubtle)
+                              : const Color(0xFFF8FAFC),
                           borderRadius: BorderRadius.circular(999),
                         ),
                         child: Row(
@@ -499,8 +536,8 @@ class _CampusUpdatesScreenState extends State<CampusUpdatesScreen> {
                             const SizedBox(width: 4),
                             Text(
                               '$totalReactions',
-                              style: const TextStyle(
-                                color: Color(AppColors.textSecondary),
+                              style: TextStyle(
+                                color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary),
                                 fontSize: 10,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -520,6 +557,7 @@ class _CampusUpdatesScreenState extends State<CampusUpdatesScreen> {
 
   // Premium, informative empty state representation
   Widget _buildEmptyState() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -528,32 +566,32 @@ class _CampusUpdatesScreenState extends State<CampusUpdatesScreen> {
           children: [
             Container(
               padding: const EdgeInsets.all(16),
-              decoration: const BoxDecoration(
-                color: Color(0xFFF1F5F9),
+              decoration: BoxDecoration(
+                color: isDark ? const Color(AppColors.darkCardSubtle) : const Color(0xFFF1F5F9),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
+              child: Icon(
                 PhosphorIconsRegular.binoculars,
-                color: Color(AppColors.textSecondary),
+                color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary),
                 size: 32,
               ),
             ),
             const SizedBox(height: 16),
-            const Text(
+            Text(
               'No Updates Found',
               style: TextStyle(
                 fontWeight: FontWeight.w800,
                 fontSize: 16,
-                color: Color(AppColors.textPrimary),
+                color: isDark ? const Color(AppColors.darkTextPrimary) : const Color(AppColors.textPrimary),
               ),
             ),
             const SizedBox(height: 8),
-            const Text(
+            Text(
               'We couldn\'t find any announcements matching your current category filter or search query. Try clearing your filters.',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 12.5,
-                color: Color(AppColors.textSecondary),
+                color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary),
                 height: 1.4,
               ),
             ),

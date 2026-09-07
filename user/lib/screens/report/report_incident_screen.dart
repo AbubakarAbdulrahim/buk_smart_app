@@ -30,14 +30,26 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
     ('Emergency', PhosphorIconsRegular.firstAid, 'Medical emergencies or critical safety assistance'),
     ('Power Outage', PhosphorIconsRegular.lightning, 'Power failures, sparking wires, or grid breakdowns'),
     ('Water Outage', PhosphorIconsRegular.drop, 'Dry pipes, broken water taps, or major flooding/leaks'),
+    ('Fire Outbreak', PhosphorIconsRegular.fire, 'Active fires, smoke, or fire hazards'),
+    ('Waste Dumps', PhosphorIconsRegular.trash, 'Hazardous waste accumulation or garbage pileup'),
+    ('Other', PhosphorIconsRegular.dotsThreeCircle, 'Specify other custom incidents'),
   ];
 
   final _desc = TextEditingController();
   final _location = TextEditingController();
+  final _customTypeController = TextEditingController();
   int _step = 0;
   String _type = 'Insecurity';
   XFile? _image;
   bool _submitting = false;
+
+  @override
+  void dispose() {
+    _desc.dispose();
+    _location.dispose();
+    _customTypeController.dispose();
+    super.dispose();
+  }
 
   Future<void> _pickImage(ImageSource source) async {
     try {
@@ -76,7 +88,7 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
       await firestore.createIncident(Incident(
         id: '',
         userId: uid,
-        type: _type,
+        type: _type == 'Other' ? _customTypeController.text.trim() : _type,
         description: _desc.text.trim(),
         location: _location.text.trim(),
         imageUrl: url,
@@ -104,19 +116,16 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text(
           'Report Incident',
           style: TextStyle(fontWeight: FontWeight.w800, fontSize: 20),
         ),
         centerTitle: true,
-        backgroundColor: Colors.white,
-        elevation: 0,
         leading: _step > 0
             ? IconButton(
                 onPressed: () => setState(() => _step--),
-                icon: const Icon(PhosphorIconsRegular.caretLeft, color: Color(AppColors.textPrimary)),
+                icon: const Icon(PhosphorIconsRegular.caretLeft),
               )
             : null,
       ),
@@ -146,12 +155,15 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
   }
 
   Widget _buildStepIndicator() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
       decoration: BoxDecoration(
-        color: const Color(0xFFF8FAFC),
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        border: Border.all(
+          color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
+        ),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -171,6 +183,7 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
     final isDone = _step > index;
     final primaryColor = const Color(AppColors.primaryDeeper);
     
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -180,10 +193,14 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
           decoration: BoxDecoration(
             color: isActive 
                 ? primaryColor 
-                : (isDone ? const Color(0xFFEFF6FF) : Colors.white),
+                : (isDone 
+                    ? (isDark ? const Color(0xFF172554) : const Color(0xFFEFF6FF))
+                    : Theme.of(context).cardColor),
             shape: BoxShape.circle,
             border: Border.all(
-              color: isActive || isDone ? primaryColor : const Color(0xFFCBD5E1),
+              color: isActive || isDone
+                  ? primaryColor
+                  : (isDark ? const Color(0xFF1E293B) : const Color(0xFFCBD5E1)),
               width: 1.5,
             ),
           ),
@@ -208,11 +225,14 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
 
   Widget _buildStepLine(int afterIndex) {
     final isDone = _step > afterIndex;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Expanded(
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 12),
         height: 1.5,
-        color: isDone ? const Color(AppColors.primaryDeeper) : const Color(0xFFE2E8F0),
+        color: isDone 
+            ? const Color(AppColors.primaryDeeper) 
+            : (isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0)),
       ),
     );
   }
@@ -231,23 +251,27 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
   }
 
   Widget _buildStepCategory() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return ListView(
       physics: const BouncingScrollPhysics(),
       key: const ValueKey('step_category'),
       children: [
-        const Text(
+        Text(
           'What are you reporting?',
           style: TextStyle(
             fontWeight: FontWeight.w800,
             fontSize: 24,
             letterSpacing: -0.5,
-            color: Color(AppColors.textPrimary),
+            color: isDark ? const Color(AppColors.darkTextPrimary) : const Color(AppColors.textPrimary),
           ),
         ),
         const SizedBox(height: 6),
-        const Text(
+        Text(
           'Select the category that matches the active incident',
-          style: TextStyle(color: Color(AppColors.textSecondary), fontSize: 13.5),
+          style: TextStyle(
+            color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary),
+            fontSize: 13.5,
+          ),
         ),
         const SizedBox(height: 20),
         ..._types.map((t) {
@@ -260,32 +284,42 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
                 duration: const Duration(milliseconds: 200),
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: isSelected ? const Color(0xFFEFF6FF) : Colors.white,
+                  color: isSelected
+                      ? (isDark ? const Color(0xFF172554) : const Color(0xFFEFF6FF))
+                      : Theme.of(context).cardColor,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                    color: isSelected ? const Color(AppColors.primaryDeeper) : const Color(0xFFE2E8F0),
+                    color: isSelected
+                        ? const Color(AppColors.primaryDeeper)
+                        : (isDark ? const Color(AppColors.darkBorder) : const Color(0xFFE2E8F0)),
                     width: isSelected ? 1.8 : 1.0,
                   ),
-                  boxShadow: isSelected ? [
-                    BoxShadow(
-                      color: const Color(AppColors.primaryDeeper).withOpacity(0.04),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    )
-                  ] : [],
+                  boxShadow: isSelected
+                      ? [
+                          BoxShadow(
+                            color: const Color(AppColors.primaryDeeper).withOpacity(0.04),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          )
+                        ]
+                      : [],
                 ),
                 child: Row(
                   children: [
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: isSelected ? Colors.white : const Color(0xFFF1F5F9),
+                        color: isSelected
+                            ? (isDark ? const Color(AppColors.darkCardSubtle) : Colors.white)
+                            : (isDark ? const Color(AppColors.darkCardSubtle) : const Color(0xFFF1F5F9)),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
                         t.$2, 
                         size: 20, 
-                        color: isSelected ? const Color(AppColors.primaryDeeper) : const Color(0xFF475569),
+                        color: isSelected
+                            ? (isDark ? const Color(AppColors.primaryLight) : const Color(AppColors.primaryDeeper))
+                            : (isDark ? const Color(AppColors.darkTextSecondary) : const Color(0xFF475569)),
                       ),
                     ),
                     const SizedBox(width: 16),
@@ -299,15 +333,15 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
                               fontWeight: FontWeight.w700,
                               fontSize: 15.5,
                               color: isSelected 
-                                  ? const Color(AppColors.primaryDeeper) 
-                                  : const Color(AppColors.textPrimary),
+                                  ? (isDark ? const Color(AppColors.primaryLight) : const Color(AppColors.primaryDeeper)) 
+                                  : (isDark ? const Color(AppColors.darkTextPrimary) : const Color(AppColors.textPrimary)),
                             ),
                           ),
                           const SizedBox(height: 3),
                           Text(
                             t.$3,
-                            style: const TextStyle(
-                              color: Color(AppColors.textSecondary),
+                            style: TextStyle(
+                              color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary),
                               fontSize: 12,
                             ),
                           ),
@@ -322,7 +356,9 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
                         shape: BoxShape.circle,
                         color: isSelected ? const Color(AppColors.primaryDeeper) : Colors.transparent,
                         border: Border.all(
-                          color: isSelected ? const Color(AppColors.primaryDeeper) : const Color(0xFFCBD5E1),
+                          color: isSelected
+                              ? const Color(AppColors.primaryDeeper)
+                              : (isDark ? const Color(AppColors.darkBorder) : const Color(0xFFCBD5E1)),
                           width: 1.5,
                         ),
                       ),
@@ -336,28 +372,71 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
             ),
           );
         }),
+        if (_type == 'Other') ...[
+          const SizedBox(height: 8),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 24),
+            child: TextFormField(
+              controller: _customTypeController,
+              validator: (v) {
+                if (_type == 'Other' && (v == null || v.trim().isEmpty)) {
+                  return 'Please specify the incident type';
+                }
+                return null;
+              },
+              decoration: InputDecoration(
+                labelText: 'Specify Incident Type *',
+                hintText: 'e.g. Noise Complaint, Vandalism, Protest',
+                prefixIcon: Icon(
+                  PhosphorIconsRegular.note,
+                  color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary),
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: BorderSide(
+                    color: isDark
+                        ? const Color(AppColors.darkBorder)
+                        : const Color(0xFFE2E8F0),
+                  ),
+                ),
+                focusedBorder: const OutlineInputBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(14)),
+                  borderSide: BorderSide(color: Color(AppColors.primaryDeeper), width: 1.8),
+                ),
+                contentPadding: const EdgeInsets.all(16),
+              ),
+              onChanged: (val) {
+                setState(() {});
+              },
+            ),
+          ),
+        ],
       ],
     );
   }
 
   Widget _buildStepDetails() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return ListView(
       physics: const BouncingScrollPhysics(),
       key: const ValueKey('step_details'),
       children: [
-        const Text(
+        Text(
           'Provide incident details',
           style: TextStyle(
             fontWeight: FontWeight.w800,
             fontSize: 24,
             letterSpacing: -0.5,
-            color: Color(AppColors.textPrimary),
+            color: isDark ? const Color(AppColors.darkTextPrimary) : const Color(AppColors.textPrimary),
           ),
         ),
         const SizedBox(height: 6),
-        const Text(
+        Text(
           'Enter descriptive elements and add any optional photo context',
-          style: TextStyle(color: Color(AppColors.textSecondary), fontSize: 13.5),
+          style: TextStyle(
+            color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary),
+            fontSize: 13.5,
+          ),
         ),
         const SizedBox(height: 20),
         
@@ -370,17 +449,24 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
             labelText: 'Description',
             hintText: 'Describe what happened in detail...',
             alignLabelWithHint: true,
-            prefixIcon: const Padding(
-              padding: EdgeInsets.only(bottom: 64),
-              child: Icon(PhosphorIconsRegular.chatText, color: Color(AppColors.textSecondary)),
+            prefixIcon: Padding(
+              padding: const EdgeInsets.only(bottom: 64),
+              child: Icon(
+                PhosphorIconsRegular.chatText,
+                color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary),
+              ),
             ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
-              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+              borderSide: BorderSide(
+                color: isDark
+                    ? const Color(AppColors.darkBorder)
+                    : const Color(0xFFE2E8F0),
+              ),
             ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide: const BorderSide(color: Color(AppColors.primaryDeeper), width: 1.8),
+            focusedBorder: const OutlineInputBorder(
+              borderRadius: BorderRadius.all(Radius.circular(14)),
+              borderSide: BorderSide(color: Color(AppColors.primaryDeeper), width: 1.8),
             ),
             contentPadding: const EdgeInsets.all(16),
           ),
@@ -394,14 +480,21 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
           decoration: InputDecoration(
             labelText: 'Location',
             hintText: 'Where did this happen?',
-            prefixIcon: const Icon(PhosphorIconsRegular.mapPin, color: Color(AppColors.textSecondary)),
+            prefixIcon: Icon(
+              PhosphorIconsRegular.mapPin,
+              color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary),
+            ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
-              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+              borderSide: BorderSide(
+                color: isDark
+                    ? const Color(AppColors.darkBorder)
+                    : const Color(0xFFE2E8F0),
+              ),
             ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide: const BorderSide(color: Color(AppColors.primaryDeeper), width: 1.8),
+            focusedBorder: const OutlineInputBorder(
+              borderRadius: BorderRadius.all(Radius.circular(14)),
+              borderSide: BorderSide(color: Color(AppColors.primaryDeeper), width: 1.8),
             ),
             contentPadding: const EdgeInsets.all(16),
           ),
@@ -409,9 +502,13 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
         const SizedBox(height: 20),
         
         // Photo upload card
-        const Text(
+        Text(
           'Attach Photo (Optional)',
-          style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14.5, color: Color(AppColors.textPrimary)),
+          style: TextStyle(
+            fontWeight: FontWeight.w700,
+            fontSize: 14.5,
+            color: isDark ? const Color(AppColors.darkTextPrimary) : const Color(AppColors.textPrimary),
+          ),
         ),
         const SizedBox(height: 10),
         _image == null ? _buildPhotoUploadBoxes() : _buildPhotoPreviewBox(),
@@ -421,6 +518,7 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
   }
 
   Widget _buildPhotoUploadBoxes() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Column(
       children: [
         GestureDetector(
@@ -429,30 +527,43 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
             width: double.infinity,
             padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
             decoration: BoxDecoration(
-              color: const Color(0xFFF8FAFC),
+              color: isDark ? const Color(AppColors.darkCard) : const Color(0xFFF8FAFC),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xFFE2E8F0)),
+              border: Border.all(
+                color: isDark ? const Color(AppColors.darkBorder) : const Color(0xFFE2E8F0),
+              ),
             ),
             child: Column(
               children: [
                 Container(
                   padding: const EdgeInsets.all(12),
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFEFF6FF),
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFF172554) : const Color(0xFFEFF6FF),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(PhosphorIconsRegular.camera, size: 28, color: Color(AppColors.primaryDeeper)),
+                  child: Icon(
+                    PhosphorIconsRegular.camera,
+                    size: 28,
+                    color: isDark ? const Color(AppColors.primaryLight) : const Color(AppColors.primaryDeeper),
+                  ),
                 ),
                 const SizedBox(height: 12),
-                const Text(
+                Text(
                   'Tap to Take Picture',
-                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15, color: Color(AppColors.textPrimary)),
+                  style: TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 15,
+                    color: isDark ? const Color(AppColors.darkTextPrimary) : const Color(AppColors.textPrimary),
+                  ),
                 ),
                 const SizedBox(height: 4),
-                const Text(
+                Text(
                   'Opens your device camera to capture visual context',
                   textAlign: TextAlign.center,
-                  style: TextStyle(color: Color(AppColors.textSecondary), fontSize: 12),
+                  style: TextStyle(
+                    color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary),
+                    fontSize: 12,
+                  ),
                 ),
               ],
             ),
@@ -462,12 +573,16 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
         Center(
           child: TextButton.icon(
             onPressed: () => _pickImage(ImageSource.gallery),
-            icon: const Icon(PhosphorIconsRegular.image, size: 16, color: Color(AppColors.primaryDeeper)),
-            label: const Text(
+            icon: Icon(
+              PhosphorIconsRegular.image,
+              size: 16,
+              color: isDark ? const Color(AppColors.primaryLight) : const Color(AppColors.primaryDeeper),
+            ),
+            label: Text(
               'Choose from Gallery',
               style: TextStyle(
                 fontWeight: FontWeight.bold,
-                color: Color(AppColors.primaryDeeper),
+                color: isDark ? const Color(AppColors.primaryLight) : const Color(AppColors.primaryDeeper),
               ),
             ),
           ),
@@ -523,32 +638,41 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
 
   Widget _buildStepReview() {
     final activeIcon = _types.firstWhere((t) => t.$1 == _type).$2;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return ListView(
       physics: const BouncingScrollPhysics(),
       key: const ValueKey('step_review'),
       children: [
-        const Text(
+        Text(
           'Review & Confirm',
           style: TextStyle(
             fontWeight: FontWeight.w800,
             fontSize: 24,
             letterSpacing: -0.5,
-            color: Color(AppColors.textPrimary),
+            color: isDark ? const Color(AppColors.darkTextPrimary) : const Color(AppColors.textPrimary),
           ),
         ),
         const SizedBox(height: 6),
-        const Text(
+        Text(
           'Please verify your report details before submission',
-          style: TextStyle(color: Color(AppColors.textSecondary), fontSize: 13.5),
+          style: TextStyle(
+            color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary),
+            fontSize: 13.5,
+          ),
         ),
         const SizedBox(height: 20),
         
         Card(
-          elevation: 6,
+          elevation: isDark ? 0 : 6,
+          color: Theme.of(context).cardColor,
           shadowColor: const Color(0x1A0B1A2B),
-          color: Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+            side: BorderSide(
+              color: isDark ? const Color(AppColors.darkBorder) : Colors.transparent,
+            ),
+          ),
           child: Padding(
             padding: const EdgeInsets.all(20),
             child: Column(
@@ -556,23 +680,33 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
               children: [
                 _confirmRow(
                   label: 'Category',
-                  value: _type,
+                  value: _type == 'Other' ? _customTypeController.text.trim() : _type,
                   icon: activeIcon,
-                  iconColor: const Color(AppColors.primaryDeeper),
+                  iconColor: isDark ? const Color(AppColors.primaryLight) : const Color(AppColors.primaryDeeper),
                 ),
-                const Divider(height: 24, color: Color(0xFFEFF1F5)),
+                Divider(
+                  height: 24,
+                  color: isDark
+                      ? const Color(AppColors.darkBorder)
+                      : const Color(0xFFEFF1F5),
+                ),
                 _confirmRow(
                   label: 'Location',
                   value: _location.text,
                   icon: PhosphorIconsRegular.mapPin,
-                  iconColor: const Color(AppColors.primaryDeeper),
+                  iconColor: isDark ? const Color(AppColors.primaryLight) : const Color(AppColors.primaryDeeper),
                 ),
-                const Divider(height: 24, color: Color(0xFFEFF1F5)),
+                Divider(
+                  height: 24,
+                  color: isDark
+                      ? const Color(AppColors.darkBorder)
+                      : const Color(0xFFEFF1F5),
+                ),
                 _confirmRow(
                   label: 'Description',
                   value: _desc.text.isEmpty ? 'No description' : _desc.text,
                   icon: PhosphorIconsRegular.chatText,
-                  iconColor: const Color(AppColors.primaryDeeper),
+                  iconColor: isDark ? const Color(AppColors.primaryLight) : const Color(AppColors.primaryDeeper),
                 ),
               ],
             ),
@@ -580,12 +714,12 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
         ),
         if (_image != null) ...[
           const SizedBox(height: 20),
-          const Text(
+          Text(
             'ATTACHED PHOTO PREVIEW',
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w800,
-              color: Color(AppColors.textSecondary),
+              color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary),
               letterSpacing: 0.5,
             ),
           ),
@@ -595,7 +729,11 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
             height: 200,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xFFE2E8F0)),
+              border: Border.all(
+                color: isDark
+                    ? const Color(AppColors.darkBorder)
+                    : const Color(0xFFE2E8F0),
+              ),
               boxShadow: const [
                 BoxShadow(
                   color: Color(0x1F0B1A2B),
@@ -625,6 +763,7 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
     required IconData icon,
     required Color iconColor,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -643,20 +782,20 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
             children: [
               Text(
                 label.toUpperCase(),
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.w800,
-                  color: Color(AppColors.textSecondary),
+                  color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary),
                   letterSpacing: 0.5,
                 ),
               ),
               const SizedBox(height: 4),
               Text(
                 value,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 14.5,
                   fontWeight: FontWeight.w600,
-                  color: Color(AppColors.textPrimary),
+                  color: isDark ? const Color(AppColors.darkTextPrimary) : const Color(AppColors.textPrimary),
                   height: 1.35,
                 ),
               ),
@@ -675,6 +814,16 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
             ? null
             : () {
                 if (_step < 2) {
+                  if (_step == 0 && _type == 'Other') {
+                    if (_customTypeController.text.trim().isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Please specify the incident type before continuing'),
+                        ),
+                      );
+                      return;
+                    }
+                  }
                   if (_step == 1 && !_formKey.currentState!.validate()) return;
                   setState(() => _step++);
                 } else {

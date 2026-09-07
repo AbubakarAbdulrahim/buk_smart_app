@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '../../core/theme/app_colors.dart';
-import '../../widgets/smart_ai_fab.dart';
 import '../lost_found/lost_found_screen.dart';
 import '../map/map_screen.dart';
 import '../profile/profile_screen.dart';
@@ -30,36 +29,59 @@ class _AppShellState extends State<AppShell> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
       body: _screens[_index],
-      floatingActionButton: const SmartAiFab(),
-      bottomNavigationBar: NavigationBarTheme(
-        data: NavigationBarThemeData(
-          indicatorColor: const Color(0x1F0085D0),
-          labelTextStyle: WidgetStateProperty.resolveWith(
-            (states) => TextStyle(
-              fontSize: 11,
-              fontWeight: states.contains(WidgetState.selected) ? FontWeight.w600 : FontWeight.w500,
-              color: states.contains(WidgetState.selected) ? const Color(AppColors.primaryDeeper) : const Color(AppColors.textSecondary),
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          color: isDark ? const Color(AppColors.darkBackground) : const Color(AppColors.background),
+          border: Border(
+            top: BorderSide(
+              color: isDark
+                  ? const Color(AppColors.darkBorder).withOpacity(0.6)
+                  : const Color(AppColors.border).withOpacity(0.8),
+              width: 1.0,
             ),
           ),
         ),
-        child: NavigationBar(
-          height: 72,
-          backgroundColor: Colors.white,
-          elevation: 3,
-          selectedIndex: _index,
-          onDestinationSelected: (i) {
-            HapticFeedback.selectionClick();
-            setState(() => _index = i);
-          },
-          destinations: const [
-            NavigationDestination(icon: Icon(PhosphorIconsRegular.house), selectedIcon: Icon(PhosphorIconsRegular.house), label: 'Home'),
-            NavigationDestination(icon: Icon(PhosphorIconsRegular.mapTrifold), selectedIcon: Icon(PhosphorIconsRegular.mapTrifold), label: 'Map'),
-            NavigationDestination(icon: Icon(PhosphorIconsRegular.magnifyingGlass), selectedIcon: Icon(PhosphorIconsRegular.magnifyingGlass), label: 'Lost & Found'),
-            NavigationDestination(icon: Icon(PhosphorIconsRegular.bookOpen), selectedIcon: Icon(PhosphorIconsRegular.bookOpen), label: 'Resources'),
-            NavigationDestination(icon: Icon(PhosphorIconsRegular.user), selectedIcon: Icon(PhosphorIconsRegular.user), label: 'Profile'),
-          ],
+        child: NavigationBarTheme(
+          data: NavigationBarThemeData(
+            indicatorColor: isDark ? const Color(0x3D0085D0) : const Color(0x1F0085D0),
+            labelTextStyle: WidgetStateProperty.resolveWith(
+              (states) => TextStyle(
+                fontSize: 11,
+                fontWeight: states.contains(WidgetState.selected) ? FontWeight.w600 : FontWeight.w500,
+                color: states.contains(WidgetState.selected)
+                    ? (isDark ? const Color(AppColors.primaryLight) : const Color(AppColors.primaryDeeper))
+                    : (isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary)),
+              ),
+            ),
+            iconTheme: WidgetStateProperty.resolveWith(
+              (states) => IconThemeData(
+                color: states.contains(WidgetState.selected)
+                    ? (isDark ? const Color(AppColors.primaryLight) : const Color(AppColors.primaryDeeper))
+                    : (isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary)),
+              ),
+            ),
+          ),
+          child: NavigationBar(
+            height: 68,
+            backgroundColor: isDark ? const Color(AppColors.darkBackground) : const Color(AppColors.background),
+            surfaceTintColor: Colors.transparent,
+            elevation: 0,
+            selectedIndex: _index,
+            onDestinationSelected: (i) {
+              HapticFeedback.selectionClick();
+              setState(() => _index = i);
+            },
+            destinations: const [
+              NavigationDestination(icon: Icon(PhosphorIconsRegular.house), selectedIcon: Icon(PhosphorIconsRegular.house), label: 'Home'),
+              NavigationDestination(icon: Icon(PhosphorIconsRegular.mapTrifold), selectedIcon: Icon(PhosphorIconsRegular.mapTrifold), label: 'Map'),
+              NavigationDestination(icon: Icon(PhosphorIconsRegular.magnifyingGlass), selectedIcon: Icon(PhosphorIconsRegular.magnifyingGlass), label: 'Lost & Found'),
+              NavigationDestination(icon: Icon(PhosphorIconsRegular.bookOpen), selectedIcon: Icon(PhosphorIconsRegular.bookOpen), label: 'Resources'),
+              NavigationDestination(icon: Icon(PhosphorIconsRegular.user), selectedIcon: Icon(PhosphorIconsRegular.user), label: 'Profile'),
+            ],
+          ),
         ),
       ),
     );

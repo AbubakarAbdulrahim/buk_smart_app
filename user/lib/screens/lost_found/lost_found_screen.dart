@@ -133,9 +133,9 @@ class _LostFoundScreenState extends State<LostFoundScreen> {
     final firestore = context.read<FirestoreService>();
     final auth = context.read<AuthService>();
     final currentUid = auth.currentUser?.uid ?? 'guest';
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
         title: const Text('Lost & Found'),
         centerTitle: true,
@@ -168,16 +168,22 @@ class _LostFoundScreenState extends State<LostFoundScreen> {
                   child: Container(
                     height: 52,
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: Theme.of(context).cardColor,
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: const Color(0xFFEFF1F4)),
-                      boxShadow: const [
-                        BoxShadow(
-                          color: Color(0x040D1B2D),
-                          blurRadius: 10,
-                          offset: Offset(0, 4),
-                        ),
-                      ],
+                      border: Border.all(
+                        color: isDark
+                            ? const Color(AppColors.darkBorder)
+                            : const Color(AppColors.border),
+                      ),
+                      boxShadow: isDark
+                          ? []
+                          : const [
+                              BoxShadow(
+                                color: Color(0x040D1B2D),
+                                blurRadius: 10,
+                                offset: Offset(0, 4),
+                              ),
+                            ],
                     ),
                     child: TextField(
                       controller: _searchController,
@@ -186,23 +192,30 @@ class _LostFoundScreenState extends State<LostFoundScreen> {
                           _searchQuery = val;
                         });
                       },
-                      style: const TextStyle(fontSize: 14),
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: isDark ? const Color(AppColors.darkTextPrimary) : const Color(AppColors.textPrimary),
+                      ),
                       decoration: InputDecoration(
                         filled: true,
                         fillColor: Colors.transparent,
                         hintText: 'Search ID card, laptop, phone, wallet, bag...',
-                        hintStyle: const TextStyle(
-                          color: Color(0xFF94A3B8),
+                        hintStyle: TextStyle(
+                          color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(0xFF94A3B8),
                           fontSize: 13,
                         ),
-                        prefixIcon: const Icon(
+                        prefixIcon: Icon(
                           PhosphorIconsRegular.magnifyingGlass,
-                          color: Color(0xFF94A3B8),
+                          color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(0xFF94A3B8),
                           size: 20,
                         ),
                         suffixIcon: _searchQuery.isNotEmpty
                             ? IconButton(
-                                icon: const Icon(PhosphorIconsRegular.xCircle, color: Color(0xFF94A3B8), size: 18),
+                                icon: Icon(
+                                  PhosphorIconsRegular.xCircle,
+                                  color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(0xFF94A3B8),
+                                  size: 18,
+                                ),
                                 onPressed: () {
                                   _searchController.clear();
                                   setState(() {
@@ -226,21 +239,29 @@ class _LostFoundScreenState extends State<LostFoundScreen> {
                     height: 52,
                     width: 52,
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: Theme.of(context).cardColor,
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: const Color(0xFFEFF1F4)),
-                      boxShadow: const [
-                        BoxShadow(
-                          color: Color(0x040D1B2D),
-                          blurRadius: 10,
-                          offset: Offset(0, 4),
-                        ),
-                      ],
+                      border: Border.all(
+                        color: isDark
+                            ? const Color(AppColors.darkBorder)
+                            : const Color(AppColors.border),
+                      ),
+                      boxShadow: isDark
+                          ? []
+                          : const [
+                              BoxShadow(
+                                color: Color(0x040D1B2D),
+                                blurRadius: 10,
+                                offset: Offset(0, 4),
+                              ),
+                            ],
                     ),
-                    child: const Center(
+                    child: Center(
                       child: Icon(
                         PhosphorIconsRegular.bookmarkSimple,
-                        color: Color(AppColors.textPrimary),
+                        color: isDark
+                            ? const Color(AppColors.darkTextPrimary)
+                            : const Color(AppColors.textPrimary),
                         size: 20,
                       ),
                     ),
@@ -267,10 +288,14 @@ class _LostFoundScreenState extends State<LostFoundScreen> {
                       margin: const EdgeInsets.only(right: 8),
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                       decoration: BoxDecoration(
-                        color: isSelected ? const Color(AppColors.primary) : Colors.white,
+                        color: isSelected
+                            ? const Color(AppColors.primary)
+                            : (isDark ? const Color(AppColors.darkCardSubtle) : Colors.white),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: isSelected ? Colors.transparent : const Color(0xFFEFF1F4),
+                          color: isSelected
+                              ? Colors.transparent
+                              : (isDark ? const Color(AppColors.darkBorder) : const Color(0xFFEFF1F4)),
                         ),
                         boxShadow: isSelected
                             ? [
@@ -286,7 +311,9 @@ class _LostFoundScreenState extends State<LostFoundScreen> {
                         child: Text(
                           filter,
                           style: TextStyle(
-                            color: isSelected ? Colors.white : const Color(AppColors.textSecondary),
+                            color: isSelected
+                                ? Colors.white
+                                : (isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary)),
                             fontWeight: FontWeight.bold,
                             fontSize: 11.5,
                           ),
@@ -300,13 +327,13 @@ class _LostFoundScreenState extends State<LostFoundScreen> {
 
             // 4. Categories list (Circular colorful icons)
             if (_searchQuery.isEmpty && _selectedCategory == 'All') ...[
-              const Padding(
-                padding: EdgeInsets.fromLTRB(20, 10, 20, 6),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 10, 20, 6),
                 child: Text(
                   'Browse Categories',
                   style: TextStyle(
                     fontSize: 13.5,
-                    color: Color(AppColors.textSecondary),
+                    color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary),
                     fontWeight: FontWeight.bold,
                     letterSpacing: 0.2,
                   ),
@@ -339,7 +366,7 @@ class _LostFoundScreenState extends State<LostFoundScreen> {
                               decoration: BoxDecoration(
                                 color: isCategorySelected 
                                     ? const Color(AppColors.primary) 
-                                    : const Color(0xFFF1F5F9), // Premium Slate 100
+                                    : (isDark ? const Color(AppColors.darkCardSubtle) : const Color(0xFFF1F5F9)),
                                 shape: BoxShape.circle,
                               ),
                               child: Center(
@@ -347,7 +374,7 @@ class _LostFoundScreenState extends State<LostFoundScreen> {
                                   cat['icon'] as IconData,
                                   color: isCategorySelected 
                                       ? Colors.white 
-                                      : const Color(AppColors.textSecondary),
+                                      : (isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary)),
                                   size: 20,
                                 ),
                               ),
@@ -360,7 +387,7 @@ class _LostFoundScreenState extends State<LostFoundScreen> {
                                 fontWeight: isCategorySelected ? FontWeight.bold : FontWeight.w600,
                                 color: isCategorySelected
                                     ? const Color(AppColors.primary)
-                                    : const Color(AppColors.textPrimary),
+                                    : (isDark ? const Color(AppColors.darkTextPrimary) : const Color(AppColors.textPrimary)),
                               ),
                             ),
                           ],
@@ -372,7 +399,6 @@ class _LostFoundScreenState extends State<LostFoundScreen> {
               ),
             ],
 
-
             // Item details header
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
@@ -380,10 +406,10 @@ class _LostFoundScreenState extends State<LostFoundScreen> {
                 children: [
                   Text(
                     _selectedCategory == 'All' ? 'Recent Reports' : 'Category: $_selectedCategory',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w800,
-                      color: Color(AppColors.textPrimary),
+                      color: isDark ? const Color(AppColors.darkTextPrimary) : const Color(AppColors.textPrimary),
                     ),
                   ),
                   const Spacer(),
@@ -429,6 +455,9 @@ class _LostFoundScreenState extends State<LostFoundScreen> {
                     return passesCategory && matchesSearch && _passesTimeFilter(item.createdAt);
                   }).toList();
 
+                  // Sort strictly descending by createdAt to make recently posted items appear at the very top
+                  items.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
                   return AsyncStateView(
                     connectionState: snapshot.connectionState,
                     hasError: snapshot.hasError,
@@ -459,6 +488,7 @@ class _LostFoundScreenState extends State<LostFoundScreen> {
     String currentUid,
     FirestoreService firestore,
   ) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final isLost = item.type == 'lost';
     final isBookmarked = item.bookmarkedBy.contains(currentUid);
     final formattedDate = DateFormat('MMM dd, yyyy').format(item.createdAt);
@@ -467,16 +497,20 @@ class _LostFoundScreenState extends State<LostFoundScreen> {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: const Color(0xFFEFF1F4)),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x030F172A),
-            blurRadius: 12,
-            offset: Offset(0, 6),
-          ),
-        ],
+        border: Border.all(
+          color: isDark ? const Color(AppColors.darkBorder) : const Color(AppColors.border),
+        ),
+        boxShadow: isDark
+            ? []
+            : const [
+                BoxShadow(
+                  color: Color(0x030F172A),
+                  blurRadius: 12,
+                  offset: Offset(0, 6),
+                ),
+              ],
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(22),
@@ -499,12 +533,14 @@ class _LostFoundScreenState extends State<LostFoundScreen> {
                     child: item.imageUrl != null && item.imageUrl!.isNotEmpty
                         ? Image.network(item.imageUrl!, fit: BoxFit.cover)
                         : Container(
-                            color: const Color(0xFFF1F5F9),
+                            color: isDark ? const Color(AppColors.darkCardSubtle) : const Color(0xFFF1F5F9),
                             child: Center(
                               child: Icon(
                                 PhosphorIconsRegular.image,
                                 size: 40,
-                                color: const Color(AppColors.textSecondary).withOpacity(0.5),
+                                color: isDark
+                                    ? const Color(AppColors.darkTextSecondary).withOpacity(0.5)
+                                    : const Color(AppColors.textSecondary).withOpacity(0.5),
                               ),
                             ),
                           ),
@@ -517,14 +553,16 @@ class _LostFoundScreenState extends State<LostFoundScreen> {
                     child: Container(
                       height: 38,
                       width: 38,
-                      decoration: const BoxDecoration(
-                        color: Colors.white,
+                      decoration: BoxDecoration(
+                        color: isDark ? const Color(AppColors.darkCard) : Colors.white,
                         shape: BoxShape.circle,
                       ),
                       child: IconButton(
                         icon: Icon(
                           isBookmarked ? PhosphorIconsFill.bookmark : PhosphorIconsRegular.bookmarkSimple,
-                          color: isBookmarked ? const Color(AppColors.primary) : const Color(AppColors.textSecondary),
+                          color: isBookmarked
+                              ? (isDark ? const Color(AppColors.primaryLight) : const Color(AppColors.primary))
+                              : (isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary)),
                           size: 18,
                         ),
                         onPressed: () async {
@@ -550,14 +588,22 @@ class _LostFoundScreenState extends State<LostFoundScreen> {
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                           decoration: BoxDecoration(
-                            color: isLost ? const Color(0xFFFEF2F2) : const Color(0xFFECFDF5),
+                            color: isLost
+                                ? (isDark ? const Color(0xFF450A0A) : const Color(0xFFFEF2F2))
+                                : (isDark ? const Color(0xFF064E3B) : const Color(0xFFECFDF5)),
                             borderRadius: BorderRadius.circular(999),
-                            border: Border.all(color: isLost ? const Color(0xFFFCA5A5) : const Color(0xFF6EE7B7)),
+                            border: Border.all(
+                              color: isLost
+                                  ? (isDark ? const Color(0xFF991B1B) : const Color(0xFFFCA5A5))
+                                  : (isDark ? const Color(0xFF047857) : const Color(0xFF6EE7B7)),
+                            ),
                           ),
                           child: Text(
                             isLost ? 'LOST' : 'FOUND',
                             style: TextStyle(
-                              color: isLost ? const Color(0xFFB91C1C) : const Color(0xFF047857),
+                              color: isLost
+                                  ? (isDark ? const Color(AppColors.darkDanger) : const Color(0xFFB91C1C))
+                                  : (isDark ? const Color(AppColors.darkSuccess) : const Color(0xFF047857)),
                               fontSize: 9,
                               fontWeight: FontWeight.bold,
                               letterSpacing: 0.6,
@@ -565,18 +611,20 @@ class _LostFoundScreenState extends State<LostFoundScreen> {
                           ),
                         ),
                         const SizedBox(width: 6),
-                        // Category Pill - Slate-Neutral Theme
+                        // Category Pill
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFF1F5F9), // Slate 100
+                            color: isDark ? const Color(AppColors.darkCardSubtle) : const Color(0xFFF1F5F9),
                             borderRadius: BorderRadius.circular(999),
-                            border: Border.all(color: const Color(0xFFE2E8F0)), // Slate 200
+                            border: Border.all(
+                              color: isDark ? const Color(AppColors.darkBorder) : const Color(0xFFE2E8F0),
+                            ),
                           ),
                           child: Text(
                             item.category,
-                            style: const TextStyle(
-                              color: Color(AppColors.textSecondary),
+                            style: TextStyle(
+                              color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary),
                               fontSize: 9,
                               fontWeight: FontWeight.bold,
                             ),
@@ -596,10 +644,10 @@ class _LostFoundScreenState extends State<LostFoundScreen> {
                   children: [
                     Text(
                       item.title,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
-                        color: Color(AppColors.textPrimary),
+                        color: isDark ? const Color(AppColors.darkTextPrimary) : const Color(AppColors.textPrimary),
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -607,14 +655,17 @@ class _LostFoundScreenState extends State<LostFoundScreen> {
                       item.description,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12.5,
-                        color: Color(AppColors.textSecondary),
+                        color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary),
                         height: 1.4,
                       ),
                     ),
                     const SizedBox(height: 14),
-                    const Divider(color: Color(0xFFF1F5F9), height: 1),
+                    Divider(
+                      color: isDark ? const Color(AppColors.darkBorder) : const Color(0xFFF1F5F9),
+                      height: 1,
+                    ),
                     const SizedBox(height: 12),
 
                     // Location & Reporter block
@@ -626,16 +677,20 @@ class _LostFoundScreenState extends State<LostFoundScreen> {
                             children: [
                               Row(
                                 children: [
-                                  const Icon(PhosphorIconsRegular.mapPin, color: Color(AppColors.textSecondary), size: 13),
+                                  Icon(
+                                    PhosphorIconsRegular.mapPin,
+                                    color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary),
+                                    size: 13,
+                                  ),
                                   const SizedBox(width: 4),
                                   Expanded(
                                     child: Text(
                                       item.location,
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         fontSize: 11.5,
-                                        color: Color(AppColors.textSecondary),
+                                        color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary),
                                         fontWeight: FontWeight.w500,
                                       ),
                                     ),
@@ -645,13 +700,17 @@ class _LostFoundScreenState extends State<LostFoundScreen> {
                               const SizedBox(height: 4),
                               Row(
                                 children: [
-                                  const Icon(PhosphorIconsRegular.clock, color: Color(AppColors.textSecondary), size: 13),
+                                  Icon(
+                                    PhosphorIconsRegular.clock,
+                                    color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary),
+                                    size: 13,
+                                  ),
                                   const SizedBox(width: 4),
                                   Text(
                                     '$formattedDate • $formattedTime',
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 11,
-                                      color: Color(AppColors.textSecondary),
+                                      color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary),
                                     ),
                                   ),
                                 ],
@@ -663,21 +722,27 @@ class _LostFoundScreenState extends State<LostFoundScreen> {
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
-                            color: item.isVerified ? const Color(0xFFEFF6FF) : const Color(0xFFF8FAFC),
+                            color: isDark
+                                ? const Color(AppColors.darkCardSubtle)
+                                : (item.isVerified ? const Color(0xFFEFF6FF) : const Color(0xFFF8FAFC)),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Row(
                             children: [
                               Icon(
                                 item.isVerified ? PhosphorIconsFill.checkCircle : PhosphorIconsRegular.userCircle,
-                                color: item.isVerified ? const Color(AppColors.primary) : const Color(AppColors.textSecondary),
+                                color: item.isVerified
+                                    ? (isDark ? const Color(AppColors.primaryLight) : const Color(AppColors.primary))
+                                    : (isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary)),
                                 size: 13,
                               ),
                               const SizedBox(width: 3),
                               Text(
                                 item.isVerified ? 'VERIFIED' : 'STUDENT',
                                 style: TextStyle(
-                                  color: item.isVerified ? const Color(AppColors.primary) : const Color(AppColors.textSecondary),
+                                  color: item.isVerified
+                                      ? (isDark ? const Color(AppColors.primaryLight) : const Color(AppColors.primary))
+                                      : (isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary)),
                                   fontSize: 8.5,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -699,6 +764,7 @@ class _LostFoundScreenState extends State<LostFoundScreen> {
 
   // Modern empty state illustrations
   Widget _buildEmptyState() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(28),
@@ -707,32 +773,32 @@ class _LostFoundScreenState extends State<LostFoundScreen> {
           children: [
             Container(
               padding: const EdgeInsets.all(20),
-              decoration: const BoxDecoration(
-                color: Color(0xFFEFF6FF),
+              decoration: BoxDecoration(
+                color: isDark ? const Color(AppColors.darkCardSubtle) : const Color(0xFFEFF6FF),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
+              child: Icon(
                 PhosphorIconsRegular.magnifyingGlass,
-                color: Color(AppColors.primary),
+                color: isDark ? const Color(AppColors.primaryLight) : const Color(AppColors.primary),
                 size: 34,
               ),
             ),
             const SizedBox(height: 18),
-            const Text(
+            Text(
               'No items found',
               style: TextStyle(
                 fontWeight: FontWeight.w800,
                 fontSize: 16,
-                color: Color(AppColors.textPrimary),
+                color: isDark ? const Color(AppColors.darkTextPrimary) : const Color(AppColors.textPrimary),
               ),
             ),
             const SizedBox(height: 8),
-            const Text(
+            Text(
               'Everything seems to have been claimed! 🎉 Try searching for another item or adjust your quick filter selections.',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 12.5,
-                color: Color(AppColors.textSecondary),
+                color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary),
                 height: 1.45,
               ),
             ),

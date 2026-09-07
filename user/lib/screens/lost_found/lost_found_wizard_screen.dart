@@ -318,19 +318,15 @@ class _LostFoundWizardScreenState extends State<LostFoundWizardScreen> {
     return Stack(
       children: [
         Scaffold(
-          backgroundColor: Colors.white,
           appBar: AppBar(
-            backgroundColor: Colors.white,
-            elevation: 0,
             leading: IconButton(
-              icon: const Icon(PhosphorIconsRegular.x, color: Color(AppColors.textPrimary)),
+              icon: const Icon(PhosphorIconsRegular.x),
               onPressed: () => Navigator.pop(context),
             ),
             title: const Text(
               'Report an Item',
               style: TextStyle(
                 fontWeight: FontWeight.w800,
-                color: Color(AppColors.textPrimary),
               ),
             ),
             centerTitle: true,
@@ -338,7 +334,9 @@ class _LostFoundWizardScreenState extends State<LostFoundWizardScreen> {
               preferredSize: const Size.fromHeight(4),
               child: LinearProgressIndicator(
                 value: progress,
-                backgroundColor: const Color(0xFFF1F5F9),
+                backgroundColor: Theme.of(context).brightness == Brightness.dark
+                    ? const Color(0xFF1E293B)
+                    : const Color(0xFFF1F5F9),
                 valueColor: const AlwaysStoppedAnimation<Color>(Color(AppColors.primary)),
                 minHeight: 3,
               ),
@@ -375,8 +373,14 @@ class _LostFoundWizardScreenState extends State<LostFoundWizardScreen> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
                   decoration: BoxDecoration(
-                    color: Colors.white,
-                    border: Border(top: BorderSide(color: const Color(0xFFEFF1F4))),
+                    color: Theme.of(context).cardColor,
+                    border: Border(
+                      top: BorderSide(
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? const Color(0xFF1E293B)
+                            : const Color(0xFFEFF1F4),
+                      ),
+                    ),
                   ),
                   child: Row(
                     children: [
@@ -387,12 +391,15 @@ class _LostFoundWizardScreenState extends State<LostFoundWizardScreen> {
                             style: OutlinedButton.styleFrom(
                               padding: const EdgeInsets.symmetric(vertical: 16),
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                              side: const BorderSide(color: Color(0xFFEFF1F4)),
+                              side: BorderSide(
+                                color: Theme.of(context).brightness == Brightness.dark
+                                    ? const Color(0xFF1E293B)
+                                    : const Color(0xFFEFF1F4),
+                              ),
                             ),
                             child: const Text(
                               'Back',
                               style: TextStyle(
-                                color: Color(AppColors.textPrimary),
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -431,12 +438,12 @@ class _LostFoundWizardScreenState extends State<LostFoundWizardScreen> {
         if (_isPublishing)
           Positioned.fill(
             child: Container(
-              color: Colors.white.withOpacity(0.85),
+              color: Theme.of(context).scaffoldBackgroundColor.withOpacity(0.85),
               child: Center(
                 child: Card(
                   elevation: 6,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                  color: Colors.white,
+                  color: Theme.of(context).cardColor,
                   child: Padding(
                     padding: const EdgeInsets.all(28),
                     child: Column(
@@ -488,17 +495,26 @@ class _LostFoundWizardScreenState extends State<LostFoundWizardScreen> {
 
   // Step 1: Is this a Lost or Found item
   Widget _buildStep1TypeSelection() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'What happened?',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: Color(AppColors.textPrimary)),
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.w900,
+            color: isDark ? const Color(AppColors.darkTextPrimary) : const Color(AppColors.textPrimary),
+          ),
         ),
         const SizedBox(height: 6),
-        const Text(
+        Text(
           'Specify if this is your missing item, or an item you discovered on campus.',
-          style: TextStyle(color: Color(AppColors.textSecondary), fontSize: 13, height: 1.35),
+          style: TextStyle(
+            color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary),
+            fontSize: 13,
+            height: 1.35,
+          ),
         ),
         const SizedBox(height: 24),
         GestureDetector(
@@ -506,10 +522,14 @@ class _LostFoundWizardScreenState extends State<LostFoundWizardScreen> {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 22),
             decoration: BoxDecoration(
-              color: _type == 'lost' ? const Color(0xFFFEF2F2) : Colors.white,
+              color: _type == 'lost'
+                  ? (isDark ? const Color(0xFF450A0A) : const Color(0xFFFEF2F2))
+                  : (isDark ? const Color(AppColors.darkCard) : Colors.white),
               borderRadius: BorderRadius.circular(18),
               border: Border.all(
-                color: _type == 'lost' ? const Color(0xFFFCA5A5) : const Color(0xFFEFF1F4),
+                color: _type == 'lost'
+                    ? (isDark ? const Color(0xFF991B1B) : const Color(0xFFFCA5A5))
+                    : (isDark ? const Color(AppColors.darkBorder) : const Color(0xFFEFF1F4)),
                 width: 1.5,
               ),
             ),
@@ -521,21 +541,33 @@ class _LostFoundWizardScreenState extends State<LostFoundWizardScreen> {
                     color: const Color(0xFFEF4444).withOpacity(0.12),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(PhosphorIconsRegular.info, color: Color(0xFFB91C1C), size: 20),
+                  child: Icon(
+                    PhosphorIconsRegular.info,
+                    color: isDark ? const Color(AppColors.darkDanger) : const Color(0xFFB91C1C),
+                    size: 20,
+                  ),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
+                    children: [
                       Text(
                         'Lost Item',
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Color(AppColors.textPrimary)),
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                          color: isDark ? const Color(AppColors.darkTextPrimary) : const Color(AppColors.textPrimary),
+                        ),
                       ),
-                      SizedBox(height: 2),
+                      const SizedBox(height: 2),
                       Text(
                         'I have lost an item and want to ask the community for assistance.',
-                        style: TextStyle(color: Color(AppColors.textSecondary), fontSize: 12, height: 1.25),
+                        style: TextStyle(
+                          color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary),
+                          fontSize: 12,
+                          height: 1.25,
+                        ),
                       ),
                     ],
                   ),
@@ -543,7 +575,7 @@ class _LostFoundWizardScreenState extends State<LostFoundWizardScreen> {
                 Radio<String>(
                   value: 'lost',
                   groupValue: _type,
-                  activeColor: const Color(0xFFEF4444),
+                  activeColor: isDark ? const Color(AppColors.darkDanger) : const Color(0xFFEF4444),
                   onChanged: (val) {
                     if (val != null) setState(() => _type = val);
                   },
@@ -558,10 +590,14 @@ class _LostFoundWizardScreenState extends State<LostFoundWizardScreen> {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 22),
             decoration: BoxDecoration(
-              color: _type == 'found' ? const Color(0xFFECFDF5) : Colors.white,
+              color: _type == 'found'
+                  ? (isDark ? const Color(0xFF064E3B) : const Color(0xFFECFDF5))
+                  : (isDark ? const Color(AppColors.darkCard) : Colors.white),
               borderRadius: BorderRadius.circular(18),
               border: Border.all(
-                color: _type == 'found' ? const Color(0xFF6EE7B7) : const Color(0xFFEFF1F4),
+                color: _type == 'found'
+                    ? (isDark ? const Color(0xFF047857) : const Color(0xFF6EE7B7))
+                    : (isDark ? const Color(AppColors.darkBorder) : const Color(0xFFEFF1F4)),
                 width: 1.5,
               ),
             ),
@@ -573,21 +609,33 @@ class _LostFoundWizardScreenState extends State<LostFoundWizardScreen> {
                     color: const Color(0xFF10B981).withOpacity(0.12),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(PhosphorIconsRegular.handWaving, color: Color(0xFF047857), size: 20),
+                  child: Icon(
+                    PhosphorIconsRegular.handWaving,
+                    color: isDark ? const Color(AppColors.darkSuccess) : const Color(0xFF047857),
+                    size: 20,
+                  ),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
+                    children: [
                       Text(
                         'Found Item',
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Color(AppColors.textPrimary)),
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                          color: isDark ? const Color(AppColors.darkTextPrimary) : const Color(AppColors.textPrimary),
+                        ),
                       ),
-                      SizedBox(height: 2),
+                      const SizedBox(height: 2),
                       Text(
                         'I have found a lost item and wish to surrender or locate the owner.',
-                        style: TextStyle(color: Color(AppColors.textSecondary), fontSize: 12, height: 1.25),
+                        style: TextStyle(
+                          color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary),
+                          fontSize: 12,
+                          height: 1.25,
+                        ),
                       ),
                     ],
                   ),
@@ -595,7 +643,7 @@ class _LostFoundWizardScreenState extends State<LostFoundWizardScreen> {
                 Radio<String>(
                   value: 'found',
                   groupValue: _type,
-                  activeColor: const Color(0xFF10B981),
+                  activeColor: isDark ? const Color(AppColors.darkSuccess) : const Color(0xFF10B981),
                   onChanged: (val) {
                     if (val != null) setState(() => _type = val);
                   },
@@ -885,15 +933,20 @@ class _LostFoundWizardScreenState extends State<LostFoundWizardScreen> {
 
   // Step 5: Picker for Dates & Times
   Widget _buildStep5DateTime() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final dateString = DateFormat('EEEE, MMMM dd, yyyy').format(_selectedDate);
     final timeString = _selectedTime.format(context);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Date & Time information',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: Color(AppColors.textPrimary)),
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.w900,
+            color: isDark ? const Color(AppColors.darkTextPrimary) : const Color(AppColors.textPrimary),
+          ),
         ),
         const SizedBox(height: 24),
 
@@ -903,25 +956,47 @@ class _LostFoundWizardScreenState extends State<LostFoundWizardScreen> {
           child: Container(
             padding: const EdgeInsets.all(18),
             decoration: BoxDecoration(
-              color: const Color(0xFFF8FAFC),
+              color: isDark ? const Color(AppColors.darkCardSubtle) : const Color(0xFFF8FAFC),
               borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: const Color(0xFFEFF1F4)),
+              border: Border.all(
+                color: isDark ? const Color(AppColors.darkBorder) : const Color(0xFFEFF1F4),
+              ),
             ),
             child: Row(
               children: [
-                const Icon(PhosphorIconsRegular.calendarBlank, color: Color(AppColors.primary)),
+                Icon(
+                  PhosphorIconsRegular.calendarBlank,
+                  color: isDark ? const Color(AppColors.primaryLight) : const Color(AppColors.primary),
+                ),
                 const SizedBox(width: 14),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('Date Occurred', style: TextStyle(color: Color(AppColors.textSecondary), fontSize: 11, fontWeight: FontWeight.bold)),
+                      Text(
+                        'Date Occurred',
+                        style: TextStyle(
+                          color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary),
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                       const SizedBox(height: 4),
-                      Text(dateString, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(AppColors.textPrimary))),
+                      Text(
+                        dateString,
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                          color: isDark ? const Color(AppColors.darkTextPrimary) : const Color(AppColors.textPrimary),
+                        ),
+                      ),
                     ],
                   ),
                 ),
-                const Icon(PhosphorIconsRegular.caretRight, color: Color(AppColors.textSecondary)),
+                Icon(
+                  PhosphorIconsRegular.caretRight,
+                  color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary),
+                ),
               ],
             ),
           ),
@@ -932,25 +1007,47 @@ class _LostFoundWizardScreenState extends State<LostFoundWizardScreen> {
           child: Container(
             padding: const EdgeInsets.all(18),
             decoration: BoxDecoration(
-              color: const Color(0xFFF8FAFC),
+              color: isDark ? const Color(AppColors.darkCardSubtle) : const Color(0xFFF8FAFC),
               borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: const Color(0xFFEFF1F4)),
+              border: Border.all(
+                color: isDark ? const Color(AppColors.darkBorder) : const Color(0xFFEFF1F4),
+              ),
             ),
             child: Row(
               children: [
-                const Icon(PhosphorIconsRegular.clock, color: Color(AppColors.primary)),
+                Icon(
+                  PhosphorIconsRegular.clock,
+                  color: isDark ? const Color(AppColors.primaryLight) : const Color(AppColors.primary),
+                ),
                 const SizedBox(width: 14),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('Approximate Time', style: TextStyle(color: Color(AppColors.textSecondary), fontSize: 11, fontWeight: FontWeight.bold)),
+                      Text(
+                        'Approximate Time',
+                        style: TextStyle(
+                          color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary),
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                       const SizedBox(height: 4),
-                      Text(timeString, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(AppColors.textPrimary))),
+                      Text(
+                        timeString,
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                          color: isDark ? const Color(AppColors.darkTextPrimary) : const Color(AppColors.textPrimary),
+                        ),
+                      ),
                     ],
                   ),
                 ),
-                const Icon(PhosphorIconsRegular.caretRight, color: Color(AppColors.textSecondary)),
+                Icon(
+                  PhosphorIconsRegular.caretRight,
+                  color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary),
+                ),
               ],
             ),
           ),

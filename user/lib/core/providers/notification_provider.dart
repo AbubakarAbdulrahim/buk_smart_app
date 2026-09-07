@@ -52,7 +52,7 @@ class NotificationProvider extends ChangeNotifier {
       accurateCount: 14,
       inaccurateCount: 2,
       status: 'unverified',
-      imageUrl: null,
+      imageUrl: 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=500&auto=format&fit=crop&q=60',
       isRead: false,
     ),
     BUKNotification(
@@ -100,7 +100,7 @@ class NotificationProvider extends ChangeNotifier {
       accurateCount: 25,
       inaccurateCount: 3,
       status: 'unverified',
-      imageUrl: null,
+      imageUrl: 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=500&auto=format&fit=crop&q=60',
       isRead: true,
     ),
   ];

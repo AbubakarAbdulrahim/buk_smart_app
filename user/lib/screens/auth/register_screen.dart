@@ -69,10 +69,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
       final user = auth.currentUser;
       if (user != null) {
+        final registeredName = _name.text.trim();
+        try {
+          await user.updateDisplayName(registeredName);
+        } catch (_) {}
         await firestore.ensureUserProfile(
           uid: user.uid,
           email: user.email ?? email,
-          name: _name.text.trim(),
+          name: registeredName,
           matricNumber: _matricNumber.text.trim(),
           faculty: _selectedFaculty,
           department: _selectedDepartment,

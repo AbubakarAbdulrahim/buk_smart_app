@@ -16,14 +16,10 @@ class ResourcesScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
         title: const Text(
           'Academic Resources',
           style: TextStyle(
-            color: Color(AppColors.textPrimary),
             fontWeight: FontWeight.w700,
           ),
         ),
@@ -131,19 +127,24 @@ class ResourcesScreen extends StatelessWidget {
     Color accentColor,
     String routeName,
   ) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: const Color(AppColors.card),
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFEFF1F4)),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x060B1A2B),
-            blurRadius: 10,
-            offset: Offset(0, 4),
-          ),
-        ],
+        border: Border.all(
+          color: isDark ? const Color(AppColors.darkBorder) : const Color(AppColors.border),
+        ),
+        boxShadow: isDark
+            ? []
+            : const [
+                BoxShadow(
+                  color: Color(0x060B1A2B),
+                  blurRadius: 10,
+                  offset: Offset(0, 4),
+                ),
+              ],
       ),
       child: Material(
         color: Colors.transparent,
@@ -171,10 +172,10 @@ class ResourcesScreen extends StatelessWidget {
                     children: [
                       Text(
                         title,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 15.5,
-                          color: Color(AppColors.textPrimary),
+                          color: isDark ? const Color(AppColors.darkTextPrimary) : const Color(AppColors.textPrimary),
                         ),
                       ),
                       const SizedBox(height: 4),
@@ -182,8 +183,8 @@ class ResourcesScreen extends StatelessWidget {
                         subtitle,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: Color(AppColors.textSecondary),
+                        style: TextStyle(
+                          color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary),
                           fontSize: 12,
                           height: 1.3,
                         ),
@@ -196,14 +197,16 @@ class ResourcesScreen extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF8FAFC),
+                    color: isDark ? const Color(AppColors.darkCardSubtle) : const Color(0xFFF8FAFC),
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                    border: Border.all(
+                      color: isDark ? const Color(AppColors.darkBorder) : const Color(AppColors.border),
+                    ),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     PhosphorIconsRegular.caretRight,
                     size: 16,
-                    color: Color(AppColors.textSecondary),
+                    color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary),
                   ),
                 ),
               ],
@@ -383,16 +386,21 @@ class _PastQuestionsScreenState extends State<PastQuestionsScreen> {
     required bool isActive,
     required VoidCallback onTap,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(10),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: isActive ? const Color(AppColors.primaryDeeper).withOpacity(0.08) : const Color(0xFFF1F5F9),
+          color: isActive
+              ? const Color(AppColors.primaryDeeper).withOpacity(0.08)
+              : (isDark ? const Color(AppColors.darkCardSubtle) : const Color(0xFFF1F5F9)),
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
-            color: isActive ? const Color(AppColors.primaryDeeper).withOpacity(0.2) : const Color(0xFFE2E8F0),
+            color: isActive
+                ? (isDark ? const Color(AppColors.primaryLight).withOpacity(0.3) : const Color(AppColors.primaryDeeper).withOpacity(0.2))
+                : (isDark ? const Color(AppColors.darkBorder) : const Color(0xFFE2E8F0)),
           ),
         ),
         child: Row(
@@ -401,7 +409,9 @@ class _PastQuestionsScreenState extends State<PastQuestionsScreen> {
             Text(
               label,
               style: TextStyle(
-                color: isActive ? const Color(AppColors.primaryDeeper) : const Color(AppColors.textSecondary),
+                color: isActive
+                    ? (isDark ? const Color(AppColors.primaryLight) : const Color(AppColors.primaryDeeper))
+                    : (isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary)),
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
               ),
@@ -410,7 +420,9 @@ class _PastQuestionsScreenState extends State<PastQuestionsScreen> {
             Icon(
               PhosphorIconsRegular.caretDown,
               size: 12,
-              color: isActive ? const Color(AppColors.primaryDeeper) : const Color(AppColors.textSecondary),
+              color: isActive
+                  ? (isDark ? const Color(AppColors.primaryLight) : const Color(AppColors.primaryDeeper))
+                  : (isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary)),
             ),
           ],
         ),
@@ -419,6 +431,7 @@ class _PastQuestionsScreenState extends State<PastQuestionsScreen> {
   }
 
   Widget _buildQuestionCard(BuildContext context, PastQuestion paper) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final courseText = paper.course;
     String code = '';
     String title = paper.title.isEmpty ? courseText : paper.title;
@@ -435,12 +448,16 @@ class _PastQuestionsScreenState extends State<PastQuestionsScreen> {
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFEFF1F4)),
-        boxShadow: const [
-          BoxShadow(color: Color(0x020B1A2B), blurRadius: 10, offset: Offset(0, 4)),
-        ],
+        border: Border.all(
+          color: isDark ? const Color(AppColors.darkBorder) : const Color(AppColors.border),
+        ),
+        boxShadow: isDark
+            ? []
+            : const [
+                BoxShadow(color: Color(0x020B1A2B), blurRadius: 10, offset: Offset(0, 4)),
+              ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -456,29 +473,31 @@ class _PastQuestionsScreenState extends State<PastQuestionsScreen> {
                     children: [
                       Container(
                         padding: const EdgeInsets.all(6),
-                        decoration: const BoxDecoration(
-                          color: Color(0xFFEFF6FF),
+                        decoration: BoxDecoration(
+                          color: isDark ? const Color(AppColors.darkCardSubtle) : const Color(0xFFEFF6FF),
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(
+                        child: Icon(
                           PhosphorIconsRegular.fileText,
-                          color: Color(AppColors.primaryDeeper),
+                          color: isDark ? const Color(AppColors.primaryLight) : const Color(AppColors.primaryDeeper),
                           size: 16,
                         ),
                       ),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFF1F5F9),
+                          color: isDark ? const Color(AppColors.darkCardSubtle) : const Color(0xFFF1F5F9),
                           borderRadius: BorderRadius.circular(6),
-                          border: Border.all(color: const Color(0xFFE2E8F0)),
+                          border: Border.all(
+                            color: isDark ? const Color(AppColors.darkBorder) : const Color(0xFFE2E8F0),
+                          ),
                         ),
                         child: Text(
                           code,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 9,
                             fontWeight: FontWeight.bold,
-                            color: Color(AppColors.textSecondary),
+                            color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary),
                           ),
                         ),
                       ),
@@ -489,19 +508,19 @@ class _PastQuestionsScreenState extends State<PastQuestionsScreen> {
                     title,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontWeight: FontWeight.w700,
                       fontSize: 12.5,
-                      color: Color(AppColors.textPrimary),
+                      color: isDark ? const Color(AppColors.darkTextPrimary) : const Color(AppColors.textPrimary),
                       height: 1.25,
                     ),
                   ),
                   const Spacer(),
                   Text(
                     '${paper.level} • ${paper.semester == "First Semester" ? "1st Sem" : "2nd Sem"}',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 9.5,
-                      color: Color(AppColors.textSecondary),
+                      color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary),
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -509,7 +528,10 @@ class _PastQuestionsScreenState extends State<PastQuestionsScreen> {
               ),
             ),
           ),
-          const Divider(height: 1, color: Color(0xFFEFF1F4)),
+          Divider(
+            height: 1,
+            color: isDark ? const Color(AppColors.darkBorder) : const Color(0xFFEFF1F4),
+          ),
           InkWell(
             onTap: () {
               ScaffoldMessenger.of(context).showSnackBar(
@@ -525,18 +547,18 @@ class _PastQuestionsScreenState extends State<PastQuestionsScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(
+                  Icon(
                     PhosphorIconsRegular.download,
-                    color: Color(AppColors.primaryDeeper),
+                    color: isDark ? const Color(AppColors.primaryLight) : const Color(AppColors.primaryDeeper),
                     size: 12,
                   ),
                   const SizedBox(width: 4),
                   Text(
                     'Download (${paper.fileSize})',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.bold,
-                      color: Color(AppColors.primaryDeeper),
+                      color: isDark ? const Color(AppColors.primaryLight) : const Color(AppColors.primaryDeeper),
                     ),
                   ),
                 ],
@@ -550,20 +572,18 @@ class _PastQuestionsScreenState extends State<PastQuestionsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(PhosphorIconsRegular.arrowLeft, color: Color(AppColors.textPrimary)),
+          icon: const Icon(PhosphorIconsRegular.arrowLeft),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
           'Past Questions',
           style: TextStyle(
             fontWeight: FontWeight.w700,
-            color: Color(AppColors.textPrimary),
           ),
         ),
         centerTitle: true,
@@ -610,16 +630,20 @@ class _PastQuestionsScreenState extends State<PastQuestionsScreen> {
                   child: Container(
                     height: 50,
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: Theme.of(context).cardColor,
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: const Color(0xFFEFF1F4)),
-                      boxShadow: const [
-                        BoxShadow(
-                          color: Color(0x040D1B2D),
-                          blurRadius: 10,
-                          offset: Offset(0, 4),
-                        ),
-                      ],
+                      border: Border.all(
+                        color: isDark ? const Color(AppColors.darkBorder) : const Color(AppColors.border),
+                      ),
+                      boxShadow: isDark
+                          ? []
+                          : const [
+                              BoxShadow(
+                                color: Color(0x040D1B2D),
+                                blurRadius: 10,
+                                offset: Offset(0, 4),
+                              ),
+                            ],
                     ),
                     child: TextField(
                       controller: _searchController,
@@ -628,23 +652,30 @@ class _PastQuestionsScreenState extends State<PastQuestionsScreen> {
                           _searchQuery = val;
                         });
                       },
-                      style: const TextStyle(fontSize: 14),
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: isDark ? const Color(AppColors.darkTextPrimary) : const Color(AppColors.textPrimary),
+                      ),
                       decoration: InputDecoration(
                         filled: true,
                         fillColor: Colors.transparent,
                         hintText: 'Search course, code, or title...',
-                        hintStyle: const TextStyle(
-                          color: Color(0xFF94A3B8),
+                        hintStyle: TextStyle(
+                          color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(0xFF94A3B8),
                           fontSize: 13.5,
                         ),
-                        prefixIcon: const Icon(
+                        prefixIcon: Icon(
                           PhosphorIconsRegular.magnifyingGlass,
                           size: 20,
-                          color: Color(0xFF94A3B8),
+                          color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(0xFF94A3B8),
                         ),
                         suffixIcon: _searchQuery.isNotEmpty
                             ? IconButton(
-                                icon: const Icon(PhosphorIconsRegular.xCircle, size: 20, color: Color(0xFF94A3B8)),
+                                icon: Icon(
+                                  PhosphorIconsRegular.xCircle,
+                                  size: 20,
+                                  color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(0xFF94A3B8),
+                                ),
                                 onPressed: () {
                                   _searchController.clear();
                                   setState(() {
@@ -833,19 +864,16 @@ class _FypSiwesScreenState extends State<FypSiwesScreen> with SingleTickerProvid
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(PhosphorIconsRegular.arrowLeft, color: Color(AppColors.textPrimary)),
+          icon: const Icon(PhosphorIconsRegular.arrowLeft),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
           'Project & SIWES Guidelines',
           style: TextStyle(
             fontWeight: FontWeight.w700,
-            color: Color(AppColors.textPrimary),
           ),
         ),
         centerTitle: true,
@@ -963,15 +991,20 @@ class _FypSiwesScreenState extends State<FypSiwesScreen> with SingleTickerProvid
     required String description,
     required List<String> bullets,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFEFF1F4)),
-        boxShadow: const [
-          BoxShadow(color: Color(0x020B1A2B), blurRadius: 12, offset: Offset(0, 4)),
-        ],
+        border: Border.all(
+          color: isDark ? const Color(AppColors.darkBorder) : const Color(AppColors.border),
+        ),
+        boxShadow: isDark
+            ? []
+            : const [
+                BoxShadow(color: Color(0x020B1A2B), blurRadius: 12, offset: Offset(0, 4)),
+              ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -980,19 +1013,23 @@ class _FypSiwesScreenState extends State<FypSiwesScreen> with SingleTickerProvid
             children: [
               Container(
                 padding: const EdgeInsets.all(8),
-                decoration: const BoxDecoration(
-                  color: Color(0xFFEFF6FF),
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(AppColors.darkCardSubtle) : const Color(0xFFEFF6FF),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(icon, color: const Color(AppColors.primaryDeeper), size: 18),
+                child: Icon(
+                  icon,
+                  color: isDark ? const Color(AppColors.primaryLight) : const Color(AppColors.primaryDeeper),
+                  size: 18,
+                ),
               ),
               const SizedBox(width: 12),
               Text(
                 title,
-                style: const TextStyle(
+                style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
-                  color: Color(AppColors.textPrimary),
+                  color: isDark ? const Color(AppColors.darkTextPrimary) : const Color(AppColors.textPrimary),
                 ),
               ),
             ],
@@ -1000,9 +1037,9 @@ class _FypSiwesScreenState extends State<FypSiwesScreen> with SingleTickerProvid
           const SizedBox(height: 12),
           Text(
             description,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 13.5,
-              color: Color(AppColors.textPrimary),
+              color: isDark ? const Color(AppColors.darkTextPrimary) : const Color(AppColors.textPrimary),
               height: 1.35,
             ),
           ),
@@ -1012,17 +1049,21 @@ class _FypSiwesScreenState extends State<FypSiwesScreen> with SingleTickerProvid
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Padding(
-                      padding: EdgeInsets.only(top: 6),
-                      child: Icon(PhosphorIconsFill.circle, size: 5, color: Color(AppColors.textSecondary)),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 6),
+                      child: Icon(
+                        PhosphorIconsFill.circle,
+                        size: 5,
+                        color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary),
+                      ),
                     ),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         bullet,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 12.5,
-                          color: Color(AppColors.textSecondary),
+                          color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary),
                           height: 1.35,
                         ),
                       ),
@@ -1041,11 +1082,14 @@ class _FypSiwesScreenState extends State<FypSiwesScreen> with SingleTickerProvid
     required String size,
     required VoidCallback onTap,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFEFF1F4)),
+        border: Border.all(
+          color: isDark ? const Color(AppColors.darkBorder) : const Color(AppColors.border),
+        ),
       ),
       child: Material(
         color: Colors.transparent,
@@ -1058,11 +1102,15 @@ class _FypSiwesScreenState extends State<FypSiwesScreen> with SingleTickerProvid
               children: [
                 Container(
                   padding: const EdgeInsets.all(8),
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFEFF6FF),
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(AppColors.darkCardSubtle) : const Color(0xFFEFF6FF),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(PhosphorIconsRegular.downloadSimple, color: Color(AppColors.primaryDeeper), size: 16),
+                  child: Icon(
+                    PhosphorIconsRegular.downloadSimple,
+                    color: isDark ? const Color(AppColors.primaryLight) : const Color(AppColors.primaryDeeper),
+                    size: 16,
+                  ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -1071,12 +1119,19 @@ class _FypSiwesScreenState extends State<FypSiwesScreen> with SingleTickerProvid
                     children: [
                       Text(
                         title,
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5, color: Color(AppColors.textPrimary)),
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13.5,
+                          color: isDark ? const Color(AppColors.darkTextPrimary) : const Color(AppColors.textPrimary),
+                        ),
                       ),
                       const SizedBox(height: 3),
                       Text(
                         subtitle,
-                        style: const TextStyle(fontSize: 11, color: Color(AppColors.textSecondary)),
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary),
+                        ),
                       ),
                     ],
                   ),
@@ -1084,7 +1139,11 @@ class _FypSiwesScreenState extends State<FypSiwesScreen> with SingleTickerProvid
                 const SizedBox(width: 8),
                 Text(
                   size,
-                  style: const TextStyle(fontSize: 11, color: Color(AppColors.textSecondary), fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary),
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ],
             ),

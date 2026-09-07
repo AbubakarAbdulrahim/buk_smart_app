@@ -1,20 +1,64 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import '../config/gemini_config.dart';
 
 class GeminiService {
   final http.Client _client = http.Client();
+  static const String _prefApiKeyKey = 'smartbuk_gemini_api_key';
+
+  /// Resolves the Gemini API key in order of precedence:
+  /// 1. Explicit [customApiKey] parameter (if provided)
+  /// 2. Compile-time --dart-define=GEMINI_API_KEY or .env
+  /// 3. Locally stored key in SharedPreferences (set via app UI)
+  Future<String> resolveApiKey({String? customApiKey}) async {
+    if (customApiKey != null && customApiKey.trim().isNotEmpty) {
+      return customApiKey.trim();
+    }
+    if (GeminiConfig.apiKey.trim().isNotEmpty) {
+      return GeminiConfig.apiKey.trim();
+    }
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final savedKey = prefs.getString(_prefApiKeyKey)?.trim();
+      if (savedKey != null && savedKey.isNotEmpty) {
+        return savedKey;
+      }
+    } catch (e) {
+      debugPrint('Error reading Gemini API key from preferences: $e');
+    }
+    return '';
+  }
+
+  /// Checks whether an API key is available via environment or local preferences.
+  Future<bool> hasValidApiKey({String? customApiKey}) async {
+    final key = await resolveApiKey(customApiKey: customApiKey);
+    return key.isNotEmpty;
+  }
+
+  /// Saves a user-provided Gemini API key to local SharedPreferences.
+  Future<void> saveApiKey(String key) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_prefApiKeyKey, key.trim());
+  }
+
+  /// Removes any locally saved Gemini API key.
+  Future<void> clearSavedApiKey() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_prefApiKeyKey);
+  }
 
   /// Generates a response from Gemini 2.5 Flash.
   /// Alternates messages in [history]: role can be 'user' or 'model'.
   Future<String> generateContent(List<Map<String, String>> history, {String? customApiKey}) async {
-    final key = (customApiKey != null && customApiKey.isNotEmpty) ? customApiKey : GeminiConfig.apiKey;
+    final key = await resolveApiKey(customApiKey: customApiKey);
     if (key.isEmpty) {
       throw Exception('Gemini API key is not configured. Please supply a valid key.');
     }
 
     final url = Uri.parse(
-      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$key',
+      'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent',
     );
 
     final contents = history.map((msg) {
@@ -45,7 +89,10 @@ class GeminiService {
     try {
       final response = await _client.post(
         url,
-        headers: {'Content-Type': 'application/json'},
+        headers: {
+          'Content-Type': 'application/json',
+          'x-goog-api-key': key,
+        },
         body: jsonEncode(body),
       );
 
@@ -75,13 +122,13 @@ class GeminiService {
 
   /// Streams chunks of text from Gemini 2.5 Flash API.
   Stream<String> generateContentStream(List<Map<String, String>> history, {String? customApiKey}) async* {
-    final key = (customApiKey != null && customApiKey.isNotEmpty) ? customApiKey : GeminiConfig.apiKey;
+    final key = await resolveApiKey(customApiKey: customApiKey);
     if (key.isEmpty) {
       throw Exception('Gemini API key is not configured. Please supply a valid key.');
     }
 
     final url = Uri.parse(
-      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:streamGenerateContent?key=$key',
+      'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:streamGenerateContent',
     );
 
     final contents = history.map((msg) {
@@ -108,6 +155,7 @@ class GeminiService {
 
     final request = http.Request('POST', url)
       ..headers['Content-Type'] = 'application/json'
+      ..headers['x-goog-api-key'] = key
       ..body = jsonEncode(body);
 
     try {
@@ -119,76 +167,83 @@ class GeminiService {
 
       if (responseStream.statusCode != 200) {
         final errText = await responseStream.stream.bytesToString();
-        try {
-          final errBody = jsonDecode(errText);
-          throw Exception(errBody['error']?['message'] ?? 'API failed.');
-        } catch (_) {
-          throw Exception('Failed to connect to Gemini services.');
-        }
+        throw Exception('API status ${responseStream.statusCode}: $errText');
       }
 
-      // Convert chunked JSON array parsing format:
-      // The stream yields objects in JSON format, usually starting with `[\n` and separated by `,\n`
-      // To parse it reliably, we parse line arrays and buffer text.
       var buffer = '';
+      int depth = 0;
+      int objectStart = -1;
+      bool inString = false;
+      bool escaped = false;
+
       await for (final chunk in responseStream.stream.transform(utf8.decoder)) {
         buffer += chunk;
         
-        // Match JSON structures: we can scan for "text" : "..." tags inside candidated payload units
-        // Or decode complete JSON objects separated by boundaries
-        // Let's use a simpler and highly robust stream parser.
-        // We know stream yields objects like:
-        // {
-        //   "candidates": [{"content": {"parts": [{"text": "hello"}]}}]
-        // }
-        // Each JSON response is bracketed or comes separated in JSON array.
-        // We can split the stream buffer by newlines or regex to extract parts, or parse objects.
-        // The most robust way is to parse lines, remove leading comma or brackets:
-        final lines = buffer.split('\n');
-        buffer = lines.removeLast(); // Keep incomplete lines in buffer
-
-        for (var line in lines) {
-          line = line.trim();
-          if (line.startsWith('[')) line = line.substring(1);
-          if (line.endsWith(']')) line = line.substring(0, line.length - 1);
-          if (line.startsWith(',')) line = line.substring(1);
-          line = line.trim();
-
-          if (line.isEmpty) continue;
-
-          try {
-            final parsed = jsonDecode(line);
-            final text = parsed['candidates']?[0]?['content']?['parts']?[0]?['text'] as String?;
-            if (text != null && text.isNotEmpty) {
-              yield text;
+        int i = 0;
+        while (i < buffer.length) {
+          final char = buffer[i];
+          if (escaped) {
+            escaped = false;
+            i++;
+            continue;
+          }
+          if (char == '\\') {
+            escaped = true;
+            i++;
+            continue;
+          }
+          if (char == '"') {
+            inString = !inString;
+            i++;
+            continue;
+          }
+          
+          if (!inString) {
+            if (char == '{') {
+              if (depth == 0) {
+                objectStart = i;
+              }
+              depth++;
+            } else if (char == '}') {
+              depth--;
+              if (depth == 0 && objectStart != -1) {
+                final objectStr = buffer.substring(objectStart, i + 1);
+                try {
+                  final parsed = jsonDecode(objectStr);
+                  
+                  // Check if chunk contains a top level error
+                  if (parsed['error'] != null) {
+                    final errMsg = parsed['error']?['message'] ?? 'Streaming error';
+                    throw Exception(errMsg);
+                  }
+                  
+                  final text = parsed['candidates']?[0]?['content']?['parts']?[0]?['text'] as String?;
+                  if (text != null && text.isNotEmpty) {
+                    yield text;
+                  }
+                } catch (e) {
+                  if (e.toString().contains('quota_exceeded')) {
+                    rethrow;
+                  }
+                  debugPrint('Failed to parse brace-enclosed JSON chunk: $e');
+                }
+                
+                // Truncate buffer including processed object
+                buffer = buffer.substring(i + 1);
+                i = -1; // resets to 0 after i++
+                objectStart = -1;
+                depth = 0;
+              }
             }
-          } catch (_) {
-            // Wait for full buffer line if json parsing failed
-            buffer = line + '\n' + buffer;
           }
+          i++;
         }
-      }
-
-      // Flush final buffer content
-      if (buffer.isNotEmpty) {
-        var line = buffer.trim();
-        if (line.startsWith('[')) line = line.substring(1);
-        if (line.endsWith(']')) line = line.substring(0, line.length - 1);
-        if (line.startsWith(',')) line = line.substring(1);
-        line = line.trim();
-        try {
-          final parsed = jsonDecode(line);
-          final text = parsed['candidates']?[0]?['content']?['parts']?[0]?['text'] as String?;
-          if (text != null && text.isNotEmpty) {
-            yield text;
-          }
-        } catch (_) {}
       }
     } catch (e) {
       if (e.toString().contains('quota_exceeded')) {
         rethrow;
       }
-      throw Exception('Streaming failure. Connection lost.');
+      throw Exception('Streaming failure: $e');
     }
   }
 

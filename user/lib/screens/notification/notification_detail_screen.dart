@@ -11,6 +11,7 @@ class NotificationDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Consumer<NotificationProvider>(
       builder: (context, provider, child) {
         final notifications = provider.notifications;
@@ -26,19 +27,16 @@ class NotificationDetailScreen extends StatelessWidget {
         final item = notifications[itemIndex];
 
         return Scaffold(
-          backgroundColor: Colors.white,
           appBar: AppBar(
-            backgroundColor: Colors.white,
             elevation: 0,
             leading: IconButton(
-              icon: const Icon(PhosphorIconsRegular.arrowLeft, color: Color(AppColors.textPrimary)),
+              icon: const Icon(PhosphorIconsRegular.arrowLeft),
               onPressed: () => Navigator.pop(context),
             ),
             title: const Text(
               'Incident Details',
               style: TextStyle(
                 fontWeight: FontWeight.w700,
-                color: Color(AppColors.textPrimary),
               ),
             ),
             centerTitle: true,
@@ -54,21 +52,21 @@ class NotificationDetailScreen extends StatelessWidget {
                         height: 240,
                         width: double.infinity,
                         fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => _buildBannerFallback(item),
+                        errorBuilder: (context, error, stackTrace) => _buildBannerFallback(item, isDark),
                         loadingBuilder: (context, child, loadingProgress) {
                           if (loadingProgress == null) return child;
                           return Container(
                             height: 240,
-                            color: const Color(0xFFF1F5F9),
-                            child: const Center(
+                            color: isDark ? const Color(AppColors.darkCardSubtle) : const Color(0xFFF1F5F9),
+                            child: Center(
                               child: CircularProgressIndicator(
-                                color: Color(AppColors.primaryDeeper),
+                                color: isDark ? const Color(AppColors.primaryLight) : const Color(AppColors.primaryDeeper),
                               ),
                             ),
                           );
                         },
                       )
-                    : _buildBannerFallback(item),
+                    : _buildBannerFallback(item, isDark),
 
                 Padding(
                   padding: const EdgeInsets.all(20),
@@ -81,13 +79,20 @@ class NotificationDetailScreen extends StatelessWidget {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                             decoration: BoxDecoration(
-                              color: item.color.withOpacity(0.12),
+                              color: isDark
+                                  ? const Color(AppColors.darkCardSubtle)
+                                  : item.color.withOpacity(0.12),
                               borderRadius: BorderRadius.circular(999),
+                              border: Border.all(
+                                color: isDark
+                                    ? const Color(AppColors.darkBorder)
+                                    : item.color.withOpacity(0.24),
+                              ),
                             ),
                             child: Text(
                               item.category.toUpperCase(),
                               style: TextStyle(
-                                color: item.color,
+                                color: isDark ? const Color(AppColors.primaryLight) : item.color,
                                 fontWeight: FontWeight.w900,
                                 fontSize: 10,
                                 letterSpacing: 0.8,
@@ -97,8 +102,8 @@ class NotificationDetailScreen extends StatelessWidget {
                           const Spacer(),
                           Text(
                             item.timeAgo,
-                            style: const TextStyle(
-                              color: Color(AppColors.textSecondary),
+                            style: TextStyle(
+                              color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary),
                               fontSize: 12,
                               fontWeight: FontWeight.w500,
                             ),
@@ -110,10 +115,10 @@ class NotificationDetailScreen extends StatelessWidget {
                       // Main Title
                       Text(
                         item.title,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontWeight: FontWeight.w800,
                           fontSize: 22,
-                          color: Color(AppColors.textPrimary),
+                          color: isDark ? const Color(AppColors.darkTextPrimary) : const Color(AppColors.textPrimary),
                           height: 1.25,
                         ),
                       ),
@@ -123,26 +128,28 @@ class NotificationDetailScreen extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFF8FAFC),
+                          color: isDark ? const Color(AppColors.darkCard) : const Color(0xFFF8FAFC),
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: const Color(0xFFE2E8F0)),
+                          border: Border.all(
+                            color: isDark ? const Color(AppColors.darkBorder) : const Color(0xFFE2E8F0),
+                          ),
                         ),
                         child: Column(
                           children: [
                             // Location Row
                             Row(
                               children: [
-                                const Icon(
+                                Icon(
                                   PhosphorIconsRegular.mapPin,
                                   size: 16,
-                                  color: Color(AppColors.primaryDeeper),
+                                  color: isDark ? const Color(AppColors.primaryLight) : const Color(AppColors.primaryDeeper),
                                 ),
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: Text(
                                     item.location,
-                                    style: const TextStyle(
-                                      color: Color(AppColors.textPrimary),
+                                    style: TextStyle(
+                                      color: isDark ? const Color(AppColors.darkTextPrimary) : const Color(AppColors.textPrimary),
                                       fontWeight: FontWeight.w600,
                                       fontSize: 13,
                                     ),
@@ -150,24 +157,26 @@ class NotificationDetailScreen extends StatelessWidget {
                                 ),
                               ],
                             ),
-                            const Padding(
-                              padding: EdgeInsets.symmetric(vertical: 8),
-                              child: Divider(color: Color(0xFFE2E8F0)),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              child: Divider(
+                                color: isDark ? const Color(AppColors.darkBorder) : const Color(0xFFE2E8F0),
+                              ),
                             ),
                             // Reporter Row
                             Row(
                               children: [
-                                const Icon(
+                                Icon(
                                   PhosphorIconsRegular.user,
                                   size: 16,
-                                  color: Color(AppColors.primaryDeeper),
+                                  color: isDark ? const Color(AppColors.primaryLight) : const Color(AppColors.primaryDeeper),
                                 ),
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: Text(
                                     'Reported by ${item.reporter}',
-                                    style: const TextStyle(
-                                      color: Color(AppColors.textPrimary),
+                                    style: TextStyle(
+                                      color: isDark ? const Color(AppColors.darkTextPrimary) : const Color(AppColors.textPrimary),
                                       fontWeight: FontWeight.w600,
                                       fontSize: 13,
                                     ),
@@ -181,41 +190,43 @@ class NotificationDetailScreen extends StatelessWidget {
                       const SizedBox(height: 20),
 
                       // Incident description message
-                      const Text(
+                      Text(
                         'Description',
                         style: TextStyle(
                           fontWeight: FontWeight.w700,
                           fontSize: 14.5,
-                          color: Color(AppColors.textPrimary),
+                          color: isDark ? const Color(AppColors.darkTextPrimary) : const Color(AppColors.textPrimary),
                         ),
                       ),
                       const SizedBox(height: 8),
                       Text(
                         item.message,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 14.5,
                           height: 1.5,
-                          color: Color(AppColors.textSecondary),
+                          color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary),
                         ),
                       ),
                       const SizedBox(height: 24),
-                      const Divider(color: Color(0xFFE5E7EB)),
+                      Divider(
+                        color: isDark ? const Color(AppColors.darkBorder) : const Color(0xFFE5E7EB),
+                      ),
                       const SizedBox(height: 16),
 
                       // React Section ("Is this report accurate?")
-                      const Text(
+                      Text(
                         'Is this incident report accurate?',
                         style: TextStyle(
                           fontWeight: FontWeight.w700,
                           fontSize: 14.5,
-                          color: Color(AppColors.textPrimary),
+                          color: isDark ? const Color(AppColors.darkTextPrimary) : const Color(AppColors.textPrimary),
                         ),
                       ),
                       const SizedBox(height: 4),
-                      const Text(
+                      Text(
                         'Your feedback helps prevent false alarms and verify updates.',
                         style: TextStyle(
-                          color: Color(AppColors.textSecondary),
+                          color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary),
                           fontSize: 12,
                         ),
                       ),
@@ -227,11 +238,12 @@ class NotificationDetailScreen extends StatelessWidget {
                           Expanded(
                             child: _reactionButton(
                               context: context,
+                              isDark: isDark,
                               isSelected: item.userReaction == 'accurate',
                               label: 'Accurate',
                               count: item.accurateCount,
                               iconData: PhosphorIconsRegular.thumbsUp,
-                              activeColor: const Color(0xFF0F79B9),
+                              activeColor: isDark ? const Color(AppColors.primaryLight) : const Color(0xFF0F79B9),
                               onPressed: () => provider.react(item.id, 'accurate'),
                             ),
                           ),
@@ -240,11 +252,12 @@ class NotificationDetailScreen extends StatelessWidget {
                           Expanded(
                             child: _reactionButton(
                               context: context,
+                              isDark: isDark,
                               isSelected: item.userReaction == 'inaccurate',
                               label: 'Inaccurate',
                               count: item.inaccurateCount,
                               iconData: PhosphorIconsRegular.thumbsDown,
-                              activeColor: const Color(0xFFE63946),
+                              activeColor: isDark ? const Color(AppColors.darkDanger) : const Color(0xFFE63946),
                               onPressed: () => provider.react(item.id, 'inaccurate'),
                             ),
                           ),
@@ -262,24 +275,27 @@ class NotificationDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildBannerFallback(BUKNotification item) {
+  Widget _buildBannerFallback(BUKNotification item, bool isDark) {
     return Container(
       height: 240,
       width: double.infinity,
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            item.color.withOpacity(0.08),
-            item.color.withOpacity(0.18),
-          ],
-        ),
+        color: isDark ? const Color(AppColors.darkCard) : null,
+        gradient: isDark
+            ? null
+            : LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  item.color.withOpacity(0.08),
+                  item.color.withOpacity(0.18),
+                ],
+              ),
       ),
       child: Center(
         child: Icon(
           item.icon,
-          color: item.color,
+          color: isDark ? const Color(AppColors.primaryLight) : item.color,
           size: 64,
         ),
       ),
@@ -288,6 +304,7 @@ class NotificationDetailScreen extends StatelessWidget {
 
   Widget _reactionButton({
     required BuildContext context,
+    required bool isDark,
     required bool isSelected,
     required String label,
     required int count,
@@ -302,10 +319,14 @@ class NotificationDetailScreen extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
-          color: isSelected ? activeColor.withOpacity(0.08) : Colors.transparent,
+          color: isSelected
+              ? activeColor.withOpacity(isDark ? 0.16 : 0.08)
+              : (isDark ? const Color(AppColors.darkCard) : Colors.transparent),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? activeColor : const Color(0xFFE2E8F0),
+            color: isSelected
+                ? activeColor
+                : (isDark ? const Color(AppColors.darkBorder) : const Color(0xFFE2E8F0)),
             width: isSelected ? 2 : 1,
           ),
         ),
@@ -315,7 +336,7 @@ class NotificationDetailScreen extends StatelessWidget {
             Icon(
               iconData,
               size: 16,
-              color: isSelected ? activeColor : const Color(AppColors.textSecondary),
+              color: isSelected ? activeColor : (isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary)),
             ),
             const SizedBox(width: 8),
             Text(
@@ -323,14 +344,16 @@ class NotificationDetailScreen extends StatelessWidget {
               style: TextStyle(
                 fontWeight: FontWeight.w700,
                 fontSize: 13,
-                color: isSelected ? activeColor : const Color(AppColors.textSecondary),
+                color: isSelected ? activeColor : (isDark ? const Color(AppColors.darkTextPrimary) : const Color(AppColors.textSecondary)),
               ),
             ),
             const SizedBox(width: 6),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(
-                color: isSelected ? activeColor.withOpacity(0.18) : const Color(0xFFEFF1F4),
+                color: isSelected
+                    ? activeColor.withOpacity(0.18)
+                    : (isDark ? const Color(AppColors.darkCardSubtle) : const Color(0xFFEFF1F4)),
                 borderRadius: BorderRadius.circular(6),
               ),
               child: Text(
@@ -338,7 +361,7 @@ class NotificationDetailScreen extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.bold,
-                  color: isSelected ? activeColor : const Color(AppColors.textSecondary),
+                  color: isSelected ? activeColor : (isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary)),
                 ),
               ),
             ),

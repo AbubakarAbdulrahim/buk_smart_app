@@ -34,7 +34,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     _pulseAnimation = Tween<double>(begin: 0.88, end: 1.12).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeInOutCubic),
     );
-    _timer = Timer(const Duration(seconds: 5), () {
+    _timer = Timer(const Duration(milliseconds: 3000), () {
       if (!mounted) return;
       Navigator.of(context).pushReplacementNamed('/auth-gate');
     });

@@ -18,6 +18,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
   );
 
   void _selectDateRange() async {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final DateTimeRange? picked = await showDateRangePicker(
       context: context,
       initialDateRange: _selectedRange,
@@ -25,14 +26,52 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
       lastDate: DateTime(2030),
       builder: (context, child) {
         return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.light(
-              primary: Color(AppColors.primaryDeeper),
-              onPrimary: Colors.white,
-              surface: Colors.white,
-              onSurface: Color(AppColors.textPrimary),
-            ),
-          ),
+          data: isDark
+              ? Theme.of(context).copyWith(
+                  scaffoldBackgroundColor: const Color(AppColors.darkBackground),
+                  colorScheme: const ColorScheme.dark(
+                    primary: Color(AppColors.primaryLight),
+                    onPrimary: Colors.white,
+                    surface: Color(AppColors.darkCard),
+                    onSurface: Color(AppColors.darkTextPrimary),
+                    secondary: Color(AppColors.primaryLight),
+                    onSecondary: Colors.white,
+                  ),
+                  dialogBackgroundColor: const Color(AppColors.darkCard),
+                  appBarTheme: const AppBarTheme(
+                    backgroundColor: Color(AppColors.darkCard),
+                    foregroundColor: Color(AppColors.darkTextPrimary),
+                    iconTheme: IconThemeData(color: Color(AppColors.darkTextPrimary)),
+                  ),
+                  datePickerTheme: DatePickerThemeData(
+                    backgroundColor: const Color(AppColors.darkCard),
+                    headerBackgroundColor: const Color(AppColors.darkCard),
+                    headerForegroundColor: const Color(AppColors.darkTextPrimary),
+                    surfaceTintColor: Colors.transparent,
+                    dayForegroundColor: MaterialStateProperty.resolveWith((states) {
+                      if (states.contains(MaterialState.selected)) {
+                        return Colors.white;
+                      }
+                      if (states.contains(MaterialState.disabled)) {
+                        return const Color(AppColors.darkTextMuted);
+                      }
+                      return const Color(AppColors.darkTextPrimary);
+                    }),
+                    rangePickerBackgroundColor: const Color(AppColors.darkCard),
+                    rangePickerHeaderBackgroundColor: const Color(AppColors.darkCard),
+                    rangePickerHeaderForegroundColor: const Color(AppColors.darkTextPrimary),
+                    rangeSelectionBackgroundColor: const Color(0xFF1E3A5F),
+                    rangePickerSurfaceTintColor: Colors.transparent,
+                  ),
+                )
+              : Theme.of(context).copyWith(
+                  colorScheme: const ColorScheme.light(
+                    primary: Color(AppColors.primaryDeeper),
+                    onPrimary: Colors.white,
+                    surface: Colors.white,
+                    onSurface: Color(AppColors.textPrimary),
+                  ),
+                ),
           child: child!,
         );
       },
@@ -53,20 +92,17 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
         leading: IconButton(
-          icon: const Icon(PhosphorIconsRegular.arrowLeft, color: Color(AppColors.textPrimary)),
+          icon: const Icon(PhosphorIconsRegular.arrowLeft),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
           'Analytics',
           style: TextStyle(
             fontWeight: FontWeight.w700,
-            color: Color(AppColors.textPrimary),
           ),
         ),
       ),
@@ -77,11 +113,13 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
           children: [
             // Timeline switcher selector
             Container(
-              color: Colors.white,
+              color: isDark ? const Color(AppColors.darkBackground) : Theme.of(context).cardColor,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               child: Container(
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF1F5F9),
+                  color: isDark
+                      ? const Color(AppColors.darkCardSubtle)
+                      : const Color(0xFFF1F5F9),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 padding: const EdgeInsets.all(4),
@@ -102,19 +140,31 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
               child: Container(
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFEFF6FF),
+                  color: isDark
+                      ? const Color(AppColors.darkCard)
+                      : const Color(0xFFEFF6FF),
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: const Color(0xFFDBEAFE)),
+                  border: Border.all(
+                    color: isDark
+                        ? const Color(AppColors.darkBorder)
+                        : const Color(0xFFDBEAFE),
+                  ),
                 ),
                 child: Row(
                   children: [
-                    const Icon(PhosphorIconsRegular.calendar, color: Color(AppColors.primaryDeeper), size: 20),
+                    Icon(
+                      PhosphorIconsRegular.calendar,
+                      color: isDark ? const Color(AppColors.primaryLight) : const Color(AppColors.primaryDeeper),
+                      size: 20,
+                    ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
                         _formatDateRange(),
-                        style: const TextStyle(
-                          color: Color(AppColors.primaryDeeper),
+                        style: TextStyle(
+                          color: isDark
+                              ? const Color(AppColors.darkTextPrimary)
+                              : const Color(AppColors.primaryDeeper),
                           fontWeight: FontWeight.w600,
                           fontSize: 13,
                         ),
@@ -122,10 +172,12 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                     ),
                     InkWell(
                       onTap: _selectDateRange,
-                      child: const Text(
+                      child: Text(
                         'Change',
                         style: TextStyle(
-                          color: Color(AppColors.primaryDeeper),
+                          color: isDark
+                              ? const Color(AppColors.primaryLight)
+                              : const Color(AppColors.primaryDeeper),
                           fontWeight: FontWeight.bold,
                           fontSize: 13,
                         ),
@@ -152,7 +204,6 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                     value: '10',
                     icon: PhosphorIconsRegular.megaphone,
                     iconColor: const Color(0xFFF59E0B), // Amber (warn/pending status)
-                    // badge: _buildDecreaseBadge(),
                   ),
                   _buildMetricCard(
                     title: 'Verified',
@@ -183,22 +234,28 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                 width: double.infinity,
                 padding: const EdgeInsets.all(18),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: isDark ? const Color(AppColors.darkBackground) : Theme.of(context).cardColor,
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: const Color(0xFFEFF1F4)),
-                  boxShadow: const [
-                    BoxShadow(color: Color(0x040D1B2D), blurRadius: 12, offset: Offset(0, 4)),
-                  ],
+                  border: Border.all(
+                    color: isDark
+                        ? const Color(AppColors.darkBorder)
+                        : const Color(0xFFEFF1F4),
+                  ),
+                  boxShadow: isDark
+                      ? []
+                      : const [
+                          BoxShadow(color: Color(0x040D1B2D), blurRadius: 12, offset: Offset(0, 4)),
+                        ],
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'Incident Trends',
                       style: TextStyle(
                         fontWeight: FontWeight.w700,
                         fontSize: 16,
-                        color: Color(AppColors.textPrimary),
+                        color: isDark ? const Color(AppColors.darkTextPrimary) : const Color(AppColors.textPrimary),
                       ),
                     ),
                     const SizedBox(height: 20),
@@ -206,7 +263,9 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                       height: 160,
                       width: double.infinity,
                       child: CustomPaint(
-                        painter: IncidentTrendsPainter(),
+                        painter: IncidentTrendsPainter(
+                          isDark: isDark,
+                        ),
                       ),
                     ),
                   ],
@@ -214,29 +273,33 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
               ),
             ),
 
-            // Donut Categories Chart Section
+            // Donut Categories Chart Section (Pie Chart Card)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(18),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: isDark ? const Color(AppColors.darkBackground) : Colors.white,
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: const Color(0xFFEFF1F4)),
-                  boxShadow: const [
-                    BoxShadow(color: Color(0x040D1B2D), blurRadius: 12, offset: Offset(0, 4)),
-                  ],
+                  border: Border.all(
+                    color: isDark ? const Color(AppColors.darkBorder) : const Color(0xFFEFF1F4),
+                  ),
+                  boxShadow: isDark
+                      ? []
+                      : const [
+                          BoxShadow(color: Color(0x040D1B2D), blurRadius: 12, offset: Offset(0, 4)),
+                        ],
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'Incidents by Category',
                       style: TextStyle(
                         fontWeight: FontWeight.w700,
                         fontSize: 16,
-                        color: Color(AppColors.textPrimary),
+                        color: isDark ? const Color(AppColors.darkTextPrimary) : const Color(AppColors.textPrimary),
                       ),
                     ),
                     const SizedBox(height: 20),
@@ -256,6 +319,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                                   Color(0xFF6366F1), // Power Outage (Indigo)
                                   Color(0xFF06B6D4), // Water Outage (Cyan)
                                 ],
+                                backgroundColor: isDark ? const Color(AppColors.darkBackground) : Colors.white,
                               ),
                             ),
                           ),
@@ -267,15 +331,15 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              _buildLegentItem(const Color(0xFFEF4444), 'Insecurity (4)'),
+                              _buildLegentItem(const Color(0xFFEF4444), 'Insecurity (4)', isDark),
                               const SizedBox(height: 8),
-                              _buildLegentItem(const Color(0xFFF59E0B), 'Theft (2)'),
+                              _buildLegentItem(const Color(0xFFF59E0B), 'Theft (2)', isDark),
                               const SizedBox(height: 8),
-                              _buildLegentItem(const Color(0xFFEC4899), 'Emergency (1)'),
+                              _buildLegentItem(const Color(0xFFEC4899), 'Emergency (1)', isDark),
                               const SizedBox(height: 8),
-                              _buildLegentItem(const Color(0xFF6366F1), 'Power (2)'),
+                              _buildLegentItem(const Color(0xFF6366F1), 'Power (2)', isDark),
                               const SizedBox(height: 8),
-                              _buildLegentItem(const Color(0xFF06B6D4), 'Water (1)'),
+                              _buildLegentItem(const Color(0xFF06B6D4), 'Water (1)', isDark),
                             ],
                           ),
                         )
@@ -293,22 +357,26 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                 width: double.infinity,
                 padding: const EdgeInsets.all(18),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: isDark ? const Color(AppColors.darkBackground) : Colors.white,
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: const Color(0xFFEFF1F4)),
-                  boxShadow: const [
-                    BoxShadow(color: Color(0x040D1B2D), blurRadius: 12, offset: Offset(0, 4)),
-                  ],
+                  border: Border.all(
+                    color: isDark ? const Color(AppColors.darkBorder) : const Color(0xFFEFF1F4),
+                  ),
+                  boxShadow: isDark
+                      ? []
+                      : const [
+                          BoxShadow(color: Color(0x040D1B2D), blurRadius: 12, offset: Offset(0, 4)),
+                        ],
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'Top Locations',
                       style: TextStyle(
                         fontWeight: FontWeight.w700,
                         fontSize: 16,
-                        color: Color(AppColors.textPrimary),
+                        color: isDark ? const Color(AppColors.darkTextPrimary) : const Color(AppColors.textPrimary),
                       ),
                     ),
                     const SizedBox(height: 18),
@@ -376,27 +444,32 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     required Color iconColor,
     Widget? badge,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? const Color(AppColors.darkBackground) : Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFEFF1F4)),
-        boxShadow: const [
-          BoxShadow(color: Color(0x021E293B), blurRadius: 10, offset: Offset(0, 4)),
-        ],
+        border: Border.all(
+          color: isDark ? const Color(AppColors.darkBorder) : const Color(0xFFEFF1F4),
+        ),
+        boxShadow: isDark
+            ? []
+            : const [
+                BoxShadow(color: Color(0x021E293B), blurRadius: 10, offset: Offset(0, 4)),
+              ],
       ),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(8),
-            decoration: const BoxDecoration(
-              color: Color(0xFFF1F5F9), // Slate 100 matching Lost & Found category icon background
+            decoration: BoxDecoration(
+              color: isDark ? const Color(AppColors.darkCardSubtle) : const Color(0xFFF1F5F9),
               shape: BoxShape.circle,
             ),
             child: Icon(
               icon,
-              color: const Color(AppColors.textSecondary), // Slate icon color matching Lost & Found
+              color: isDark ? const Color(AppColors.primaryLight) : const Color(0xFF64748B),
               size: 18,
             ),
           ),
@@ -410,8 +483,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                   title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: Color(AppColors.textSecondary),
+                  style: TextStyle(
+                    color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary),
                     fontSize: 10.5,
                     fontWeight: FontWeight.w600,
                   ),
@@ -422,10 +495,10 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                   children: [
                     Text(
                       value,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontWeight: FontWeight.w800,
                         fontSize: 17,
-                        color: Color(AppColors.textPrimary),
+                        color: isDark ? const Color(AppColors.darkTextPrimary) : const Color(AppColors.textPrimary),
                         letterSpacing: -0.5,
                       ),
                     ),
@@ -469,7 +542,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     );
   }
 
-  Widget _buildLegentItem(Color color, String text) {
+  Widget _buildLegentItem(Color color, String text, bool isDark) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -484,8 +557,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
         const SizedBox(width: 8),
         Text(
           text,
-          style: const TextStyle(
-            color: Color(AppColors.textSecondary),
+          style: TextStyle(
+            color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary),
             fontSize: 12,
             fontWeight: FontWeight.w600,
           ),
@@ -499,6 +572,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     required int count,
     required double percentage,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -510,17 +584,17 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                 name,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
+                style: TextStyle(
                   fontWeight: FontWeight.w700,
                   fontSize: 13,
-                  color: Color(AppColors.textPrimary),
+                  color: isDark ? const Color(AppColors.darkTextPrimary) : const Color(AppColors.textPrimary),
                 ),
               ),
             ),
             Text(
               '$count (${percentage.toStringAsFixed(1)}%)',
-              style: const TextStyle(
-                color: Color(AppColors.textSecondary),
+              style: TextStyle(
+                color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary),
                 fontSize: 11.5,
                 fontWeight: FontWeight.w600,
               ),
@@ -532,7 +606,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
           width: double.infinity,
           height: 8,
           decoration: BoxDecoration(
-            color: const Color(0xFFF1F5F9),
+            color: isDark ? const Color(AppColors.darkCardSubtle) : const Color(0xFFF1F5F9),
             borderRadius: BorderRadius.circular(4),
           ),
           child: FractionallySizedBox(
@@ -540,7 +614,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
             widthFactor: percentage / 100,
             child: Container(
               decoration: BoxDecoration(
-                color: const Color(AppColors.primaryDeeper),
+                color: isDark ? const Color(AppColors.primaryLight) : const Color(AppColors.primaryDeeper),
                 borderRadius: BorderRadius.circular(4),
               ),
             ),
@@ -552,10 +626,13 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
 }
 
 class IncidentTrendsPainter extends CustomPainter {
+  IncidentTrendsPainter({required this.isDark});
+  final bool isDark;
+
   @override
   void paint(Canvas canvas, Size size) {
     final paintGrid = Paint()
-      ..color = const Color(0xFFE2E8F0)
+      ..color = isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0)
       ..strokeWidth = 1.0;
 
     final paintLine = Paint()
@@ -569,7 +646,7 @@ class IncidentTrendsPainter extends CustomPainter {
       ..style = PaintingStyle.fill;
 
     final paintInnerDot = Paint()
-      ..color = Colors.white
+      ..color = isDark ? const Color(0xFF1E293B) : Colors.white
       ..style = PaintingStyle.fill;
 
     // Draw dashed/dotted grid lines
@@ -673,10 +750,12 @@ class DonutChartPainter extends CustomPainter {
   DonutChartPainter({
     required this.values,
     required this.colors,
+    required this.backgroundColor,
   });
 
   final List<double> values;
   final List<Color> colors;
+  final Color backgroundColor;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -700,12 +779,12 @@ class DonutChartPainter extends CustomPainter {
       startAngle += sweepAngle;
     }
 
-    // Cut a inner white circle to make it a Donut shape
-    final whitePaint = Paint()
-      ..color = Colors.white
+    // Cut an inner circle matching background to make it a Donut shape
+    final cutPaint = Paint()
+      ..color = backgroundColor
       ..style = PaintingStyle.fill;
 
-    canvas.drawCircle(center, radius * 0.38, whitePaint);
+    canvas.drawCircle(center, radius * 0.38, cutPaint);
   }
 
   @override

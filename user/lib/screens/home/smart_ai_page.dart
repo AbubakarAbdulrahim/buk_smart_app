@@ -4,11 +4,13 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../services/auth_service.dart';
 import '../../services/gemini_service.dart';
 import '../../services/smart_ai_repository.dart';
+import '../../config/gemini_config.dart';
 
 class SmartAiPage extends StatefulWidget {
   const SmartAiPage({super.key});
@@ -24,8 +26,10 @@ class _SmartAiPageState extends State<SmartAiPage> {
   final FocusNode _focusNode = FocusNode();
 
   String? _currentSessionId;
+  Stream<List<ChatMessage>>? _messagesStream;
   bool _isTyping = false;
   String _streamingText = '';
+  String? _savingMessageText;
   StreamSubscription? _streamingSubscription;
 
   final List<String> _suggestionPool = const [
@@ -37,7 +41,7 @@ class _SmartAiPageState extends State<SmartAiPage> {
     'How do I format my FYP template?',
     'Where is the student handbook?',
     'Where is the CITS building?',
-    'Is the registration portal still open?'
+    'Is the registration portal still open?',
     'Where is the senate building?',
   ];
 
@@ -85,6 +89,7 @@ class _SmartAiPageState extends State<SmartAiPage> {
     _streamingSubscription?.cancel();
     setState(() {
       _currentSessionId = null;
+      _messagesStream = null;
       _streamingText = '';
       _isTyping = false;
       _randomizeSuggestions();
@@ -116,6 +121,7 @@ class _SmartAiPageState extends State<SmartAiPage> {
       if (_currentSessionId == sessionId) {
         setState(() {
           _currentSessionId = null;
+          _messagesStream = null;
           _streamingText = '';
           _isTyping = false;
         });
@@ -166,8 +172,163 @@ class _SmartAiPageState extends State<SmartAiPage> {
     }
   }
 
+  Future<void> _showApiKeySetupSheet(BuildContext context, GeminiService gemini) async {
+    final existingKey = await gemini.resolveApiKey();
+    final isCompileTime = GeminiConfig.apiKey.isNotEmpty;
+    final controller = TextEditingController(text: isCompileTime ? '' : existingKey);
+    if (!mounted) return;
+
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(ctx).viewInsets.bottom,
+          ),
+          child: Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: isDark ? const Color(AppColors.darkSurface) : Colors.white,
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Icon(PhosphorIconsFill.key, color: Color(AppColors.primaryDeeper), size: 22),
+                    const SizedBox(width: 10),
+                    Text(
+                      'Gemini AI Key Setup',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: isDark ? const Color(AppColors.darkTextPrimary) : const Color(AppColors.textPrimary),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                if (isCompileTime)
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    margin: const EdgeInsets.only(bottom: 12),
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(AppColors.darkCardSubtle) : const Color(AppColors.cardSubtle),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: const Color(AppColors.primary).withAlpha(80)),
+                    ),
+                    child: const Row(
+                      children: [
+                        Icon(PhosphorIconsRegular.checkCircle, color: Color(AppColors.primaryDeeper), size: 18),
+                        SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Active Gemini API key is loaded via build environment (--dart-define / .env).',
+                            style: TextStyle(fontSize: 12.5, color: Color(AppColors.primaryDeeper)),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                Text(
+                  isCompileTime
+                      ? 'You can optionally override it below with a custom key saved locally on this device:'
+                      : 'To chat with Smart AI, provide your Gemini API key. Your key is stored securely in local storage on this device.',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary),
+                    height: 1.4,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: controller,
+                  obscureText: true,
+                  decoration: InputDecoration(
+                    hintText: 'Paste Gemini API Key (e.g. AQ... or AIza...)',
+                    prefixIcon: const Icon(PhosphorIconsRegular.password, size: 20),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  ),
+                ),
+                const SizedBox(height: 18),
+                Row(
+                  children: [
+                    if (existingKey.isNotEmpty && !isCompileTime) ...[
+                      OutlinedButton(
+                        onPressed: () async {
+                          await gemini.clearSavedApiKey();
+                          if (ctx.mounted) Navigator.pop(ctx);
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Saved key removed')),
+                            );
+                          }
+                        },
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.red,
+                          side: const BorderSide(color: Colors.red),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                        ),
+                        child: const Text('Clear'),
+                      ),
+                      const SizedBox(width: 10),
+                    ],
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          final input = controller.text.trim();
+                          if (input.isNotEmpty) {
+                            await gemini.saveApiKey(input);
+                            if (ctx.mounted) Navigator.pop(ctx);
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('API Key saved successfully')),
+                              );
+                            }
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(AppColors.primaryDeeper),
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                        ),
+                        child: const Text('Save Key', style: TextStyle(fontWeight: FontWeight.bold)),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   Future<void> _sendMessage(String text, String uid, SmartAiRepository repository, GeminiService gemini) async {
     if (text.trim().isEmpty) return;
+
+    final hasKey = await gemini.hasValidApiKey();
+    if (!hasKey) {
+      if (!mounted) return;
+      await _showApiKeySetupSheet(context, gemini);
+      if (!(await gemini.hasValidApiKey())) {
+        return;
+      }
+    }
 
     // Trigger soft haptic feedback
     HapticFeedback.lightImpact();
@@ -182,6 +343,7 @@ class _SmartAiPageState extends State<SmartAiPage> {
       sessionId = await repository.createSession(uid, messageContent);
       setState(() {
         _currentSessionId = sessionId;
+        _messagesStream = repository.getMessages(uid, sessionId);
       });
     }
 
@@ -216,12 +378,23 @@ class _SmartAiPageState extends State<SmartAiPage> {
         },
         onDone: () async {
           if (_streamingText.trim().isNotEmpty) {
-            await repository.addMessage(uid, sessionId, 'model', _streamingText);
+            final savedText = _streamingText;
+            setState(() {
+              _isTyping = false;
+              _streamingText = '';
+              _savingMessageText = savedText;
+            });
+            await repository.addMessage(uid, sessionId, 'model', savedText);
+            if (mounted) {
+              setState(() {
+                _savingMessageText = null;
+              });
+            }
+          } else {
+            setState(() {
+              _isTyping = false;
+            });
           }
-          setState(() {
-            _isTyping = false;
-            _streamingText = '';
-          });
           _scrollToBottom();
         },
         cancelOnError: true,
@@ -232,13 +405,24 @@ class _SmartAiPageState extends State<SmartAiPage> {
   }
 
   void _handleError(String uid, String sessionId, Object err, SmartAiRepository repository) async {
-    String friendlyError = 'Smart AI is a bit busy right now. Please try again in a moment.';
+    debugPrint('Smart AI API Error: $err');
+    
+    String friendlyError = 'An unexpected error occurred. Please try again later.';
     final errMsg = err.toString().toLowerCase();
 
-    if (errMsg.contains('quota_exceeded') || errMsg.contains('429')) {
-      friendlyError = 'Smart AI free quota exceeded. Please wait a moment before trying again.';
-    } else if (errMsg.contains('network') || errMsg.contains('failed to connect')) {
-      friendlyError = 'Network error. Please check your internet connection.';
+    if (errMsg.contains('api key') || errMsg.contains('not configured')) {
+      friendlyError = 'Gemini API key is not configured. Tap the key icon in the top right to configure your API key, or launch with --dart-define-from-file=.env.';
+    } else if (errMsg.contains('quota') || errMsg.contains('429') || errMsg.contains('exhausted') || errMsg.contains('resource_exhausted')) {
+      friendlyError = 'Service is temporarily busy. Please wait a moment and try again.';
+    } else if (errMsg.contains('failed to fetch') || 
+               errMsg.contains('clientexception') || 
+               errMsg.contains('socketexception') || 
+               errMsg.contains('network') || 
+               errMsg.contains('failed to connect') || 
+               errMsg.contains('connection refused') || 
+               errMsg.contains('handshake') || 
+               errMsg.contains('no internet')) {
+      friendlyError = 'No internet connection, please try again later.';
     }
 
     await repository.addMessage(uid, sessionId, 'model', friendlyError);
@@ -269,12 +453,12 @@ class _SmartAiPageState extends State<SmartAiPage> {
         children.add(
           Padding(
             padding: const EdgeInsets.only(top: 8, bottom: 4),
-            child: Text(
+            child: _buildRichText(
               headerMatch.group(1)!,
-              style: TextStyle(
+              isDarkText,
+              customStyle: const TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 14.5,
-                color: isDarkText ? const Color(AppColors.textPrimary) : Colors.white,
               ),
             ),
           ),
@@ -295,7 +479,9 @@ class _SmartAiPageState extends State<SmartAiPage> {
                   '• ',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    color: isDarkText ? const Color(AppColors.textPrimary) : Colors.white,
+                    color: isDarkText 
+                        ? (Theme.of(context).brightness == Brightness.dark ? Colors.white : const Color(AppColors.textPrimary))
+                        : Colors.white,
                   ),
                 ),
                 Expanded(
@@ -323,15 +509,22 @@ class _SmartAiPageState extends State<SmartAiPage> {
     );
   }
 
-  Widget _buildRichText(String text, bool isDarkText) {
+  Widget _buildRichText(String text, bool isDarkText, {TextStyle? customStyle}) {
+    // Self-close unmatched bold markers if odd count
+    var processedText = text;
+    final occurrences = RegExp(r'\*\*').allMatches(text).length;
+    if (occurrences.isOdd) {
+      processedText += '**';
+    }
+
     // Basic inline bold formatting checker (**text**)
     final boldRegex = RegExp(r'\*\*(.*?)\*\*');
     final spans = <TextSpan>[];
     
     int start = 0;
-    for (final match in boldRegex.allMatches(text)) {
+    for (final match in boldRegex.allMatches(processedText)) {
       if (match.start > start) {
-        spans.add(TextSpan(text: text.substring(start, match.start)));
+        spans.add(TextSpan(text: processedText.substring(start, match.start)));
       }
       spans.add(
         TextSpan(
@@ -342,18 +535,22 @@ class _SmartAiPageState extends State<SmartAiPage> {
       start = match.end;
     }
     
-    if (start < text.length) {
-      spans.add(TextSpan(text: text.substring(start)));
+    if (start < processedText.length) {
+      spans.add(TextSpan(text: processedText.substring(start)));
     }
+
+    final defaultStyle = TextStyle(
+      fontSize: 13.5,
+      color: isDarkText 
+          ? (Theme.of(context).brightness == Brightness.dark ? Colors.white : const Color(AppColors.textPrimary))
+          : Colors.white,
+      height: 1.4,
+    );
 
     return Text.rich(
       TextSpan(
         children: spans,
-        style: TextStyle(
-          fontSize: 13.5,
-          color: isDarkText ? const Color(AppColors.textPrimary) : Colors.white,
-          height: 1.4,
-        ),
+        style: defaultStyle.merge(customStyle),
       ),
     );
   }
@@ -370,12 +567,14 @@ class _SmartAiPageState extends State<SmartAiPage> {
                 children: [
                   const Icon(PhosphorIconsFill.sparkle, color: Color(AppColors.primaryDeeper), size: 24),
                   const SizedBox(width: 10),
-                  const Text(
+                  Text(
                     'Chat Sessions',
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: Color(AppColors.textPrimary),
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? Colors.white
+                          : const Color(AppColors.textPrimary),
                     ),
                   ),
                 ],
@@ -472,6 +671,7 @@ class _SmartAiPageState extends State<SmartAiPage> {
             _streamingSubscription?.cancel();
             setState(() {
               _currentSessionId = session.id;
+              _messagesStream = repository.getMessages(uid, session.id);
               _streamingText = '';
               _isTyping = false;
             });
@@ -524,7 +724,9 @@ class _SmartAiPageState extends State<SmartAiPage> {
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                      color: isSelected ? const Color(AppColors.primaryDeeper) : const Color(AppColors.textPrimary),
+                      color: isSelected
+                          ? const Color(AppColors.primaryDeeper)
+                          : (Theme.of(context).brightness == Brightness.dark ? Colors.white70 : const Color(AppColors.textPrimary)),
                     ),
                   ),
                 ),
@@ -539,6 +741,7 @@ class _SmartAiPageState extends State<SmartAiPage> {
   }
 
   Widget _buildEmptyState(String uid, SmartAiRepository repository, GeminiService gemini) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Center(
       child: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
@@ -558,7 +761,6 @@ class _SmartAiPageState extends State<SmartAiPage> {
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: Color(AppColors.textPrimary),
               ),
             ),
             const SizedBox(height: 32),
@@ -568,7 +770,7 @@ class _SmartAiPageState extends State<SmartAiPage> {
               alignment: WrapAlignment.center,
               children: _currentSuggestions.map((s) {
                 return Material(
-                  color: Colors.white,
+                  color: Theme.of(context).cardColor,
                   borderRadius: BorderRadius.circular(20),
                   child: InkWell(
                     borderRadius: BorderRadius.circular(20),
@@ -577,24 +779,18 @@ class _SmartAiPageState extends State<SmartAiPage> {
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: const Color(AppColors.border)),
+                        border: Border.all(
+                          color: isDark ? const Color(0xFF1E293B) : const Color(AppColors.border),
+                        ),
                       ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(PhosphorIconsRegular.question, size: 14, color: Color(AppColors.primaryDeeper)),
-                          const SizedBox(width: 8),
-                          Flexible(
-                            child: Text(
-                              s,
-                              style: const TextStyle(
-                                fontSize: 12.5,
-                                color: Color(AppColors.textPrimary),
-                                fontWeight: FontWeight.normal,
-                              ),
-                            ),
-                          ),
-                        ],
+                      child: Text(
+                        s,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          color: isDark ? Colors.white70 : const Color(AppColors.textPrimary),
+                          fontWeight: FontWeight.normal,
+                        ),
                       ),
                     ),
                   ),
@@ -608,6 +804,7 @@ class _SmartAiPageState extends State<SmartAiPage> {
   }
 
   Widget _buildThinkingBubble() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
       child: Row(
@@ -625,13 +822,15 @@ class _SmartAiPageState extends State<SmartAiPage> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: Theme.of(context).cardColor,
               borderRadius: const BorderRadius.only(
                 topRight: Radius.circular(16),
                 bottomLeft: Radius.circular(16),
                 bottomRight: Radius.circular(16),
               ),
-              border: Border.all(color: const Color(AppColors.border)),
+              border: Border.all(
+                color: isDark ? const Color(0xFF1E293B) : const Color(AppColors.border),
+              ),
             ),
             child: const Row(
               mainAxisSize: MainAxisSize.min,
@@ -650,12 +849,27 @@ class _SmartAiPageState extends State<SmartAiPage> {
   }
 
   Widget _buildMessageList(List<ChatMessage> messages) {
+    final displayMessages = List<ChatMessage>.from(messages);
+    if (_savingMessageText != null) {
+      final alreadySaved = messages.isNotEmpty &&
+          messages.last.role == 'model' &&
+          messages.last.content == _savingMessageText;
+      if (!alreadySaved) {
+        displayMessages.add(ChatMessage(
+          id: 'temp_save',
+          role: 'model',
+          content: _savingMessageText!,
+          createdAt: DateTime.now(),
+        ));
+      }
+    }
+
     return ListView.builder(
       controller: _scrollController,
       padding: const EdgeInsets.symmetric(vertical: 16),
-      itemCount: messages.length + (_isTyping ? 1 : 0),
+      itemCount: displayMessages.length + (_isTyping ? 1 : 0),
       itemBuilder: (context, index) {
-        if (index == messages.length && _isTyping) {
+        if (index == displayMessages.length && _isTyping) {
           if (_streamingText.trim().isNotEmpty) {
             // Render streaming content block
             return _buildSpeechBubble(
@@ -667,8 +881,10 @@ class _SmartAiPageState extends State<SmartAiPage> {
           return _buildThinkingBubble();
         }
 
-        final m = messages[index];
-        final timeStr = DateFormat('h:mm a').format(m.createdAt);
+        final m = displayMessages[index];
+        final timeStr = m.id == 'temp_save'
+            ? 'Saving...'
+            : DateFormat('h:mm a').format(m.createdAt);
 
         return _buildSpeechBubble(
           role: m.role,
@@ -705,14 +921,20 @@ class _SmartAiPageState extends State<SmartAiPage> {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 decoration: BoxDecoration(
-                  color: isMe ? const Color(AppColors.primaryDeeper) : Colors.white,
+                  color: isMe ? const Color(AppColors.primaryDeeper) : Theme.of(context).cardColor,
                   borderRadius: BorderRadius.only(
                     topLeft: const Radius.circular(16),
                     topRight: const Radius.circular(16),
                     bottomLeft: isMe ? const Radius.circular(16) : Radius.zero,
                     bottomRight: isMe ? Radius.zero : const Radius.circular(16),
                   ),
-                  border: isMe ? null : Border.all(color: const Color(AppColors.border)),
+                  border: isMe
+                      ? null
+                      : Border.all(
+                          color: Theme.of(context).brightness == Brightness.dark
+                              ? const Color(0xFF1E293B)
+                              : const Color(AppColors.border),
+                        ),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -720,13 +942,117 @@ class _SmartAiPageState extends State<SmartAiPage> {
                   children: [
                     _buildMarkdown(content, !isMe),
                     const SizedBox(height: 4),
-                    Text(
-                      time,
-                      style: TextStyle(
-                        fontSize: 9.5,
-                        color: isMe ? Colors.white.withOpacity(0.7) : const Color(AppColors.textSecondary),
-                      ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          time,
+                          style: TextStyle(
+                            fontSize: 9.5,
+                            color: isMe ? Colors.white.withOpacity(0.7) : const Color(AppColors.textSecondary),
+                          ),
+                        ),
+                      ],
                     ),
+                    if (!isMe && time != 'Generating...') ...[
+                      const SizedBox(height: 8),
+                      Divider(
+                        height: 1,
+                        thickness: 0.5,
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? const Color(0xFF1E293B)
+                            : null,
+                      ),
+                      const SizedBox(height: 6),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(4),
+                              onTap: () {
+                                Clipboard.setData(ClipboardData(text: content));
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Copied to clipboard'),
+                                    duration: Duration(seconds: 2),
+                                  ),
+                                );
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      PhosphorIconsRegular.copy,
+                                      size: 12,
+                                      color: Theme.of(context).brightness == Brightness.dark
+                                          ? Colors.white60
+                                          : const Color(AppColors.textSecondary),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      'Copy',
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        color: Theme.of(context).brightness == Brightness.dark
+                                            ? Colors.white60
+                                            : const Color(AppColors.textSecondary),
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                          if (() {
+                            final urlRegex = RegExp(r'(https?://[^\s\)]+)');
+                            return urlRegex.hasMatch(content);
+                          }()) ...[
+                            const SizedBox(width: 12),
+                            Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(4),
+                                onTap: () async {
+                                  final urlRegex = RegExp(r'(https?://[^\s\)]+)');
+                                  final match = urlRegex.firstMatch(content);
+                                  if (match != null) {
+                                    final uri = Uri.parse(match.group(1)!);
+                                    if (await canLaunchUrl(uri)) {
+                                      await launchUrl(uri);
+                                    }
+                                  }
+                                },
+                                child: const Padding(
+                                  padding: EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(PhosphorIconsRegular.arrowSquareOut, size: 12, color: Color(AppColors.primaryDeeper)),
+                                      SizedBox(width: 4),
+                                      Text(
+                                        'Open Link',
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          color: Color(AppColors.primaryDeeper),
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -737,25 +1063,31 @@ class _SmartAiPageState extends State<SmartAiPage> {
     );
   }
 
-  @override
   Widget _buildInputBar(String uid, SmartAiRepository repository, GeminiService gemini) {
     final canSend = _inputController.text.trim().isNotEmpty && !_isTyping;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
       decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(top: BorderSide(color: const Color(AppColors.border))),
+        color: Theme.of(context).cardColor,
+        border: Border(
+          top: BorderSide(
+            color: isDark ? const Color(0xFF1E293B) : const Color(AppColors.border),
+          ),
+        ),
       ),
       child: Row(
         children: [
           Expanded(
             child: Container(
               decoration: BoxDecoration(
-                color: const Color(AppColors.background),
+                color: isDark ? const Color(AppColors.darkBackground) : const Color(AppColors.background),
                 borderRadius: BorderRadius.circular(24),
                 border: Border.all(
-                  color: _focusNode.hasFocus ? const Color(AppColors.primaryDeeper) : const Color(AppColors.border),
+                  color: _focusNode.hasFocus
+                      ? const Color(AppColors.primaryDeeper)
+                      : (isDark ? const Color(AppColors.darkBorder) : const Color(AppColors.border)),
                   width: _focusNode.hasFocus ? 1.5 : 1,
                 ),
               ),
@@ -786,7 +1118,7 @@ class _SmartAiPageState extends State<SmartAiPage> {
           const SizedBox(width: 8),
           IconButton(
             style: IconButton.styleFrom(
-              backgroundColor: canSend ? const Color(AppColors.primaryDeeper) : const Color(AppColors.border),
+              backgroundColor: canSend ? const Color(AppColors.primaryDeeper) : (isDark ? const Color(0xFF1E293B) : const Color(AppColors.border)),
               foregroundColor: Colors.white,
               shape: const CircleBorder(),
               padding: const EdgeInsets.all(12),
@@ -814,13 +1146,10 @@ class _SmartAiPageState extends State<SmartAiPage> {
     return FocusScope(
       child: Scaffold(
         key: _scaffoldKey,
-        backgroundColor: const Color(AppColors.background),
         drawer: _buildSidebar(uid, repository),
         appBar: AppBar(
-          backgroundColor: Colors.white,
-          elevation: 0,
           leading: IconButton(
-            icon: const Icon(PhosphorIconsRegular.list, color: Color(AppColors.textPrimary)),
+            icon: const Icon(PhosphorIconsRegular.list),
             onPressed: () {
               _scaffoldKey.currentState?.openDrawer();
             },
@@ -833,7 +1162,6 @@ class _SmartAiPageState extends State<SmartAiPage> {
               Text(
                 'Smart AI',
                 style: TextStyle(
-                  color: Color(AppColors.textPrimary),
                   fontWeight: FontWeight.bold,
                   fontSize: 16.5,
                 ),
@@ -843,7 +1171,12 @@ class _SmartAiPageState extends State<SmartAiPage> {
           centerTitle: true,
           actions: [
             IconButton(
-              icon: const Icon(PhosphorIconsRegular.notePencil, color: Color(AppColors.textPrimary)),
+              icon: const Icon(PhosphorIconsRegular.key, size: 20),
+              tooltip: 'Configure Gemini API Key',
+              onPressed: () => _showApiKeySetupSheet(context, gemini),
+            ),
+            IconButton(
+              icon: const Icon(PhosphorIconsRegular.notePencil),
               onPressed: () => _startNewChat(uid, repository),
             ),
           ],
@@ -851,23 +1184,28 @@ class _SmartAiPageState extends State<SmartAiPage> {
         body: Column(
           children: [
             Expanded(
-              child: _currentSessionId == null
-                  ? _buildEmptyState(uid, repository, gemini)
-                  : StreamBuilder<List<ChatMessage>>(
-                      stream: repository.getMessages(uid, _currentSessionId!),
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState == ConnectionState.waiting) {
-                          return const Center(child: CircularProgressIndicator());
-                        }
-      
-                        final messages = snapshot.data ?? [];
-                        if (messages.isEmpty && !_isTyping) {
-                          return _buildEmptyState(uid, repository, gemini);
-                        }
-      
-                        return _buildMessageList(messages);
-                      },
-                    ),
+              child: () {
+                if (_currentSessionId != null && _messagesStream == null) {
+                  _messagesStream = repository.getMessages(uid, _currentSessionId!);
+                }
+                return _currentSessionId == null
+                    ? _buildEmptyState(uid, repository, gemini)
+                    : StreamBuilder<List<ChatMessage>>(
+                        stream: _messagesStream,
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) {
+                            return const Center(child: CircularProgressIndicator());
+                          }
+        
+                          final messages = snapshot.data ?? [];
+                          if (messages.isEmpty && !_isTyping) {
+                            return _buildEmptyState(uid, repository, gemini);
+                          }
+        
+                          return _buildMessageList(messages);
+                        },
+                      );
+              }(),
             ),
             _buildInputBar(uid, repository, gemini),
           ],

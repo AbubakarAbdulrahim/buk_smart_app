@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
@@ -22,17 +24,14 @@ class ProfileScreen extends StatelessWidget {
     final auth = context.read<AuthService>();
     final firestore = context.read<FirestoreService>();
     final user = auth.currentUser;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
         title: const Text(
           'Profile',
           style: TextStyle(
             fontWeight: FontWeight.w800,
-            color: Color(AppColors.textPrimary),
           ),
         ),
         centerTitle: true,
@@ -56,10 +55,10 @@ class ProfileScreen extends StatelessWidget {
                   children: [
                     Container(
                       padding: const EdgeInsets.all(4),
-                      decoration: const BoxDecoration(
-                        color: Colors.white,
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).cardColor,
                         shape: BoxShape.circle,
-                        boxShadow: [
+                        boxShadow: const [
                           BoxShadow(color: Color(0x060A1320), blurRadius: 16, offset: Offset(0, 8)),
                         ],
                       ),
@@ -67,18 +66,20 @@ class ProfileScreen extends StatelessWidget {
                         width: 80,
                         height: 80,
                         decoration: BoxDecoration(
-                          color: const Color(0xFFF1F5F9),
+                          color: isDark ? const Color(AppColors.darkCardSubtle) : const Color(0xFFF1F5F9),
                           shape: BoxShape.circle,
-                          border: Border.all(color: const Color(0xFFE2E8F0)),
+                          border: Border.all(
+                            color: isDark ? const Color(AppColors.darkBorder) : const Color(0xFFE2E8F0),
+                          ),
                         ),
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(40),
                           child: photoUrl != null && photoUrl.isNotEmpty
                               ? Image.network(photoUrl, fit: BoxFit.cover)
-                              : const Icon(
+                              : Icon(
                                   PhosphorIconsRegular.user,
                                   size: 36,
-                                  color: Color(0xFF64748B),
+                                  color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(0xFF64748B),
                                 ),
                         ),
                       ),
@@ -86,18 +87,18 @@ class ProfileScreen extends StatelessWidget {
                     const SizedBox(height: 12),
                     Text(
                       name,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontWeight: FontWeight.w800,
                         fontSize: 19.5,
-                        color: Color(AppColors.textPrimary),
+                        color: isDark ? const Color(AppColors.darkTextPrimary) : const Color(AppColors.textPrimary),
                         letterSpacing: -0.3,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       email,
-                      style: const TextStyle(
-                        color: Color(AppColors.textSecondary),
+                      style: TextStyle(
+                        color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary),
                         fontSize: 13,
                         fontWeight: FontWeight.w500,
                       ),
@@ -106,15 +107,23 @@ class ProfileScreen extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFEFF6FF),
+                        color: isDark
+                            ? const Color(AppColors.darkCardSubtle)
+                            : const Color(0xFFEFF6FF),
                         borderRadius: BorderRadius.circular(100),
-                        border: Border.all(color: const Color(0xFFDBEAFE)),
+                        border: Border.all(
+                          color: isDark
+                              ? const Color(AppColors.darkBorder)
+                              : const Color(0xFFDBEAFE),
+                        ),
                       ),
                       child: Text(
                         '$department • $faculty',
                         textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          color: Color(AppColors.primaryDeeper),
+                        style: TextStyle(
+                          color: isDark
+                              ? const Color(AppColors.primaryLight)
+                              : const Color(AppColors.primaryDeeper),
                           fontSize: 11,
                           fontWeight: FontWeight.bold,
                         ),
@@ -128,8 +137,14 @@ class ProfileScreen extends StatelessWidget {
                       icon: const Icon(PhosphorIconsRegular.pencilSimple, size: 14),
                       label: const Text('Edit Profile'),
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: const Color(AppColors.textPrimary),
-                        side: const BorderSide(color: Color(0xFFE2E8F0)),
+                        foregroundColor: isDark
+                            ? const Color(AppColors.darkTextPrimary)
+                            : const Color(AppColors.textPrimary),
+                        side: BorderSide(
+                          color: isDark
+                              ? const Color(AppColors.darkBorder)
+                              : const Color(0xFFE2E8F0),
+                        ),
                         minimumSize: const Size(120, 36),
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
@@ -142,32 +157,12 @@ class ProfileScreen extends StatelessWidget {
               const SizedBox(height: 24),
 
               // Stats Row
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(18),
-                  border: Border.all(color: const Color(0xFFEFF1F4)),
-                  boxShadow: const [
-                    BoxShadow(color: Color(0x020B1A2B), blurRadius: 10, offset: Offset(0, 4)),
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    Expanded(child: _buildStatItem('Reports', '12')),
-                    _buildStatDivider(),
-                    Expanded(child: _buildStatItem('Lost Posts', '8')),
-                    _buildStatDivider(),
-                    Expanded(child: _buildStatItem('Resolved', '5')),
-                  ],
-                ),
-              ),
+              user == null ? const SizedBox.shrink() : ProfileStatsCard(uid: user.uid),
               const SizedBox(height: 24),
 
-              // Settings Categories
-              _buildSectionHeader('Account Settings'),
+              _buildSectionHeader(context, 'Account Settings'),
               const SizedBox(height: 8),
-              _buildMenuList([
+              _buildMenuList(context, [
                 _MenuRow(
                   label: 'My Reports',
                   icon: PhosphorIconsRegular.fileText,
@@ -178,20 +173,17 @@ class ProfileScreen extends StatelessWidget {
                   icon: PhosphorIconsRegular.magnifyingGlass,
                   onTap: user == null ? null : () => Navigator.pushNamed(context, AppRoutes.myLostFound, arguments: user.uid),
                 ),
-                const _MenuRow(
-                  label: 'Notification Settings',
-                  icon: PhosphorIconsRegular.bell,
-                ),
-                const _MenuRow(
-                  label: 'Security & Access',
-                  icon: PhosphorIconsRegular.lock,
+                _MenuRow(
+                  label: 'Settings',
+                  icon: PhosphorIconsRegular.gear,
+                  onTap: () => Navigator.pushNamed(context, AppRoutes.profileSettings),
                 ),
               ]),
               const SizedBox(height: 20),
 
-              _buildSectionHeader('Support & Policies'),
+              _buildSectionHeader(context, 'Support & Policies'),
               const SizedBox(height: 8),
-              _buildMenuList([
+              _buildMenuList(context, [
                 const _MenuRow(
                   label: 'Help & Knowledge Base',
                   icon: PhosphorIconsRegular.question,
@@ -200,20 +192,27 @@ class ProfileScreen extends StatelessWidget {
                   label: 'Submit Feedback',
                   icon: PhosphorIconsRegular.chatTeardrop,
                 ),
-                const _MenuRow(
-                  label: 'About Campus App',
-                  icon: PhosphorIconsRegular.info,
-                ),
               ]),
               const SizedBox(height: 24),
 
-              // Logout Button
               Container(
                 width: double.infinity,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFEF2F2),
+                  color: isDark ? const Color(0xFF450A0A) : const Color(0xFFFEF2F2),
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: const Color(0xFFFEE2E2)),
+                  border: Border.all(
+                    color: isDark ? const Color(0xFF991B1B) : const Color(0xFFFCA5A5),
+                    width: 1.2,
+                  ),
+                  boxShadow: isDark
+                      ? []
+                      : [
+                          BoxShadow(
+                            color: const Color(0xFFB91C1C).withOpacity(0.06),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
                 ),
                 child: Material(
                   color: Colors.transparent,
@@ -224,19 +223,19 @@ class ProfileScreen extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
-                        children: const [
+                        children: [
                           Icon(
                             PhosphorIconsRegular.signOut,
-                            color: Color(AppColors.danger),
+                            color: isDark ? const Color(AppColors.darkDanger) : const Color(0xFFB91C1C),
                             size: 18,
                           ),
-                          SizedBox(width: 8),
+                          const SizedBox(width: 8),
                           Text(
                             'Log Out Account',
                             style: TextStyle(
                               fontSize: 14.5,
                               fontWeight: FontWeight.bold,
-                              color: Color(AppColors.danger),
+                              color: isDark ? const Color(AppColors.darkDanger) : const Color(0xFFB91C1C),
                             ),
                           ),
                         ],
@@ -253,47 +252,18 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStatItem(String label, String value) {
-    return Column(
-      children: [
-        Text(
-          value,
-          style: const TextStyle(
-            fontWeight: FontWeight.w800,
-            fontSize: 18,
-            color: Color(AppColors.textPrimary),
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: const TextStyle(
-            color: Color(AppColors.textSecondary),
-            fontSize: 11.5,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildStatDivider() {
-    return Container(
-      width: 1,
-      height: 28,
-      color: const Color(0xFFEFF1F4),
-    );
-  }
-
-  Widget _buildSectionHeader(String title) {
+  Widget _buildSectionHeader(BuildContext context, String title) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Align(
       alignment: Alignment.centerLeft,
       child: Padding(
         padding: const EdgeInsets.only(left: 4),
         child: Text(
           title.toUpperCase(),
-          style: const TextStyle(
-            color: Color(AppColors.textSecondary),
+          style: TextStyle(
+            color: isDark
+                ? const Color(AppColors.darkTextSecondary)
+                : const Color(AppColors.textSecondary),
             fontWeight: FontWeight.w800,
             fontSize: 10.5,
             letterSpacing: 0.8,
@@ -303,20 +273,33 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildMenuList(List<Widget> children) {
+  Widget _buildMenuList(BuildContext context, List<Widget> children) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFEFF1F4)),
-        boxShadow: const [
-          BoxShadow(color: Color(0x020B1A2B), blurRadius: 10, offset: Offset(0, 4)),
-        ],
+        border: Border.all(
+          color: isDark
+              ? const Color(AppColors.darkBorder)
+              : const Color(AppColors.border),
+        ),
+        boxShadow: isDark
+            ? []
+            : const [
+                BoxShadow(color: Color(0x020B1A2B), blurRadius: 10, offset: Offset(0, 4)),
+              ],
       ),
       child: Column(
         children: List.generate(children.length * 2 - 1, (index) {
           if (index.isOdd) {
-            return const Divider(height: 1, color: Color(0xFFF1F5F9), indent: 52);
+            return Divider(
+              height: 1,
+              color: isDark
+                  ? const Color(AppColors.darkBorder)
+                  : const Color(0xFFF1F5F9),
+              indent: 52,
+            );
           }
           return children[index ~/ 2];
         }),
@@ -334,32 +317,33 @@ class _MenuRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return ListTile(
       onTap: onTap,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
       leading: Container(
         padding: const EdgeInsets.all(8),
-        decoration: const BoxDecoration(
-          color: Color(0xFFF8FAFC),
+        decoration: BoxDecoration(
+          color: isDark ? const Color(AppColors.darkCardSubtle) : const Color(0xFFF8FAFC),
           shape: BoxShape.circle,
         ),
         child: Icon(
           icon,
-          color: const Color(0xFF334155),
+          color: isDark ? const Color(AppColors.darkTextPrimary) : const Color(0xFF334155),
           size: 18,
         ),
       ),
       title: Text(
         label,
-        style: const TextStyle(
-          color: Color(AppColors.textPrimary),
+        style: TextStyle(
+          color: isDark ? const Color(AppColors.darkTextPrimary) : const Color(AppColors.textPrimary),
           fontSize: 13.5,
           fontWeight: FontWeight.w600,
         ),
       ),
-      trailing: const Icon(
+      trailing: Icon(
         PhosphorIconsRegular.caretRight,
-        color: Color(0xFF94A3B8),
+        color: isDark ? const Color(AppColors.darkTextMuted) : const Color(0xFF94A3B8),
         size: 16,
       ),
     );
@@ -469,10 +453,21 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     
     try {
       final firestore = context.read<FirestoreService>();
+      final updatedName = _nameController.text.trim();
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        try {
+          await user.updateDisplayName(updatedName);
+          if (_uploadedPhotoUrl != null && _uploadedPhotoUrl!.isNotEmpty) {
+            await user.updatePhotoURL(_uploadedPhotoUrl);
+          }
+        } catch (_) {}
+      }
+
       await firestore.ensureUserProfile(
         uid: uid,
         email: email,
-        name: _nameController.text.trim(),
+        name: updatedName,
         matricNumber: _matricController.text.trim(),
         faculty: _facultyController.text.trim(),
         department: _departmentController.text.trim(),
@@ -505,25 +500,23 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     final auth = context.read<AuthService>();
     final firestore = context.read<FirestoreService>();
     final user = auth.currentUser;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     if (user == null) {
       return const Scaffold(body: Center(child: Text('User not logged in.')));
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: isDark ? const Color(AppColors.darkBackground) : const Color(0xFFF8FAFC),
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
         leading: IconButton(
-          icon: const Icon(PhosphorIconsRegular.arrowLeft, color: Color(AppColors.textPrimary)),
+          icon: const Icon(PhosphorIconsRegular.arrowLeft),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
           'Edit Profile',
           style: TextStyle(
             fontWeight: FontWeight.w800,
-            color: Color(AppColors.textPrimary),
           ),
         ),
         centerTitle: true,
@@ -532,7 +525,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         stream: firestore.userProfile(user.uid),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting && !_isInitialized) {
-            return const Center(child: CircularProgressIndicator());
+            return Center(
+              child: CircularProgressIndicator(
+                color: isDark ? const Color(AppColors.primaryLight) : const Color(AppColors.primaryDeeper),
+              ),
+            );
           }
 
           String initialPhotoUrl = '';
@@ -566,12 +563,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       children: [
                         Container(
                           padding: const EdgeInsets.all(4),
-                          decoration: const BoxDecoration(
-                            color: Colors.white,
+                          decoration: BoxDecoration(
+                            color: isDark ? const Color(AppColors.darkCard) : Theme.of(context).cardColor,
                             shape: BoxShape.circle,
-                            boxShadow: [
-                              BoxShadow(color: Color(0x060A1320), blurRadius: 16, offset: Offset(0, 8)),
-                            ],
+                            boxShadow: isDark
+                                ? []
+                                : const [
+                                    BoxShadow(color: Color(0x060A1320), blurRadius: 16, offset: Offset(0, 8)),
+                                  ],
                           ),
                           child: GestureDetector(
                             onTap: _isLoading ? null : () => _pickImage(initialPhotoUrl),
@@ -579,9 +578,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                               width: 90,
                               height: 90,
                               decoration: BoxDecoration(
-                                color: const Color(0xFFF1F5F9),
+                                color: isDark ? const Color(AppColors.darkCardSubtle) : const Color(0xFFF1F5F9),
                                 shape: BoxShape.circle,
-                                border: Border.all(color: const Color(0xFFE2E8F0)),
+                                border: Border.all(
+                                  color: isDark ? const Color(AppColors.darkBorder) : const Color(0xFFE2E8F0),
+                                ),
                               ),
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(45),
@@ -589,10 +590,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                     ? Image.network(_uploadedPhotoUrl!, fit: BoxFit.cover)
                                     : (initialPhotoUrl.isNotEmpty
                                         ? Image.network(initialPhotoUrl, fit: BoxFit.cover)
-                                        : const Icon(
+                                        : Icon(
                                             PhosphorIconsRegular.user,
                                             size: 40,
-                                            color: Color(0xFF64748B),
+                                            color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(0xFF64748B),
                                           )),
                               ),
                             ),
@@ -606,9 +607,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             child: Container(
                               padding: const EdgeInsets.all(6),
                               decoration: BoxDecoration(
-                                color: const Color(AppColors.primaryDeeper),
+                                color: isDark ? const Color(AppColors.primaryLight) : const Color(AppColors.primaryDeeper),
                                 shape: BoxShape.circle,
-                                border: Border.all(color: Colors.white, width: 2),
+                                border: Border.all(
+                                  color: isDark ? const Color(AppColors.darkBackground) : Colors.white,
+                                  width: 2,
+                                ),
                               ),
                               child: const Icon(
                                 PhosphorIconsRegular.camera,
@@ -623,15 +627,20 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   ),
                   const SizedBox(height: 24),
 
-                  const Text(
+                  Text(
                     'Personal Information',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(AppColors.textPrimary)),
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      color: isDark ? const Color(AppColors.darkTextPrimary) : const Color(AppColors.textPrimary),
+                    ),
                   ),
                   const SizedBox(height: 12),
                   
                   _buildTextField(
                     label: 'Full Name',
                     controller: _nameController,
+                    isDark: isDark,
                     validator: (v) => v == null || v.trim().isEmpty ? 'Name is required' : null,
                   ),
                   const SizedBox(height: 12),
@@ -639,6 +648,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   _buildTextField(
                     label: 'Email Address (Unchangeable)',
                     controller: TextEditingController(text: user.email ?? 'abubakar.cs@buk.edu.ng'),
+                    isDark: isDark,
                     enabled: false,
                   ),
                   const SizedBox(height: 12),
@@ -646,36 +656,45 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   _buildTextField(
                     label: 'Matric / Registration Number',
                     controller: _matricController,
+                    isDark: isDark,
                   ),
                   const SizedBox(height: 24),
                   
-                  const Text(
+                  Text(
                     'Academic Information',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(AppColors.textPrimary)),
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      color: isDark ? const Color(AppColors.darkTextPrimary) : const Color(AppColors.textPrimary),
+                    ),
                   ),
                   const SizedBox(height: 12),
                   
                   _buildTextField(
                     label: 'Faculty',
                     controller: _facultyController,
+                    isDark: isDark,
                   ),
                   const SizedBox(height: 12),
                   
                   _buildTextField(
                     label: 'Department',
                     controller: _departmentController,
+                    isDark: isDark,
                   ),
                   const SizedBox(height: 12),
                   
                   _buildTextField(
                     label: 'Program',
                     controller: _programController,
+                    isDark: isDark,
                   ),
                   const SizedBox(height: 12),
                   
                   _buildTextField(
                     label: 'Level (e.g. 400)',
                     controller: _levelController,
+                    isDark: isDark,
                   ),
                   const SizedBox(height: 28),
                   
@@ -684,11 +703,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     height: 52,
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(AppColors.primaryDeeper),
+                        backgroundColor: isDark ? const Color(AppColors.primaryLight) : const Color(AppColors.primaryDeeper),
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
                         ),
+                        elevation: 0,
                       ),
                       onPressed: _isLoading ? null : () => _saveProfile(user.uid, user.email ?? ''),
                       child: _isLoading
@@ -711,6 +731,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   Widget _buildTextField({
     required String label,
     required TextEditingController controller,
+    required bool isDark,
     String? Function(String?)? validator,
     bool enabled = true,
   }) {
@@ -719,38 +740,56 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       children: [
         Text(
           label,
-          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: Color(AppColors.textPrimary)),
+          style: TextStyle(
+            fontWeight: FontWeight.w600,
+            fontSize: 13,
+            color: isDark ? const Color(AppColors.darkTextPrimary) : const Color(AppColors.textPrimary),
+          ),
         ),
         const SizedBox(height: 6),
         TextFormField(
           controller: controller,
           validator: validator,
           enabled: enabled,
+          cursorColor: isDark ? const Color(AppColors.primaryLight) : const Color(AppColors.primaryDeeper),
           decoration: InputDecoration(
             isDense: true,
             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+              borderSide: BorderSide(
+                color: isDark ? const Color(AppColors.darkBorder) : const Color(0xFFE2E8F0),
+              ),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+              borderSide: BorderSide(
+                color: isDark ? const Color(AppColors.darkBorder) : const Color(0xFFE2E8F0),
+              ),
             ),
             disabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Color(0xFFEFF1F4)),
+              borderSide: BorderSide(
+                color: isDark ? const Color(AppColors.darkBorder) : const Color(0xFFEFF1F4),
+              ),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Color(AppColors.primaryDeeper), width: 1.5),
+              borderSide: BorderSide(
+                color: isDark ? const Color(AppColors.primaryLight) : const Color(AppColors.primaryDeeper),
+                width: 1.5,
+              ),
             ),
-            fillColor: enabled ? Colors.white : const Color(0xFFEFF1F4),
+            fillColor: enabled
+                ? (isDark ? const Color(AppColors.darkCardSubtle) : Colors.white)
+                : (isDark ? const Color(AppColors.darkCard) : const Color(0xFFEFF1F4)),
             filled: true,
           ),
           style: TextStyle(
             fontSize: 14,
-            color: enabled ? const Color(AppColors.textPrimary) : const Color(AppColors.textSecondary),
+            color: enabled
+                ? (isDark ? const Color(AppColors.darkTextPrimary) : const Color(AppColors.textPrimary))
+                : (isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary)),
           ),
         ),
       ],
@@ -809,20 +848,17 @@ class MyLostFoundScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final firestore = context.read<FirestoreService>();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
         leading: IconButton(
-          icon: const Icon(PhosphorIconsRegular.arrowLeft, color: Color(AppColors.textPrimary)),
+          icon: const Icon(PhosphorIconsRegular.arrowLeft),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
           'My Lost & Found Posts',
           style: TextStyle(
             fontWeight: FontWeight.w800,
-            color: Color(AppColors.textPrimary),
           ),
         ),
       ),
@@ -840,18 +876,26 @@ class MyLostFoundScreen extends StatelessWidget {
                 padding: const EdgeInsets.all(32),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
-                    Icon(PhosphorIconsRegular.pencilLine, size: 54, color: Color(0xFF94A3B8)),
-                    SizedBox(height: 16),
+                  children: [
+                    const Icon(PhosphorIconsRegular.pencilLine, size: 54, color: Color(0xFF94A3B8)),
+                    const SizedBox(height: 16),
                     Text(
                       'No Reports Posted',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(AppColors.textPrimary)),
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        color: isDark ? const Color(AppColors.darkTextPrimary) : const Color(AppColors.textPrimary),
+                      ),
                     ),
-                    SizedBox(height: 6),
+                    const SizedBox(height: 6),
                     Text(
                       'You have not published any lists yet. Tap "Report Item" on the home feed to begin reporting files.',
                       textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 13, color: Color(AppColors.textSecondary), height: 1.4),
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary),
+                        height: 1.4,
+                      ),
                     ),
                   ],
                 ),
@@ -867,11 +911,13 @@ class MyLostFoundScreen extends StatelessWidget {
 
                 return Card(
                   elevation: 0,
-                  color: Colors.white,
+                  color: Theme.of(context).cardColor,
                   margin: const EdgeInsets.only(bottom: 12),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
-                    side: const BorderSide(color: Color(0xFFEFF1F4)),
+                    side: BorderSide(
+                      color: isDark ? const Color(AppColors.darkBorder) : const Color(0xFFEFF1F4),
+                    ),
                   ),
                   child: ListTile(
                     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -882,8 +928,12 @@ class MyLostFoundScreen extends StatelessWidget {
                           : Container(
                               width: 56,
                               height: 56,
-                              color: const Color(0xFFF1F5F9),
-                              child: const Icon(PhosphorIconsRegular.image, size: 24, color: Color(AppColors.textSecondary)),
+                              color: isDark ? const Color(AppColors.darkCardSubtle) : const Color(0xFFF1F5F9),
+                              child: Icon(
+                                PhosphorIconsRegular.image,
+                                size: 24,
+                                color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary),
+                              ),
                             ),
                     ),
                     title: Row(
@@ -891,13 +941,17 @@ class MyLostFoundScreen extends StatelessWidget {
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                           decoration: BoxDecoration(
-                            color: isLost ? const Color(0xFFFEF2F2) : const Color(0xFFECFDF5),
+                            color: isLost
+                                ? (isDark ? const Color(0xFF450A0A) : const Color(0xFFFEF2F2))
+                                : (isDark ? const Color(0xFF064E3B) : const Color(0xFFECFDF5)),
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Text(
                             isLost ? 'LOST' : 'FOUND',
                             style: TextStyle(
-                              color: isLost ? const Color(0xFFB91C1C) : const Color(0xFF047857),
+                              color: isLost
+                                  ? (isDark ? const Color(AppColors.darkDanger) : const Color(0xFFB91C1C))
+                                  : (isDark ? const Color(AppColors.darkSuccess) : const Color(0xFF047857)),
                               fontSize: 9,
                               fontWeight: FontWeight.bold,
                             ),
@@ -909,7 +963,11 @@ class MyLostFoundScreen extends StatelessWidget {
                             item.title,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                              color: isDark ? const Color(AppColors.darkTextPrimary) : const Color(AppColors.textPrimary),
+                            ),
                           ),
                         ),
                       ],
@@ -919,13 +977,29 @@ class MyLostFoundScreen extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(item.location, style: const TextStyle(fontSize: 11.5, color: Color(AppColors.textSecondary))),
+                          Text(
+                            item.location,
+                            style: TextStyle(
+                              fontSize: 11.5,
+                              color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary),
+                            ),
+                          ),
                           const SizedBox(height: 2),
-                          Text(formattedDate, style: const TextStyle(fontSize: 10.5, color: Color(AppColors.textSecondary))),
+                          Text(
+                            formattedDate,
+                            style: TextStyle(
+                              fontSize: 10.5,
+                              color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary),
+                            ),
+                          ),
                         ],
                       ),
                     ),
-                    trailing: const Icon(PhosphorIconsRegular.caretRight, size: 16),
+                    trailing: Icon(
+                      PhosphorIconsRegular.caretRight,
+                      size: 16,
+                      color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary),
+                    ),
                     onTap: () {
                       Navigator.pushNamed(
                         context,
@@ -944,3 +1018,111 @@ class MyLostFoundScreen extends StatelessWidget {
   }
 }
 
+class ProfileStatsCard extends StatefulWidget {
+  final String uid;
+
+  const ProfileStatsCard({super.key, required this.uid});
+
+  @override
+  State<ProfileStatsCard> createState() => _ProfileStatsCardState();
+}
+
+class _ProfileStatsCardState extends State<ProfileStatsCard> {
+  int _reportsCount = 0;
+  int _lostPostsCount = 0;
+  int _resolvedCount = 0;
+
+  StreamSubscription? _incidentsSub;
+  StreamSubscription? _lostFoundSub;
+
+  @override
+  void initState() {
+    super.initState();
+    final firestore = context.read<FirestoreService>();
+    _incidentsSub = firestore.myIncidents(widget.uid).listen((incidents) {
+      if (mounted) {
+        setState(() {
+          _reportsCount = incidents.length;
+        });
+      }
+    });
+    _lostFoundSub = firestore.myLostFound(widget.uid).listen((items) {
+      if (mounted) {
+        setState(() {
+          _lostPostsCount = items.length;
+          _resolvedCount = items.where((item) => item.isResolved).length;
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _incidentsSub?.cancel();
+    _lostFoundSub?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: isDark
+              ? const Color(AppColors.darkBorder)
+              : const Color(0xFFEFF1F4),
+        ),
+        boxShadow: isDark
+            ? []
+            : const [
+                BoxShadow(color: Color(0x020B1A2B), blurRadius: 10, offset: Offset(0, 4)),
+              ],
+      ),
+      child: Row(
+        children: [
+          Expanded(child: _buildStatItem('Reports', '$_reportsCount', isDark)),
+          _buildStatDivider(isDark),
+          Expanded(child: _buildStatItem('Lost Posts', '$_lostPostsCount', isDark)),
+          _buildStatDivider(isDark),
+          Expanded(child: _buildStatItem('Resolved', '$_resolvedCount', isDark)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatItem(String label, String value, bool isDark) {
+    return Column(
+      children: [
+        Text(
+          value,
+          style: TextStyle(
+            fontWeight: FontWeight.w800,
+            fontSize: 18,
+            color: isDark ? const Color(AppColors.darkTextPrimary) : const Color(AppColors.textPrimary),
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          label,
+          style: TextStyle(
+            color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary),
+            fontSize: 11.5,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStatDivider(bool isDark) {
+    return Container(
+      width: 1,
+      height: 28,
+      color: isDark ? const Color(AppColors.darkBorder) : const Color(0xFFEFF1F4),
+    );
+  }
+}

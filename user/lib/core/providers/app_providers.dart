@@ -6,6 +6,7 @@ import '../../services/gemini_service.dart';
 import '../../services/smart_ai_repository.dart';
 import 'notification_provider.dart';
 import 'campus_updates_provider.dart';
+import 'theme_provider.dart';
 
 final appProviders = [
   Provider<AuthService>(create: (_) => AuthService()),
@@ -14,4 +15,5 @@ final appProviders = [
   Provider<SmartAiRepository>(create: (_) => SmartAiRepository()),
   ChangeNotifierProvider<NotificationProvider>(create: (_) => NotificationProvider()),
   ChangeNotifierProvider<CampusUpdatesProvider>(create: (_) => CampusUpdatesProvider()),
+  ChangeNotifierProvider<ThemeProvider>(create: (_) => ThemeProvider()),
 ];

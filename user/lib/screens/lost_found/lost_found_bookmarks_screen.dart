@@ -19,20 +19,19 @@ class LostFoundBookmarksScreen extends StatelessWidget {
     final auth = context.read<AuthService>();
     final currentUid = auth.currentUser?.uid ?? 'guest';
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(PhosphorIconsRegular.arrowLeft, color: Color(AppColors.textPrimary)),
+          icon: const Icon(PhosphorIconsRegular.arrowLeft),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
           'Saved Bookmarks',
           style: TextStyle(
             fontWeight: FontWeight.w800,
-            color: Color(AppColors.textPrimary),
           ),
         ),
       ),
@@ -46,7 +45,7 @@ class LostFoundBookmarksScreen extends StatelessWidget {
             hasError: snapshot.hasError,
             errorMessage: snapshot.error?.toString(),
             isEmpty: items.isEmpty,
-            emptyWidget: _buildEmptyState(),
+            emptyWidget: _buildEmptyState(context),
             child: ListView.builder(
               padding: const EdgeInsets.all(16),
               itemCount: items.length,
@@ -57,11 +56,13 @@ class LostFoundBookmarksScreen extends StatelessWidget {
 
                 return Card(
                   elevation: 0,
-                  color: Colors.white,
+                  color: Theme.of(context).cardColor,
                   margin: const EdgeInsets.only(bottom: 12),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
-                    side: const BorderSide(color: Color(0xFFEFF1F4)),
+                    side: BorderSide(
+                      color: isDark ? const Color(AppColors.darkBorder) : const Color(AppColors.border),
+                    ),
                   ),
                   child: ListTile(
                     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -72,8 +73,12 @@ class LostFoundBookmarksScreen extends StatelessWidget {
                           : Container(
                               width: 56,
                               height: 56,
-                              color: const Color(0xFFF1F5F9),
-                              child: const Icon(PhosphorIconsRegular.image, size: 24, color: Color(AppColors.textSecondary)),
+                              color: isDark ? const Color(AppColors.darkCardSubtle) : const Color(0xFFF1F5F9),
+                              child: Icon(
+                                PhosphorIconsRegular.image,
+                                size: 24,
+                                color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary),
+                              ),
                             ),
                     ),
                     title: Row(
@@ -81,13 +86,17 @@ class LostFoundBookmarksScreen extends StatelessWidget {
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                           decoration: BoxDecoration(
-                            color: isLost ? const Color(0xFFFEF2F2) : const Color(0xFFECFDF5),
+                            color: isLost
+                                ? (isDark ? const Color(0xFF450A0A) : const Color(0xFFFEF2F2))
+                                : (isDark ? const Color(0xFF064E3B) : const Color(0xFFECFDF5)),
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Text(
                             isLost ? 'LOST' : 'FOUND',
                             style: TextStyle(
-                              color: isLost ? const Color(0xFFB91C1C) : const Color(0xFF047857),
+                              color: isLost
+                                  ? (isDark ? const Color(AppColors.darkDanger) : const Color(0xFFB91C1C))
+                                  : (isDark ? const Color(AppColors.darkSuccess) : const Color(0xFF047857)),
                               fontSize: 9,
                               fontWeight: FontWeight.bold,
                             ),
@@ -99,7 +108,11 @@ class LostFoundBookmarksScreen extends StatelessWidget {
                             item.title,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                              color: isDark ? const Color(AppColors.darkTextPrimary) : const Color(AppColors.textPrimary),
+                            ),
                           ),
                         ),
                       ],
@@ -109,14 +122,30 @@ class LostFoundBookmarksScreen extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(item.location, style: const TextStyle(fontSize: 11.5, color: Color(AppColors.textSecondary))),
+                          Text(
+                            item.location,
+                            style: TextStyle(
+                              fontSize: 11.5,
+                              color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary),
+                            ),
+                          ),
                           const SizedBox(height: 2),
-                          Text(formattedDate, style: const TextStyle(fontSize: 10.5, color: Color(AppColors.textSecondary))),
+                          Text(
+                            formattedDate,
+                            style: TextStyle(
+                              fontSize: 10.5,
+                              color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary),
+                            ),
+                          ),
                         ],
                       ),
                     ),
                     trailing: IconButton(
-                      icon: const Icon(PhosphorIconsFill.bookmark, color: Color(AppColors.primary), size: 20),
+                      icon: Icon(
+                        PhosphorIconsFill.bookmark,
+                        color: isDark ? const Color(AppColors.primaryLight) : const Color(AppColors.primary),
+                        size: 20,
+                      ),
                       onPressed: () async {
                         await firestore.toggleBookmark(item.id, currentUid);
                       },
@@ -138,24 +167,37 @@ class LostFoundBookmarksScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: const [
-            Icon(PhosphorIconsRegular.bookmarkSimple, size: 54, color: Color(0xFF94A3B8)),
-            SizedBox(height: 16),
+          children: [
+            Icon(
+              PhosphorIconsRegular.bookmarkSimple,
+              size: 54,
+              color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(0xFF94A3B8),
+            ),
+            const SizedBox(height: 16),
             Text(
               'No Saved Items',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(AppColors.textPrimary)),
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+                color: isDark ? const Color(AppColors.darkTextPrimary) : const Color(AppColors.textPrimary),
+              ),
             ),
-            SizedBox(height: 6),
+            const SizedBox(height: 6),
             Text(
               'Your bookmarked Lost & Found listings will appear here. Simply tap the bookmark icon on any item card.',
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 13, color: Color(AppColors.textSecondary), height: 1.4),
+              style: TextStyle(
+                fontSize: 13,
+                color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary),
+                height: 1.4,
+              ),
             ),
           ],
         ),

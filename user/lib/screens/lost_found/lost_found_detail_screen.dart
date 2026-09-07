@@ -151,6 +151,7 @@ class _LostFoundDetailScreenState extends State<LostFoundDetailScreen> {
     final firestore = context.read<FirestoreService>();
     final auth = context.read<AuthService>();
     final currentUid = auth.currentUser?.uid ?? 'guest';
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return StreamBuilder<LostFoundItem>(
       stream: firestore.lostFoundItem(widget.itemId),
@@ -178,7 +179,6 @@ class _LostFoundDetailScreenState extends State<LostFoundDetailScreen> {
         final images = item.imageUrls.isNotEmpty ? item.imageUrls : (item.imageUrl != null && item.imageUrl!.isNotEmpty ? [item.imageUrl!] : <String>[]);
 
         return Scaffold(
-          backgroundColor: Colors.white,
           body: Stack(
             children: [
               // Scrollable details contents
@@ -247,7 +247,7 @@ class _LostFoundDetailScreenState extends State<LostFoundDetailScreen> {
                         ],
                       ),
 
-                      // Document contents block
+                        // Document contents block
                       Padding(
                         padding: const EdgeInsets.all(24),
                         child: Column(
@@ -260,16 +260,22 @@ class _LostFoundDetailScreenState extends State<LostFoundDetailScreen> {
                                 Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                                   decoration: BoxDecoration(
-                                    color: item.type == 'lost' ? const Color(0xFFFEF2F2) : const Color(0xFFECFDF5),
+                                    color: item.type == 'lost'
+                                        ? (isDark ? const Color(0xFF450A0A) : const Color(0xFFFEF2F2))
+                                        : (isDark ? const Color(0xFF064E3B) : const Color(0xFFECFDF5)),
                                     borderRadius: BorderRadius.circular(8),
                                     border: Border.all(
-                                      color: item.type == 'lost' ? const Color(0xFFFCA5A5) : const Color(0xFF6EE7B7),
+                                      color: item.type == 'lost'
+                                          ? (isDark ? const Color(0xFF991B1B) : const Color(0xFFFCA5A5))
+                                          : (isDark ? const Color(0xFF047857) : const Color(0xFF6EE7B7)),
                                     ),
                                   ),
                                   child: Text(
                                     item.type.toUpperCase(),
                                     style: TextStyle(
-                                      color: item.type == 'lost' ? const Color(0xFFB91C1C) : const Color(0xFF047857),
+                                      color: item.type == 'lost'
+                                          ? (isDark ? const Color(AppColors.darkDanger) : const Color(0xFFB91C1C))
+                                          : (isDark ? const Color(AppColors.darkSuccess) : const Color(0xFF047857)),
                                       fontSize: 10,
                                       fontWeight: FontWeight.bold,
                                       letterSpacing: 0.8,
@@ -301,13 +307,17 @@ class _LostFoundDetailScreenState extends State<LostFoundDetailScreen> {
                                 // Date badge
                                 Row(
                                   children: [
-                                    const Icon(PhosphorIconsRegular.calendarBlank, size: 14, color: Color(AppColors.textSecondary)),
+                                    Icon(
+                                      PhosphorIconsRegular.calendarBlank,
+                                      size: 14,
+                                      color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary),
+                                    ),
                                     const SizedBox(width: 4),
                                     Text(
                                       DateFormat('MMM d, yyyy').format(item.createdAt),
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         fontSize: 12.5,
-                                        color: Color(AppColors.textSecondary),
+                                        color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary),
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
@@ -320,10 +330,10 @@ class _LostFoundDetailScreenState extends State<LostFoundDetailScreen> {
                             // Main Title
                             Text(
                               item.title,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 22,
                                 fontWeight: FontWeight.w900,
-                                color: Color(AppColors.textPrimary),
+                                color: isDark ? const Color(AppColors.darkTextPrimary) : const Color(AppColors.textPrimary),
                                 letterSpacing: -0.5,
                               ),
                             ),
@@ -336,70 +346,92 @@ class _LostFoundDetailScreenState extends State<LostFoundDetailScreen> {
                                 runSpacing: 8,
                                 children: [
                                   if (item.brand != null)
-                                    _buildMetaChip('Brand: ${item.brand}', PhosphorIconsRegular.tag),
+                                    _buildMetaChip(context, 'Brand: ${item.brand}', PhosphorIconsRegular.tag),
                                   if (item.color != null)
-                                    _buildMetaChip('Color: ${item.color}', PhosphorIconsRegular.palette),
+                                    _buildMetaChip(context, 'Color: ${item.color}', PhosphorIconsRegular.palette),
                                   if (item.uniqueFeatures != null)
-                                    _buildMetaChip('Marking: ${item.uniqueFeatures}', PhosphorIconsRegular.fingerprint),
+                                    _buildMetaChip(context, 'Marking: ${item.uniqueFeatures}', PhosphorIconsRegular.fingerprint),
                                   if (item.isVerified)
-                                    _buildMetaChip('Verified Student', PhosphorIconsRegular.shieldCheck, isPrimary: true),
+                                    _buildMetaChip(context, 'Verified Student', PhosphorIconsRegular.shieldCheck, isPrimary: true),
                                 ],
                               ),
                               const SizedBox(height: 20),
                             ],
 
                             // Description block
-                            const Text(
+                            Text(
                               'Description',
-                              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: Color(AppColors.textPrimary)),
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w800,
+                                color: isDark ? const Color(AppColors.darkTextPrimary) : const Color(AppColors.textPrimary),
+                              ),
                             ),
                             const SizedBox(height: 8),
                             Text(
                               item.description,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 13.5,
                                 height: 1.5,
-                                color: Color(AppColors.textSecondary),
+                                color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary),
                               ),
                             ),
                             const SizedBox(height: 24),
 
                             // Location coordinate details
-                            const Text(
+                            Text(
                               'Location Details',
-                              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: Color(AppColors.textPrimary)),
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w800,
+                                color: isDark ? const Color(AppColors.darkTextPrimary) : const Color(AppColors.textPrimary),
+                              ),
                             ),
                             const SizedBox(height: 10),
                             Container(
                               padding: const EdgeInsets.all(16),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFF8FAFC),
+                                color: isDark ? const Color(AppColors.darkCard) : const Color(0xFFF8FAFC),
                                 borderRadius: BorderRadius.circular(14),
-                                border: Border.all(color: const Color(0xFFEFF1F4)),
+                                border: Border.all(
+                                  color: isDark ? const Color(AppColors.darkBorder) : const Color(AppColors.border),
+                                ),
                               ),
                               child: Row(
                                 children: [
                                   Container(
                                     padding: const EdgeInsets.all(10),
-                                    decoration: const BoxDecoration(
-                                      color: Colors.white,
+                                    decoration: BoxDecoration(
+                                      color: isDark ? const Color(AppColors.darkCardSubtle) : Colors.white,
                                       shape: BoxShape.circle,
                                     ),
-                                    child: const Icon(PhosphorIconsRegular.mapPin, color: Color(AppColors.primary), size: 18),
+                                    child: Icon(
+                                      PhosphorIconsRegular.mapPin,
+                                      color: isDark ? const Color(AppColors.primaryLight) : const Color(AppColors.primary),
+                                      size: 18,
+                                    ),
                                   ),
                                   const SizedBox(width: 14),
                                   Expanded(
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        const Text(
+                                        Text(
                                           'Campus Coordinates',
-                                          style: TextStyle(color: Color(AppColors.textSecondary), fontSize: 10.5, fontWeight: FontWeight.bold),
+                                          style: TextStyle(
+                                            color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary),
+                                            fontSize: 10.5,
+                                            fontWeight: FontWeight.bold,
+                                          ),
                                         ),
                                         const SizedBox(height: 3),
                                         Text(
                                           item.location,
-                                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5, color: Color(AppColors.textPrimary)),
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 13.5,
+                                            color: isDark ? const Color(AppColors.darkTextPrimary) : const Color(AppColors.textPrimary),
+                                          ),
                                         ),
                                       ],
                                     ),
@@ -430,12 +462,16 @@ class _LostFoundDetailScreenState extends State<LostFoundDetailScreen> {
                 child: Container(
                   height: 40,
                   width: 40,
-                  decoration: const BoxDecoration(
-                    color: Colors.white70,
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(AppColors.darkCard).withOpacity(0.9) : Colors.white70,
                     shape: BoxShape.circle,
                   ),
                   child: IconButton(
-                    icon: const Icon(PhosphorIconsRegular.arrowLeft, color: Color(AppColors.textPrimary), size: 20),
+                    icon: Icon(
+                      PhosphorIconsRegular.arrowLeft,
+                      color: isDark ? const Color(AppColors.darkTextPrimary) : const Color(AppColors.textPrimary),
+                      size: 20,
+                    ),
                     onPressed: () => Navigator.pop(context),
                   ),
                 ),
@@ -448,15 +484,18 @@ class _LostFoundDetailScreenState extends State<LostFoundDetailScreen> {
                 right: 0,
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black12,
-                        blurRadius: 10,
-                        offset: Offset(0, -2),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? const Color(AppColors.darkBackground)
+                        : Colors.white,
+                    border: Border(
+                      top: BorderSide(
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? const Color(AppColors.darkBorder)
+                            : const Color(AppColors.border),
+                        width: 1,
                       ),
-                    ],
+                    ),
                   ),
                   child: Row(
                     children: [
@@ -465,13 +504,22 @@ class _LostFoundDetailScreenState extends State<LostFoundDetailScreen> {
                         height: 52,
                         width: 52,
                         decoration: BoxDecoration(
-                          color: const Color(0xFFF1F5F9),
+                          color: Theme.of(context).brightness == Brightness.dark
+                              ? const Color(AppColors.darkCard)
+                              : const Color(0xFFF1F5F9),
                           borderRadius: BorderRadius.circular(14),
+                          border: Border.all(
+                            color: Theme.of(context).brightness == Brightness.dark
+                                ? const Color(AppColors.darkBorder)
+                                : Colors.transparent,
+                          ),
                         ),
                         child: IconButton(
                           icon: Icon(
                             isBookmarked ? PhosphorIconsFill.bookmark : PhosphorIconsRegular.bookmarkSimple,
-                            color: isBookmarked ? const Color(AppColors.primary) : const Color(AppColors.textSecondary),
+                            color: isBookmarked
+                                ? (isDark ? const Color(AppColors.primaryLight) : const Color(AppColors.primary))
+                                : (isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary)),
                           ),
                           onPressed: () async {
                             if (currentUid == 'guest') {
@@ -525,11 +573,14 @@ class _LostFoundDetailScreenState extends State<LostFoundDetailScreen> {
   }
 
   // Small metadata pills
-  Widget _buildMetaChip(String text, IconData icon, {bool isPrimary = false}) {
+  Widget _buildMetaChip(BuildContext context, String text, IconData icon, {bool isPrimary = false}) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: isPrimary ? const Color(0xFFEFF6FF) : const Color(0xFFF1F5F9),
+        color: isPrimary
+            ? (isDark ? const Color(0xFF172554) : const Color(0xFFEFF6FF))
+            : (isDark ? const Color(AppColors.darkCardSubtle) : const Color(0xFFF1F5F9)),
         borderRadius: BorderRadius.circular(999),
       ),
       child: Row(
@@ -538,14 +589,18 @@ class _LostFoundDetailScreenState extends State<LostFoundDetailScreen> {
           Icon(
             icon,
             size: 13,
-            color: isPrimary ? const Color(AppColors.primary) : const Color(AppColors.textSecondary),
+            color: isPrimary
+                ? (isDark ? const Color(AppColors.primaryLight) : const Color(AppColors.primary))
+                : (isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary)),
           ),
           const SizedBox(width: 4),
           Text(
             text,
             style: TextStyle(
               fontSize: 11,
-              color: isPrimary ? const Color(AppColors.primary) : const Color(AppColors.textPrimary),
+              color: isPrimary
+                  ? (isDark ? const Color(AppColors.primaryLight) : const Color(AppColors.primary))
+                  : (isDark ? const Color(AppColors.darkTextPrimary) : const Color(AppColors.textPrimary)),
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -561,12 +616,15 @@ class _LostFoundDetailScreenState extends State<LostFoundDetailScreen> {
     bool isOwner,
     FirestoreService firestore,
   ) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       padding: const EdgeInsets.all(6),
       decoration: BoxDecoration(
-        color: const Color(0xFFFAFBFD),
+        color: isDark ? const Color(AppColors.darkCard) : const Color(0xFFFAFBFD),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFEFF1F4)),
+        border: Border.all(
+          color: isDark ? const Color(AppColors.darkBorder) : const Color(AppColors.border),
+        ),
       ),
       child: Column(
         children: [
@@ -575,24 +633,47 @@ class _LostFoundDetailScreenState extends State<LostFoundDetailScreen> {
               dense: true,
               leading: Icon(
                 item.isResolved ? PhosphorIconsRegular.arrowsLeftRight : PhosphorIconsRegular.check,
-                color: item.isResolved ? Colors.orange : Colors.green,
+                color: item.isResolved ? Colors.orange : (isDark ? const Color(AppColors.darkSuccess) : Colors.green),
               ),
               title: Text(
                 item.isResolved ? 'Mark Listing as Active' : 'Mark Listing as Resolved / Returned',
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                  color: isDark ? const Color(AppColors.darkTextPrimary) : const Color(AppColors.textPrimary),
+                ),
               ),
               subtitle: Text(
                 item.isResolved ? 'Make item searchable again.' : 'Inform local students that this item has been matched.',
-                style: const TextStyle(fontSize: 11),
+                style: TextStyle(
+                  fontSize: 11,
+                  color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary),
+                ),
               ),
               onTap: () => _toggleClaimState(firestore, item),
             ),
           if (!isOwner)
             ListTile(
               dense: true,
-              leading: const Icon(PhosphorIconsRegular.flag, color: Colors.redAccent),
-              title: const Text('Report Incorrect Listing', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-              subtitle: const Text('Report if this post contains fraudulent claims or fake photos.', style: TextStyle(fontSize: 11)),
+              leading: Icon(
+                PhosphorIconsRegular.flag,
+                color: isDark ? const Color(AppColors.darkDanger) : Colors.redAccent,
+              ),
+              title: Text(
+                'Report Incorrect Listing',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                  color: isDark ? const Color(AppColors.darkTextPrimary) : const Color(AppColors.textPrimary),
+                ),
+              ),
+              subtitle: Text(
+                'Report if this post contains fraudulent claims or fake photos.',
+                style: TextStyle(
+                  fontSize: 11,
+                  color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary),
+                ),
+              ),
               onTap: () => _flagIncorrect(firestore),
             ),
         ],
@@ -602,6 +683,7 @@ class _LostFoundDetailScreenState extends State<LostFoundDetailScreen> {
 
   // Similar recommendation lists (Smart Feature)
   Widget _buildSimilarItems(BuildContext context, FirestoreService firestore, LostFoundItem targetItem) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return StreamBuilder<List<LostFoundItem>>(
       stream: firestore.lostFound(targetItem.type),
       builder: (context, snapshot) {
@@ -617,12 +699,12 @@ class _LostFoundDetailScreenState extends State<LostFoundDetailScreen> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'Could this be yours?',
               style: TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w800,
-                color: Color(AppColors.textPrimary),
+                color: isDark ? const Color(AppColors.darkTextPrimary) : const Color(AppColors.textPrimary),
               ),
             ),
             const SizedBox(height: 12),
@@ -634,9 +716,12 @@ class _LostFoundDetailScreenState extends State<LostFoundDetailScreen> {
                 final match = similar[idx];
                 return Card(
                   elevation: 0,
+                  color: Theme.of(context).cardColor,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),
-                    side: const BorderSide(color: Color(0xFFEFF1F4)),
+                    side: BorderSide(
+                      color: isDark ? const Color(AppColors.darkBorder) : const Color(AppColors.border),
+                    ),
                   ),
                   margin: const EdgeInsets.only(bottom: 8),
                   child: ListTile(
@@ -645,17 +730,37 @@ class _LostFoundDetailScreenState extends State<LostFoundDetailScreen> {
                       borderRadius: BorderRadius.circular(8),
                       child: match.imageUrl != null && match.imageUrl!.isNotEmpty
                           ? Image.network(match.imageUrl!, width: 44, height: 44, fit: BoxFit.cover)
-                          : Container(width: 44, height: 44, color: const Color(0xFFF1F5F9), child: const Icon(PhosphorIconsRegular.image, size: 18)),
+                          : Container(
+                              width: 44,
+                              height: 44,
+                              color: isDark ? const Color(AppColors.darkCardSubtle) : const Color(0xFFF1F5F9),
+                              child: Icon(
+                                PhosphorIconsRegular.image,
+                                size: 18,
+                                color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary),
+                              ),
+                            ),
                     ),
                     title: Text(
                       match.title,
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5),
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13.5,
+                        color: isDark ? const Color(AppColors.darkTextPrimary) : const Color(AppColors.textPrimary),
+                      ),
                     ),
                     subtitle: Text(
                       match.location,
-                      style: const TextStyle(fontSize: 11),
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary),
+                      ),
                     ),
-                    trailing: const Icon(PhosphorIconsRegular.caretRight, size: 16),
+                    trailing: Icon(
+                      PhosphorIconsRegular.caretRight,
+                      size: 16,
+                      color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary),
+                    ),
                     onTap: () {
                       // Navigate inside detail screen using replacement pushes
                       Navigator.pushReplacementNamed(

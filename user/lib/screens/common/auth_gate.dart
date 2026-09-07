@@ -14,10 +14,8 @@ class AuthGate extends StatelessWidget {
     final auth = context.read<AuthService>();
     return StreamBuilder<User?>(
       stream: auth.authStateChanges(),
+      initialData: auth.currentUser,
       builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Scaffold(body: Center(child: CircularProgressIndicator()));
-        }
         if (snapshot.data == null) return const OnboardingScreen();
         return const AppShell();
       },

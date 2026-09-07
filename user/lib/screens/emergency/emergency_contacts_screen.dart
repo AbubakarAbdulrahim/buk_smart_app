@@ -130,19 +130,15 @@ class _EmergencyContactsScreenState extends State<EmergencyContactsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
         leading: IconButton(
-          icon: const Icon(PhosphorIconsRegular.arrowLeft, color: Color(AppColors.textPrimary)),
+          icon: const Icon(PhosphorIconsRegular.arrowLeft),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
           'Emergency Contacts',
           style: TextStyle(
             fontWeight: FontWeight.w700,
-            color: Color(AppColors.textPrimary),
           ),
         ),
         centerTitle: true,
@@ -260,11 +256,14 @@ class _EmergencyContactsScreenState extends State<EmergencyContactsScreen> {
               separatorBuilder: (_, __) => const SizedBox(height: 12),
               itemBuilder: (context, index) {
                 final c = _filteredContacts[index];
+                final isDark = Theme.of(context).brightness == Brightness.dark;
                 return Container(
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: Theme.of(context).cardColor,
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: const Color(0xFFEFF1F4)),
+                    border: Border.all(
+                      color: isDark ? const Color(0xFF1E293B) : const Color(0xFFEFF1F4),
+                    ),
                     boxShadow: const [
                       BoxShadow(
                         color: Color(0x040D1B2D),
@@ -281,11 +280,17 @@ class _EmergencyContactsScreenState extends State<EmergencyContactsScreen> {
                         Container(
                           padding: const EdgeInsets.all(10),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFF1F5F9),
+                            color: isDark ? const Color(AppColors.darkCardSubtle) : const Color(0xFFF1F5F9),
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: const Color(0xFFE2E8F0)),
+                            border: Border.all(
+                              color: isDark ? const Color(AppColors.darkBorder) : const Color(0xFFE2E8F0),
+                            ),
                           ),
-                          child: Icon(c.icon, color: const Color(0xFF334155), size: 20),
+                          child: Icon(
+                            c.icon,
+                            color: isDark ? Colors.white60 : const Color(0xFF334155),
+                            size: 20,
+                          ),
                         ),
                         const SizedBox(width: 14),
                         
@@ -306,17 +311,17 @@ class _EmergencyContactsScreenState extends State<EmergencyContactsScreen> {
                               const SizedBox(height: 4),
                               Text(
                                 c.name,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontWeight: FontWeight.w700,
                                   fontSize: 14,
-                                  color: Color(0xFF0F172A),
+                                  color: isDark ? Colors.white : const Color(AppColors.textPrimary),
                                 ),
                               ),
                               const SizedBox(height: 3),
                               Text(
                                 c.description,
-                                style: const TextStyle(
-                                  color: Color(0xFF475569),
+                                style: TextStyle(
+                                  color: isDark ? Colors.white70 : const Color(0xFF475569),
                                   fontSize: 12,
                                   height: 1.35,
                                 ),
@@ -324,8 +329,8 @@ class _EmergencyContactsScreenState extends State<EmergencyContactsScreen> {
                               const SizedBox(height: 6),
                               Text(
                                 c.phone,
-                                style: const TextStyle(
-                                  color: Color(0xFF475569),
+                                style: TextStyle(
+                                  color: isDark ? Colors.white60 : const Color(0xFF475569),
                                   fontWeight: FontWeight.bold,
                                   fontSize: 12,
                                 ),
@@ -366,6 +371,7 @@ class _EmergencyContactsScreenState extends State<EmergencyContactsScreen> {
 
   Widget _filterChip(String label) {
     final isSelected = _filterActive == label;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return GestureDetector(
       onTap: () => setState(() => _filterActive = label),
       child: AnimatedContainer(
@@ -375,7 +381,9 @@ class _EmergencyContactsScreenState extends State<EmergencyContactsScreen> {
           color: isSelected ? const Color(AppColors.primaryDeeper) : Colors.transparent,
           borderRadius: BorderRadius.circular(999),
           border: Border.all(
-            color: isSelected ? Colors.transparent : const Color(0xFFE5E7EB),
+            color: isSelected
+                ? Colors.transparent
+                : (isDark ? const Color(0xFF1E293B) : const Color(0xFFE5E7EB)),
           ),
         ),
         child: Text(

@@ -70,7 +70,7 @@ class _CampusUpdateDetailScreenState extends State<CampusUpdateDetailScreen> wit
 
         if (updateIdx == -1) {
           return Scaffold(
-            appBar: AppBar(elevation: 0, backgroundColor: Colors.white),
+            appBar: AppBar(),
             body: const Center(
               child: Text(
                 'Announcement not found.',
@@ -82,6 +82,7 @@ class _CampusUpdateDetailScreenState extends State<CampusUpdateDetailScreen> wit
 
         final update = updates[updateIdx];
         final readingTime = '${update.content.split(' ').length ~/ 150 + 1} min read';
+        final isDark = Theme.of(context).brightness == Brightness.dark;
 
         // Filter and sort active reactions
         final sortedReactions = update.reactions.entries
@@ -92,19 +93,15 @@ class _CampusUpdateDetailScreenState extends State<CampusUpdateDetailScreen> wit
             .fold(0, (sum, val) => sum + val);
 
         return Scaffold(
-          backgroundColor: const Color(0xFFF8FAFC),
           appBar: AppBar(
-            backgroundColor: Colors.white,
-            elevation: 0,
             leading: IconButton(
-              icon: const Icon(PhosphorIconsRegular.arrowLeft, color: Color(AppColors.textPrimary)),
+              icon: const Icon(PhosphorIconsRegular.arrowLeft),
               onPressed: () => Navigator.pop(context),
             ),
             title: Text(
               update.tag,
               style: const TextStyle(
                 fontWeight: FontWeight.w800,
-                color: Color(AppColors.textPrimary),
                 fontSize: 18,
               ),
             ),
@@ -209,19 +206,25 @@ class _CampusUpdateDetailScreenState extends State<CampusUpdateDetailScreen> wit
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: Theme.of(context).cardColor,
                             borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: const Color(0xFFEFF1F4)),
+                            border: Border.all(
+                              color: isDark ? const Color(AppColors.darkBorder) : const Color(AppColors.border),
+                            ),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(PhosphorIconsRegular.calendarBlank, color: Color(AppColors.textSecondary), size: 13),
+                              Icon(
+                                PhosphorIconsRegular.calendarBlank,
+                                color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary),
+                                size: 13,
+                              ),
                               const SizedBox(width: 4),
                               Text(
                                 update.date,
-                                style: const TextStyle(
-                                  color: Color(AppColors.textSecondary),
+                                style: TextStyle(
+                                  color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary),
                                   fontSize: 11,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -234,9 +237,11 @@ class _CampusUpdateDetailScreenState extends State<CampusUpdateDetailScreen> wit
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: Theme.of(context).cardColor,
                             borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: const Color(0xFFEFF1F4)),
+                            border: Border.all(
+                              color: isDark ? const Color(AppColors.darkBorder) : const Color(AppColors.border),
+                            ),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
@@ -245,8 +250,8 @@ class _CampusUpdateDetailScreenState extends State<CampusUpdateDetailScreen> wit
                               const SizedBox(width: 4),
                               Text(
                                 readingTime,
-                                style: const TextStyle(
-                                  color: Color(AppColors.textSecondary),
+                                style: TextStyle(
+                                  color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary),
                                   fontSize: 11,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -259,12 +264,12 @@ class _CampusUpdateDetailScreenState extends State<CampusUpdateDetailScreen> wit
                     const SizedBox(height: 24),
 
                     // 3. Message Details Main block
-                    const Text(
+                    Text(
                       'ANNOUNCEMENT BRIEF',
                       style: TextStyle(
                         fontWeight: FontWeight.w800,
                         fontSize: 12,
-                        color: Color(AppColors.textSecondary),
+                        color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary),
                         letterSpacing: 0.5,
                       ),
                     ),
@@ -273,23 +278,27 @@ class _CampusUpdateDetailScreenState extends State<CampusUpdateDetailScreen> wit
                       width: double.infinity,
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: Theme.of(context).cardColor,
                         borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: const Color(0xFFEFF1F4)),
-                        boxShadow: const [
-                          BoxShadow(
-                            color: Color(0x020D1B2D),
-                            blurRadius: 10,
-                            offset: Offset(0, 4),
-                          ),
-                        ],
+                        border: Border.all(
+                          color: isDark ? const Color(AppColors.darkBorder) : const Color(AppColors.border),
+                        ),
+                        boxShadow: isDark
+                            ? []
+                            : const [
+                                BoxShadow(
+                                  color: Color(0x020D1B2D),
+                                  blurRadius: 10,
+                                  offset: Offset(0, 4),
+                                ),
+                              ],
                       ),
                       child: Text(
                         update.content,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 14,
-                          color: Color(AppColors.textPrimary),
                           height: 1.6,
+                          color: isDark ? const Color(AppColors.darkTextPrimary) : const Color(AppColors.textPrimary),
                         ),
                       ),
                     ),
@@ -297,10 +306,10 @@ class _CampusUpdateDetailScreenState extends State<CampusUpdateDetailScreen> wit
 
                     // 4. Reactions Summary block
                     if (totalReactions > 0) ...[
-                      const Text(
+                      Text(
                         'COMMUNITY REACTIONS',
                         style: TextStyle(
-                          color: Color(AppColors.textSecondary),
+                          color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary),
                           fontWeight: FontWeight.w800,
                           fontSize: 12,
                           letterSpacing: 0.5,
@@ -318,19 +327,25 @@ class _CampusUpdateDetailScreenState extends State<CampusUpdateDetailScreen> wit
                           return Container(
                             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
                             decoration: BoxDecoration(
-                              color: isUserRep ? const Color(0xFFEFF6FF) : Colors.white,
+                              color: isUserRep
+                                  ? (isDark ? const Color(0xFF172554) : const Color(0xFFEFF6FF))
+                                  : (isDark ? const Color(AppColors.darkCardSubtle) : Theme.of(context).cardColor),
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
-                                color: isUserRep ? const Color(0xFFBFDBFE) : const Color(0xFFEFF1F4),
+                                color: isUserRep
+                                    ? (isDark ? const Color(0xFF1D4ED8) : const Color(0xFFBFDBFE))
+                                    : (isDark ? const Color(AppColors.darkBorder) : const Color(AppColors.border)),
                                 width: 1,
                               ),
-                              boxShadow: const [
-                                BoxShadow(
-                                  color: Color(0x020D1B2D),
-                                  blurRadius: 4,
-                                  offset: Offset(0, 2),
-                                ),
-                              ],
+                              boxShadow: isDark
+                                  ? []
+                                  : const [
+                                      BoxShadow(
+                                        color: Color(0x020D1B2D),
+                                        blurRadius: 4,
+                                        offset: Offset(0, 2),
+                                      ),
+                                    ],
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
@@ -340,7 +355,9 @@ class _CampusUpdateDetailScreenState extends State<CampusUpdateDetailScreen> wit
                                 Text(
                                   '$count',
                                   style: TextStyle(
-                                    color: isUserRep ? const Color(AppColors.primary) : const Color(AppColors.textPrimary),
+                                    color: isUserRep
+                                        ? const Color(AppColors.primary)
+                                        : (isDark ? const Color(AppColors.darkTextPrimary) : const Color(AppColors.textPrimary)),
                                     fontSize: 12,
                                     fontWeight: FontWeight.bold,
                                   ),
@@ -366,9 +383,11 @@ class _CampusUpdateDetailScreenState extends State<CampusUpdateDetailScreen> wit
                     alignment: Alignment.bottomCenter,
                     child: Container(
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: Theme.of(context).cardColor,
                         borderRadius: BorderRadius.circular(999),
-                        border: Border.all(color: const Color(0xFFEFF1F4)),
+                        border: Border.all(
+                          color: isDark ? const Color(AppColors.darkBorder) : const Color(AppColors.border),
+                        ),
                         boxShadow: const [
                           BoxShadow(
                             color: Color(0x1A0F172A),
@@ -389,7 +408,9 @@ class _CampusUpdateDetailScreenState extends State<CampusUpdateDetailScreen> wit
                                 duration: const Duration(milliseconds: 150),
                                 padding: const EdgeInsets.all(8),
                                 decoration: BoxDecoration(
-                                  color: isSelected ? const Color(0xFFEFF6FF) : Colors.transparent,
+                                  color: isSelected
+                                      ? (isDark ? const Color(0xFF172554) : const Color(0xFFEFF6FF))
+                                      : Colors.transparent,
                                   shape: BoxShape.circle,
                                 ),
                                 child: Text(
@@ -414,15 +435,21 @@ class _CampusUpdateDetailScreenState extends State<CampusUpdateDetailScreen> wit
                 child: Container(
                   padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
                   decoration: BoxDecoration(
-                    color: Colors.white,
-                    border: Border(top: BorderSide(color: const Color(0xFFEFF1F4))),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Color(0x04000000),
-                        blurRadius: 16,
-                        offset: Offset(0, -4),
+                    color: Theme.of(context).cardColor,
+                    border: Border(
+                      top: BorderSide(
+                        color: isDark ? const Color(AppColors.darkBorder) : const Color(AppColors.border),
                       ),
-                    ],
+                    ),
+                    boxShadow: isDark
+                        ? []
+                        : const [
+                            BoxShadow(
+                              color: Color(0x04000000),
+                              blurRadius: 16,
+                              offset: Offset(0, -4),
+                            ),
+                          ],
                   ),
                   child: Row(
                     children: [
@@ -431,23 +458,27 @@ class _CampusUpdateDetailScreenState extends State<CampusUpdateDetailScreen> wit
                           onPressed: _toggleEmojiPicker,
                           icon: Icon(
                             update.userReaction != null ? PhosphorIconsRegular.smiley : PhosphorIconsRegular.plus,
-                            color: const Color(AppColors.primary),
+                            color: isDark ? const Color(AppColors.primaryLight) : const Color(AppColors.primary),
                             size: 16,
                           ),
                           label: Text(
                             update.userReaction != null
                                 ? 'Reaction: ${update.userReaction}'
                                 : 'Select Reaction',
-                            style: const TextStyle(
-                              color: Color(AppColors.primary),
+                            style: TextStyle(
+                              color: isDark ? const Color(AppColors.primaryLight) : const Color(AppColors.primary),
                               fontWeight: FontWeight.bold,
                               fontSize: 13,
                             ),
                           ),
                           style: OutlinedButton.styleFrom(
-                            backgroundColor: update.userReaction != null ? const Color(0xFFEFF6FF) : Colors.white,
+                            backgroundColor: update.userReaction != null
+                                ? (isDark ? const Color(0xFF172554) : const Color(0xFFEFF6FF))
+                                : Theme.of(context).cardColor,
                             side: BorderSide(
-                              color: update.userReaction != null ? const Color(0xFFBFDBFE) : const Color(0xFFEFF1F4),
+                              color: update.userReaction != null
+                                  ? (isDark ? const Color(0xFF1D4ED8) : const Color(0xFFBFDBFE))
+                                  : (isDark ? const Color(AppColors.darkBorder) : const Color(AppColors.border)),
                               width: 1,
                             ),
                             padding: const EdgeInsets.symmetric(vertical: 14),

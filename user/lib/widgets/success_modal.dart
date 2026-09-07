@@ -54,6 +54,7 @@ class _SuccessModalContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Material(
       color: Colors.transparent,
       child: Container(
@@ -61,11 +62,14 @@ class _SuccessModalContent extends StatelessWidget {
         margin: const EdgeInsets.symmetric(horizontal: 28),
         padding: const EdgeInsets.fromLTRB(24, 28, 24, 22),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).cardColor,
           borderRadius: BorderRadius.circular(28),
+          border: Border.all(
+            color: isDark ? const Color(AppColors.darkBorder) : Colors.transparent,
+          ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.18),
+              color: Colors.black.withOpacity(isDark ? 0.35 : 0.18),
               blurRadius: 34,
               offset: const Offset(0, 18),
             ),
@@ -109,8 +113,8 @@ class _SuccessModalContent extends StatelessWidget {
             Text(
               title,
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: Color(AppColors.textPrimary),
+              style: TextStyle(
+                color: isDark ? const Color(AppColors.darkTextPrimary) : const Color(AppColors.textPrimary),
                 fontSize: 24,
                 fontWeight: FontWeight.w800,
               ),
@@ -119,8 +123,8 @@ class _SuccessModalContent extends StatelessWidget {
             Text(
               message,
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: Color(AppColors.textSecondary),
+              style: TextStyle(
+                color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary),
                 fontSize: 14,
                 height: 1.45,
                 fontWeight: FontWeight.w500,

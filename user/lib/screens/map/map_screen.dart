@@ -78,15 +78,13 @@ class _MapScreenState extends State<MapScreen> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text('BUK Campus Map'),
         centerTitle: true,
-        backgroundColor: Colors.white,
         elevation: 0,
         leading: widget.showBack
             ? IconButton(
-                icon: const Icon(PhosphorIconsRegular.arrowLeft, color: Color(AppColors.textPrimary)),
+                icon: const Icon(PhosphorIconsRegular.arrowLeft),
                 onPressed: () => Navigator.pop(context),
               )
             : null,

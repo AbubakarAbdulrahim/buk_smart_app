@@ -51,15 +51,23 @@ class SectionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       padding: padding,
       decoration: BoxDecoration(
-        color: const Color(AppColors.card),
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(AppColors.border), width: 1.0),
-        boxShadow: const [
-          BoxShadow(color: Color(0x060B1A2B), blurRadius: 16, offset: Offset(0, 6)),
-        ],
+        border: Border.all(
+          color: isDark
+              ? const Color(AppColors.darkBorder)
+              : const Color(AppColors.border),
+          width: 1.0,
+        ),
+        boxShadow: isDark
+            ? []
+            : const [
+                BoxShadow(color: Color(0x020B1A2B), blurRadius: 16, offset: Offset(0, 6)),
+              ],
       ),
       child: child,
     );
@@ -139,6 +147,7 @@ class AppInput extends StatelessWidget {
   }
 }
 
+// Intentionally fixed color — excluded from dark mode by design
 class QuickActionCard extends StatefulWidget {
   const QuickActionCard({
     super.key,
@@ -167,6 +176,7 @@ class _QuickActionCardState extends State<QuickActionCard> {
   Widget build(BuildContext context) {
     final active = _isPressed || _isHovered;
 
+    // Intentionally fixed vibrant color gradient — excluded from dark mode by design
     final startColor = widget.accentColor;
     final endColor = Color.alphaBlend(Colors.black.withOpacity(0.18), widget.accentColor);
 

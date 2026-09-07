@@ -14,6 +14,10 @@ import '../../screens/analytics/analytics_screen.dart';
 import '../../screens/updates/campus_updates_screen.dart';
 import '../../screens/updates/campus_update_detail_screen.dart';
 import '../../screens/profile/profile_screen.dart';
+import '../../screens/profile/settings_screen.dart';
+import '../../screens/profile/change_password_screen.dart';
+import '../../screens/profile/terms_of_service_screen.dart';
+import '../../screens/profile/privacy_policy_screen.dart';
 import '../../screens/resources/resources_screen.dart';
 import '../../screens/report/cloudinary_upload_demo_screen.dart';
 import '../../screens/lost_found/lost_found_detail_screen.dart';
@@ -50,6 +54,10 @@ class AppRoutes {
   static const lostFoundWizard = '/lost-found/report';
   static const lostFoundBookmarks = '/lost-found/bookmarks';
   static const smartAi = '/smart-ai';
+  static const profileSettings = '/profile/settings';
+  static const changePassword = '/profile/change-password';
+  static const termsOfService = '/terms-of-service';
+  static const privacyPolicy = '/privacy-policy';
 
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
     return MaterialPageRoute(
@@ -108,6 +116,14 @@ class AppRoutes {
             return const LostFoundBookmarksScreen();
           case smartAi:
             return const SmartAiPage();
+          case profileSettings:
+            return const SettingsScreen();
+          case changePassword:
+            return const ChangePasswordScreen();
+          case termsOfService:
+            return const TermsOfServiceScreen();
+          case privacyPolicy:
+            return const PrivacyPolicyScreen();
           default:
             return const SplashScreen();
         }

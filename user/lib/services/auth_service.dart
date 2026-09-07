@@ -18,5 +18,21 @@ class AuthService {
     await _auth.sendPasswordResetEmail(email: email.trim());
   }
 
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    final user = currentUser;
+    if (user == null || user.email == null) {
+      throw Exception('No authenticated user found.');
+    }
+    final credential = EmailAuthProvider.credential(
+      email: user.email!,
+      password: currentPassword.trim(),
+    );
+    await user.reauthenticateWithCredential(credential);
+    await user.updatePassword(newPassword.trim());
+  }
+
   Future<void> signOut() => _auth.signOut();
 }
