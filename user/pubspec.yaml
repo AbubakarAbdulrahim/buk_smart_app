@@ -53,7 +53,7 @@ flutter:
     - assets/images/buk_student.jpg
     - assets/images/buk_square.jpg
     - assets/icon/bukapp_logo.png
-    - .env
+    - assets/env.json
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

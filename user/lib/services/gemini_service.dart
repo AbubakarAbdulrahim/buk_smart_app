@@ -86,9 +86,14 @@ class GeminiService {
         }
 
         if (response.statusCode != 200) {
-          final errBody = jsonDecode(response.body);
-          final errMsg = errBody['error']?['message'] ?? 'Failed to communicate with AI service.';
-          throw Exception(errMsg);
+          try {
+            final errBody = jsonDecode(response.body);
+            final errMsg = errBody['error']?['message'] ?? 'Failed to communicate with AI service.';
+            throw Exception(errMsg);
+          } catch (e) {
+            if (e is Exception && e.toString().contains('Failed to communicate')) rethrow;
+            throw Exception('AI service returned HTTP ${response.statusCode}');
+          }
         }
 
         final data = jsonDecode(response.body);

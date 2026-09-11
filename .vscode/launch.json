@@ -6,7 +6,7 @@
       "cwd": "user",
       "request": "launch",
       "type": "dart",
-      "toolArgs": [
+      "args": [
         "--dart-define-from-file=.env"
       ]
     }

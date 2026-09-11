@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/theme/app_colors.dart';
+import '../../config/gemini_config.dart';
 import '../../services/auth_service.dart';
 import '../../services/gemini_service.dart';
 import '../../services/smart_ai_repository.dart';
@@ -266,7 +267,11 @@ class _SmartAiPageState extends State<SmartAiPage> {
     String friendlyError = 'An unexpected error occurred. Please try again later.';
     final errMsg = err.toString().toLowerCase();
 
-    if (errMsg.contains('api key') || errMsg.contains('not configured')) {
+    if (errMsg.contains('not configured') || (errMsg.contains('api key') && GeminiConfig.apiKey.isEmpty)) {
+      friendlyError = 'AI service configuration error: API key is not loaded. Please fully stop and rebuild the app (e.g. flutter run) to bundle the configuration.';
+    } else if (errMsg.contains('api key not valid') || errMsg.contains('api_key_invalid')) {
+      friendlyError = 'API key is invalid. Please check your GEMINI_API_KEY in .env.';
+    } else if (errMsg.contains('api key')) {
       friendlyError = 'AI service configuration error. Please try again later.';
     } else if (errMsg.contains('quota') || errMsg.contains('429') || errMsg.contains('exhausted') || errMsg.contains('resource_exhausted')) {
       friendlyError = 'Service is temporarily busy. Please wait a moment and try again.';

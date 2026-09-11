@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -5,7 +6,7 @@ import 'package:flutter/services.dart';
 class GeminiConfig {
   static String? _cachedKey;
 
-  /// Loads the API key into memory from compile-time defines, bundled .env asset, or local file.
+  /// Loads the API key into memory from compile-time defines, bundled assets, or local environment.
   static Future<void> init() async {
     if (_cachedKey != null && _cachedKey!.isNotEmpty) return;
 
@@ -13,21 +14,40 @@ class GeminiConfig {
     const compileTimeKey = String.fromEnvironment('GEMINI_API_KEY');
     if (compileTimeKey.trim().isNotEmpty) {
       _cachedKey = compileTimeKey.trim();
+      debugPrint('[GeminiConfig] Loaded key from compile-time define');
       return;
     }
 
-    // 2. Check bundled asset (.env included in pubspec assets)
-    try {
-      final assetContent = await rootBundle.loadString('.env');
-      final parsed = _parseKeyFromContent(assetContent);
-      if (parsed != null && parsed.isNotEmpty) {
-        _cachedKey = parsed;
-        return;
-      }
-    } catch (_) {}
+    // 2. Check bundled assets (assets/env.json is packaged into the APK/IPA by Flutter)
+    for (final assetPath in ['assets/env.json', 'assets/.env.json', '.env']) {
+      try {
+        final assetContent = await rootBundle.loadString(assetPath);
+        if (assetPath.endsWith('.json')) {
+          final Map<String, dynamic> jsonMap = jsonDecode(assetContent);
+          final key = jsonMap['GEMINI_API_KEY'] as String?;
+          if (key != null && key.trim().isNotEmpty) {
+            _cachedKey = key.trim();
+            debugPrint('[GeminiConfig] Loaded key from asset: $assetPath');
+            return;
+          }
+        } else {
+          final parsed = _parseKeyFromContent(assetContent);
+          if (parsed != null && parsed.isNotEmpty) {
+            _cachedKey = parsed;
+            debugPrint('[GeminiConfig] Loaded key from asset: $assetPath');
+            return;
+          }
+        }
+      } catch (_) {}
+    }
 
-    // 3. Fallback to local file on disk (for desktop and tests)
+    // 3. Fallback to local file on disk (for desktop, emulator host, and tests)
     _cachedKey = _readLocalEnvFile();
+    if (_cachedKey != null && _cachedKey!.isNotEmpty) {
+      debugPrint('[GeminiConfig] Loaded key from local disk file');
+    } else {
+      debugPrint('[GeminiConfig] WARNING: No API key found in define, asset, or local file');
+    }
   }
 
   /// Retrieves the Gemini API key synchronously if already loaded.
@@ -60,8 +80,17 @@ class GeminiConfig {
   static String? _readLocalEnvFile() {
     if (kIsWeb) return null;
     try {
-      final candidates = ['.env', 'user/.env', '../.env'];
-      for (final p in candidates) {
+      // Check assets/env.json on host
+      for (final p in ['assets/env.json', 'user/assets/env.json', '../assets/env.json']) {
+        final file = File(p);
+        if (file.existsSync()) {
+          final data = jsonDecode(file.readAsStringSync());
+          final k = data['GEMINI_API_KEY'] as String?;
+          if (k != null && k.trim().isNotEmpty) return k.trim();
+        }
+      }
+      // Check .env files on host
+      for (final p in ['.env', 'user/.env', '../.env']) {
         final file = File(p);
         if (file.existsSync()) {
           final parsed = _parseKeyFromContent(file.readAsStringSync());
