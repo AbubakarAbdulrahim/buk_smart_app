@@ -1,7 +1,10 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
+import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
+import '../../models/incident.dart';
+import '../../services/firestore_service.dart';
 
 class AnalyticsScreen extends StatefulWidget {
   const AnalyticsScreen({super.key});
@@ -12,10 +15,48 @@ class AnalyticsScreen extends StatefulWidget {
 
 class _AnalyticsScreenState extends State<AnalyticsScreen> {
   String _activeTab = 'Yearly';
-  DateTimeRange _selectedRange = DateTimeRange(
-    start: DateTime(2026, 1, 1),
-    end: DateTime(2026, 7, 2),
-  );
+  late DateTimeRange _selectedRange;
+
+  @override
+  void initState() {
+    super.initState();
+    final now = DateTime.now();
+    _selectedRange = DateTimeRange(
+      start: DateTime(now.year, 1, 1),
+      end: DateTime(now.year, 12, 31, 23, 59, 59),
+    );
+  }
+
+  void _onTabSelected(String label) {
+    final now = DateTime.now();
+    if (label == 'Daily') {
+      setState(() {
+        _activeTab = label;
+        _selectedRange = DateTimeRange(
+          start: DateTime(now.year, now.month, now.day),
+          end: DateTime(now.year, now.month, now.day, 23, 59, 59),
+        );
+      });
+    } else if (label == 'Monthly') {
+      setState(() {
+        _activeTab = label;
+        _selectedRange = DateTimeRange(
+          start: DateTime(now.year, now.month, 1),
+          end: DateTime(now.year, now.month + 1, 0, 23, 59, 59),
+        );
+      });
+    } else if (label == 'Yearly') {
+      setState(() {
+        _activeTab = label;
+        _selectedRange = DateTimeRange(
+          start: DateTime(now.year, 1, 1),
+          end: DateTime(now.year, 12, 31, 23, 59, 59),
+        );
+      });
+    } else if (label == 'Custom') {
+      _selectDateRange();
+    }
+  }
 
   void _selectDateRange() async {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -37,7 +78,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                     secondary: Color(AppColors.primaryLight),
                     onSecondary: Colors.white,
                   ),
-                  dialogBackgroundColor: const Color(AppColors.darkCard),
+                  dialogTheme: const DialogThemeData(backgroundColor: Color(AppColors.darkCard)),
                   appBarTheme: const AppBarTheme(
                     backgroundColor: Color(AppColors.darkCard),
                     foregroundColor: Color(AppColors.darkTextPrimary),
@@ -48,11 +89,11 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                     headerBackgroundColor: const Color(AppColors.darkCard),
                     headerForegroundColor: const Color(AppColors.darkTextPrimary),
                     surfaceTintColor: Colors.transparent,
-                    dayForegroundColor: MaterialStateProperty.resolveWith((states) {
-                      if (states.contains(MaterialState.selected)) {
+                    dayForegroundColor: WidgetStateProperty.resolveWith((states) {
+                      if (states.contains(WidgetState.selected)) {
                         return Colors.white;
                       }
-                      if (states.contains(MaterialState.disabled)) {
+                      if (states.contains(WidgetState.disabled)) {
                         return const Color(AppColors.darkTextMuted);
                       }
                       return const Color(AppColors.darkTextPrimary);
@@ -78,7 +119,11 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     );
     if (picked != null && picked != _selectedRange) {
       setState(() {
-        _selectedRange = picked;
+        _selectedRange = DateTimeRange(
+          start: DateTime(picked.start.year, picked.start.month, picked.start.day),
+          end: DateTime(picked.end.year, picked.end.month, picked.end.day, 23, 59, 59),
+        );
+        _activeTab = 'Custom';
       });
     }
   }
@@ -90,9 +135,31 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     return '${months[start.month - 1]} ${start.day}, ${start.year} - ${months[end.month - 1]} ${end.day}, ${end.year}';
   }
 
+  List<int> _calculateTrendPoints(List<Incident> incidents, int numPoints) {
+    if (numPoints <= 1) return [incidents.length];
+    final startMs = _selectedRange.start.millisecondsSinceEpoch;
+    final endMs = _selectedRange.end.millisecondsSinceEpoch;
+    final span = math.max(1, endMs - startMs);
+    final step = span / (numPoints - 1);
+    final buckets = List<int>.filled(numPoints, 0);
+
+    for (final inc in incidents) {
+      final t = inc.createdAt.millisecondsSinceEpoch;
+      if (t >= startMs && t <= endMs) {
+        int idx = ((t - startMs) / step).floor();
+        if (idx >= numPoints) idx = numPoints - 1;
+        if (idx < 0) idx = 0;
+        buckets[idx]++;
+      }
+    }
+    return buckets;
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final firestore = context.read<FirestoreService>();
+
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -106,303 +173,367 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
           ),
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.only(bottom: 30),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Timeline switcher selector
-            Container(
-              color: isDark ? const Color(AppColors.darkBackground) : Theme.of(context).cardColor,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: isDark
-                      ? const Color(AppColors.darkCardSubtle)
-                      : const Color(0xFFF1F5F9),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                padding: const EdgeInsets.all(4),
-                child: Row(
-                  children: [
-                    _buildSwitchTab('Daily'),
-                    _buildSwitchTab('Monthly'),
-                    _buildSwitchTab('Yearly'),
-                    _buildSwitchTab('Custom'),
-                  ],
-                ),
-              ),
-            ),
+      body: StreamBuilder<List<Incident>>(
+        stream: firestore.allIncidents(),
+        builder: (context, snapshot) {
+          final all = snapshot.data ?? [];
+          final start = DateTime(_selectedRange.start.year, _selectedRange.start.month, _selectedRange.start.day);
+          final end = DateTime(_selectedRange.end.year, _selectedRange.end.month, _selectedRange.end.day, 23, 59, 59, 999);
+          final filtered = all.where((inc) {
+            return inc.createdAt.isAfter(start.subtract(const Duration(milliseconds: 1))) &&
+                inc.createdAt.isBefore(end.add(const Duration(milliseconds: 1)));
+          }).toList();
 
-            // Date pill banner
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-              child: Container(
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: isDark
-                      ? const Color(AppColors.darkCard)
-                      : const Color(0xFFEFF6FF),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: isDark
-                        ? const Color(AppColors.darkBorder)
-                        : const Color(0xFFDBEAFE),
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      PhosphorIconsRegular.calendar,
-                      color: isDark ? const Color(AppColors.primaryLight) : const Color(AppColors.primaryDeeper),
-                      size: 20,
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        _formatDateRange(),
-                        style: TextStyle(
-                          color: isDark
-                              ? const Color(AppColors.darkTextPrimary)
-                              : const Color(AppColors.primaryDeeper),
-                          fontWeight: FontWeight.w600,
-                          fontSize: 13,
-                        ),
-                      ),
-                    ),
-                    InkWell(
-                      onTap: _selectDateRange,
-                      child: Text(
-                        'Change',
-                        style: TextStyle(
-                          color: isDark
-                              ? const Color(AppColors.primaryLight)
-                              : const Color(AppColors.primaryDeeper),
-                          fontWeight: FontWeight.bold,
-                          fontSize: 13,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+          final totalCount = filtered.length;
+          final verifiedCount = filtered.where((i) => i.isVerified).length;
+          final resolvedCount = filtered.where((i) => i.isResolved || i.status.toLowerCase() == 'resolved').length;
+          final resolutionRate = totalCount == 0 ? '0.0%' : '${((resolvedCount / totalCount) * 100).toStringAsFixed(1)}%';
 
-            // 2x2 Metric Cards Grid
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: GridView.count(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                crossAxisCount: 2,
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
-                childAspectRatio: 2.22, // Halved card height ratio (horizontal layout)
-                children: [
-                  _buildMetricCard(
-                    title: 'Total Incidents',
-                    value: '10',
-                    icon: PhosphorIconsRegular.megaphone,
-                    iconColor: const Color(0xFFF59E0B), // Amber (warn/pending status)
-                  ),
-                  _buildMetricCard(
-                    title: 'Verified',
-                    value: '4',
-                    icon: PhosphorIconsRegular.sealCheck,
-                    iconColor: const Color(0xFF3B82F6), // Royal Blue (trusted status)
-                  ),
-                  _buildMetricCard(
-                    title: 'Resolved',
-                    value: '3',
-                    icon: PhosphorIconsRegular.checkCircle,
-                    iconColor: const Color(0xFF10B981), // Emerald Green (completion status)
-                  ),
-                  _buildMetricCard(
-                    title: 'Resolution Rate',
-                    value: '30.0%',
-                    icon: PhosphorIconsRegular.trendUp,
-                    iconColor: const Color(0xFF6366F1), // Indigo (performance stat)
-                  ),
-                ],
-              ),
-            ),
+          // Incidents by category palette
+          final categoryPalette = <String, Color>{
+            'Insecurity': const Color(0xFFEF4444), // Red
+            'Theft': const Color(0xFFF59E0B), // Amber
+            'Emergency': const Color(0xFFEC4899), // Pink
+            'Power Outage': const Color(0xFF6366F1), // Indigo
+            'Water Outage': const Color(0xFF06B6D4), // Cyan
+            'Fire Outbreak': const Color(0xFFF97316), // Orange
+            'Waste Dumps': const Color(0xFF84CC16), // Lime
+            'Other': const Color(0xFF8B5CF6), // Purple
+          };
 
-            // Line/Spline Trends Section
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(18),
-                decoration: BoxDecoration(
+          final Map<String, int> catCounts = {};
+          for (final inc in filtered) {
+            final cat = inc.type.trim().isEmpty ? 'Other' : inc.type.trim();
+            catCounts[cat] = (catCounts[cat] ?? 0) + 1;
+          }
+
+          final sortedCats = catCounts.entries.toList()
+            ..sort((a, b) => b.value.compareTo(a.value));
+
+          // Locations
+          final Map<String, int> locCounts = {};
+          for (final inc in filtered) {
+            final loc = inc.location.trim().isEmpty ? 'Unknown' : inc.location.trim();
+            locCounts[loc] = (locCounts[loc] ?? 0) + 1;
+          }
+          final sortedLocs = locCounts.entries.toList()
+            ..sort((a, b) => b.value.compareTo(a.value));
+
+          final trendPoints = _calculateTrendPoints(filtered, 7);
+
+          return SingleChildScrollView(
+            padding: const EdgeInsets.only(bottom: 30),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Timeline switcher selector
+                Container(
                   color: isDark ? const Color(AppColors.darkBackground) : Theme.of(context).cardColor,
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: isDark
-                        ? const Color(AppColors.darkBorder)
-                        : const Color(0xFFEFF1F4),
-                  ),
-                  boxShadow: isDark
-                      ? []
-                      : const [
-                          BoxShadow(color: Color(0x040D1B2D), blurRadius: 12, offset: Offset(0, 4)),
-                        ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Incident Trends',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w700,
-                        fontSize: 16,
-                        color: isDark ? const Color(AppColors.darkTextPrimary) : const Color(AppColors.textPrimary),
-                      ),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? const Color(AppColors.darkCardSubtle)
+                          : const Color(0xFFF1F5F9),
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                    const SizedBox(height: 20),
-                    SizedBox(
-                      height: 160,
-                      width: double.infinity,
-                      child: CustomPaint(
-                        painter: IncidentTrendsPainter(
-                          isDark: isDark,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            // Donut Categories Chart Section (Pie Chart Card)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(18),
-                decoration: BoxDecoration(
-                  color: isDark ? const Color(AppColors.darkBackground) : Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: isDark ? const Color(AppColors.darkBorder) : const Color(0xFFEFF1F4),
-                  ),
-                  boxShadow: isDark
-                      ? []
-                      : const [
-                          BoxShadow(color: Color(0x040D1B2D), blurRadius: 12, offset: Offset(0, 4)),
-                        ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Incidents by Category',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w700,
-                        fontSize: 16,
-                        color: isDark ? const Color(AppColors.darkTextPrimary) : const Color(AppColors.textPrimary),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    Row(
+                    padding: const EdgeInsets.all(4),
+                    child: Row(
                       children: [
+                        _buildSwitchTab('Daily'),
+                        _buildSwitchTab('Monthly'),
+                        _buildSwitchTab('Yearly'),
+                        _buildSwitchTab('Custom'),
+                      ],
+                    ),
+                  ),
+                ),
+
+                // Date pill banner
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                  child: Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? const Color(AppColors.darkCard)
+                          : const Color(0xFFEFF6FF),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: isDark
+                            ? const Color(AppColors.darkBorder)
+                            : const Color(0xFFDBEAFE),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          PhosphorIconsRegular.calendar,
+                          color: isDark ? const Color(AppColors.primaryLight) : const Color(AppColors.primaryDeeper),
+                          size: 20,
+                        ),
+                        const SizedBox(width: 12),
                         Expanded(
-                          flex: 5,
-                          child: AspectRatio(
-                            aspectRatio: 1,
-                            child: CustomPaint(
-                              painter: DonutChartPainter(
-                                values: const [4, 2, 1, 2, 1], // Insecurity=4, Theft=2, Emergency=1, Power=2, Water=1 (Total=10)
-                                colors: const [
-                                  Color(0xFFEF4444), // Insecurity (Red)
-                                  Color(0xFFF59E0B), // Theft (Amber)
-                                  Color(0xFFEC4899), // Emergency (Pink)
-                                  Color(0xFF6366F1), // Power Outage (Indigo)
-                                  Color(0xFF06B6D4), // Water Outage (Cyan)
-                                ],
-                                backgroundColor: isDark ? const Color(AppColors.darkBackground) : Colors.white,
-                              ),
+                          child: Text(
+                            _formatDateRange(),
+                            style: TextStyle(
+                              color: isDark
+                                  ? const Color(AppColors.darkTextPrimary)
+                                  : const Color(AppColors.primaryDeeper),
+                              fontWeight: FontWeight.w600,
+                              fontSize: 13,
                             ),
                           ),
                         ),
-                        const SizedBox(width: 20),
-                        Expanded(
-                          flex: 4,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              _buildLegentItem(const Color(0xFFEF4444), 'Insecurity (4)', isDark),
-                              const SizedBox(height: 8),
-                              _buildLegentItem(const Color(0xFFF59E0B), 'Theft (2)', isDark),
-                              const SizedBox(height: 8),
-                              _buildLegentItem(const Color(0xFFEC4899), 'Emergency (1)', isDark),
-                              const SizedBox(height: 8),
-                              _buildLegentItem(const Color(0xFF6366F1), 'Power (2)', isDark),
-                              const SizedBox(height: 8),
-                              _buildLegentItem(const Color(0xFF06B6D4), 'Water (1)', isDark),
-                            ],
+                        InkWell(
+                          onTap: _selectDateRange,
+                          child: Text(
+                            'Change',
+                            style: TextStyle(
+                              color: isDark
+                                  ? const Color(AppColors.primaryLight)
+                                  : const Color(AppColors.primaryDeeper),
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                            ),
                           ),
-                        )
+                        ),
                       ],
                     ),
-                  ],
-                ),
-              ),
-            ),
-
-            // Top Locations Section
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(18),
-                decoration: BoxDecoration(
-                  color: isDark ? const Color(AppColors.darkBackground) : Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: isDark ? const Color(AppColors.darkBorder) : const Color(0xFFEFF1F4),
                   ),
-                  boxShadow: isDark
-                      ? []
-                      : const [
-                          BoxShadow(color: Color(0x040D1B2D), blurRadius: 12, offset: Offset(0, 4)),
-                        ],
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Top Locations',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w700,
-                        fontSize: 16,
-                        color: isDark ? const Color(AppColors.darkTextPrimary) : const Color(AppColors.textPrimary),
+
+                // 2x2 Metric Cards Grid
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: GridView.count(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 12,
+                    mainAxisSpacing: 12,
+                    childAspectRatio: 2.22, // Halved card height ratio (horizontal layout)
+                    children: [
+                      _buildMetricCard(
+                        title: 'Total Incidents',
+                        value: '$totalCount',
+                        icon: PhosphorIconsRegular.megaphone,
+                        iconColor: const Color(0xFFF59E0B), // Amber (warn/pending status)
                       ),
-                    ),
-                    const SizedBox(height: 18),
-                    _buildLocationProgress(
-                      name: 'Kano',
-                      count: 2,
-                      percentage: 20.0,
-                    ),
-                    const SizedBox(height: 14),
-                    _buildLocationProgress(
-                      name: 'Kofar Wambai',
-                      count: 2,
-                      percentage: 20.0,
-                    ),
-                    const SizedBox(height: 14),
-                    _buildLocationProgress(
-                      name: 'Kofar Ruwa - Kofar Kabuga Road',
-                      count: 1,
-                      percentage: 10.0,
-                    ),
-                  ],
+                      _buildMetricCard(
+                        title: 'Verified',
+                        value: '$verifiedCount',
+                        icon: PhosphorIconsRegular.sealCheck,
+                        iconColor: const Color(0xFF3B82F6), // Royal Blue (trusted status)
+                      ),
+                      _buildMetricCard(
+                        title: 'Resolved',
+                        value: '$resolvedCount',
+                        icon: PhosphorIconsRegular.checkCircle,
+                        iconColor: const Color(0xFF10B981), // Emerald Green (completion status)
+                      ),
+                      _buildMetricCard(
+                        title: 'Resolution Rate',
+                        value: resolutionRate,
+                        icon: PhosphorIconsRegular.trendUp,
+                        iconColor: const Color(0xFF6366F1), // Indigo (performance stat)
+                      ),
+                    ],
+                  ),
                 ),
-              ),
+
+                // Line/Spline Trends Section
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(18),
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(AppColors.darkBackground) : Theme.of(context).cardColor,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: isDark
+                            ? const Color(AppColors.darkBorder)
+                            : const Color(0xFFEFF1F4),
+                      ),
+                      boxShadow: isDark
+                          ? []
+                          : const [
+                              BoxShadow(color: Color(0x040D1B2D), blurRadius: 12, offset: Offset(0, 4)),
+                            ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Incident Trends',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 16,
+                            color: isDark ? const Color(AppColors.darkTextPrimary) : const Color(AppColors.textPrimary),
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        SizedBox(
+                          height: 160,
+                          width: double.infinity,
+                          child: CustomPaint(
+                            painter: IncidentTrendsPainter(
+                              isDark: isDark,
+                              counts: trendPoints,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                // Donut Categories Chart Section (Pie Chart Card)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(18),
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(AppColors.darkBackground) : Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: isDark ? const Color(AppColors.darkBorder) : const Color(0xFFEFF1F4),
+                      ),
+                      boxShadow: isDark
+                          ? []
+                          : const [
+                              BoxShadow(color: Color(0x040D1B2D), blurRadius: 12, offset: Offset(0, 4)),
+                            ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Incidents by Category',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 16,
+                            color: isDark ? const Color(AppColors.darkTextPrimary) : const Color(AppColors.textPrimary),
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        if (sortedCats.isEmpty)
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 24),
+                            child: Center(
+                              child: Text(
+                                'No incidents recorded for this period',
+                                style: TextStyle(
+                                  color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary),
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ),
+                          )
+                        else
+                          Row(
+                            children: [
+                              Expanded(
+                                flex: 5,
+                                child: AspectRatio(
+                                  aspectRatio: 1,
+                                  child: CustomPaint(
+                                    painter: DonutChartPainter(
+                                      values: sortedCats.map((e) => e.value.toDouble()).toList(),
+                                      colors: sortedCats.map((e) => categoryPalette[e.key] ?? const Color(0xFF8B5CF6)).toList(),
+                                      backgroundColor: isDark ? const Color(AppColors.darkBackground) : Colors.white,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 20),
+                              Expanded(
+                                flex: 4,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    for (int i = 0; i < sortedCats.length; i++) ...[
+                                      if (i > 0) const SizedBox(height: 8),
+                                      _buildLegentItem(
+                                        categoryPalette[sortedCats[i].key] ?? const Color(0xFF8B5CF6),
+                                        '${sortedCats[i].key} (${sortedCats[i].value})',
+                                        isDark,
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                              )
+                            ],
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                // Top Locations Section
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(18),
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(AppColors.darkBackground) : Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: isDark ? const Color(AppColors.darkBorder) : const Color(0xFFEFF1F4),
+                      ),
+                      boxShadow: isDark
+                          ? []
+                          : const [
+                              BoxShadow(color: Color(0x040D1B2D), blurRadius: 12, offset: Offset(0, 4)),
+                            ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Top Locations',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 16,
+                            color: isDark ? const Color(AppColors.darkTextPrimary) : const Color(AppColors.textPrimary),
+                          ),
+                        ),
+                        const SizedBox(height: 18),
+                        if (sortedLocs.isEmpty)
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            child: Center(
+                              child: Text(
+                                'No location data recorded for this period',
+                                style: TextStyle(
+                                  color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary),
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ),
+                          )
+                        else ...[
+                          for (int i = 0; i < math.min(sortedLocs.length, 5); i++) ...[
+                            if (i > 0) const SizedBox(height: 14),
+                            _buildLocationProgress(
+                              name: sortedLocs[i].key,
+                              count: sortedLocs[i].value,
+                              percentage: totalCount > 0 ? (sortedLocs[i].value / totalCount) * 100 : 0.0,
+                            ),
+                          ],
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
@@ -411,11 +542,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     final isSelected = _activeTab == label;
     return Expanded(
       child: InkWell(
-        onTap: () {
-          setState(() {
-            _activeTab = label;
-          });
-        },
+        onTap: () => _onTabSelected(label),
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 8),
           decoration: BoxDecoration(
@@ -516,32 +643,6 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     );
   }
 
-  Widget _buildDecreaseBadge() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-      decoration: BoxDecoration(
-        color: const Color(0xFFEFF6FF),
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: const Color(0xFFDBEAFE)),
-      ),
-      child: const Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(PhosphorIconsRegular.trendDown, color: Color(0xFF10B981), size: 10),
-          SizedBox(width: 4),
-          Text(
-            '33.3%',
-            style: TextStyle(
-              color: Color(0xFF10B981),
-              fontSize: 9.5,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildLegentItem(Color color, String text, bool isDark) {
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -626,8 +727,13 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
 }
 
 class IncidentTrendsPainter extends CustomPainter {
-  IncidentTrendsPainter({required this.isDark});
+  IncidentTrendsPainter({
+    required this.isDark,
+    required this.counts,
+  });
+
   final bool isDark;
+  final List<int> counts;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -649,10 +755,20 @@ class IncidentTrendsPainter extends CustomPainter {
       ..color = isDark ? const Color(0xFF1E293B) : Colors.white
       ..style = PaintingStyle.fill;
 
+    // Determine scale
+    int maxVal = 2;
+    for (final c in counts) {
+      if (c > maxVal) maxVal = c;
+    }
+    final double maxY = maxVal.toDouble();
+
     // Draw dashed/dotted grid lines
     const int segments = 4;
     final double stepY = size.height / segments;
-    final List<String> labels = ['2.0', '1.8', '1.6', '1.4', '1.2'];
+    final List<String> labels = List.generate(segments + 1, (i) {
+      final v = maxY - (i * (maxY / segments));
+      return v >= 10 ? v.toStringAsFixed(0) : v.toStringAsFixed(1);
+    });
 
     final textPainter = TextPainter(
       textDirection: TextDirection.ltr,
@@ -660,14 +776,14 @@ class IncidentTrendsPainter extends CustomPainter {
 
     for (int i = 0; i <= segments; i++) {
       final double y = i * stepY;
-      
+
       // Draw label text
       textPainter.text = TextSpan(
         text: labels[i],
         style: const TextStyle(color: Color(AppColors.textSecondary), fontSize: 10),
       );
       textPainter.layout();
-      textPainter.paint(canvas, Offset(0, y - 6));
+      textPainter.paint(canvas, Offset(0, (y - 6).clamp(0, size.height - 12)));
 
       // Draw dashed horizontal line
       double startX = 26.0;
@@ -683,21 +799,20 @@ class IncidentTrendsPainter extends CustomPainter {
       }
     }
 
-    // Spline line data points (normalized to coordinates)
-    // Points represent coordinates starting at y=1.0, dipping, peaking at y=2.0, coming down to 1.0
+    if (counts.isEmpty) return;
+
+    // Coordinates
     final double startX = 30.0;
     final double endX = size.width - 10;
     final double width = endX - startX;
-    
-    final points = [
-      Offset(startX, size.height), // point 0
-      Offset(startX + width * 0.25, size.height), // point 1
-      Offset(startX + width * 0.45, size.height + 4), // slight dip
-      Offset(startX + width * 0.65, size.height - size.height * 0.9), // high peak
-      Offset(startX + width * 0.75, size.height - size.height * 0.82), // slight descend
-      Offset(startX + width * 0.9, size.height), // point 5
-      Offset(endX, size.height), // final
-    ];
+
+    final points = <Offset>[];
+    for (int i = 0; i < counts.length; i++) {
+      final x = startX + width * (i / (counts.length - 1));
+      final val = counts[i];
+      final y = size.height - (val / (maxY * 1.15)) * size.height;
+      points.add(Offset(x, y.clamp(8.0, size.height)));
+    }
 
     // Compute bezier spline path
     final path = Path()..moveTo(points[0].dx, points[0].dy);
@@ -712,7 +827,7 @@ class IncidentTrendsPainter extends CustomPainter {
         p1.dx, p1.dy,
       );
     }
-    
+
     // Fill under the line with light gradient
     final fillPath = Path()
       ..addPath(path, Offset.zero)
@@ -723,8 +838,8 @@ class IncidentTrendsPainter extends CustomPainter {
     final fillPaint = Paint()
       ..shader = LinearGradient(
         colors: [
-          const Color(AppColors.primaryDeeper).withOpacity(0.18),
-          const Color(AppColors.primaryDeeper).withOpacity(0.0),
+          const Color(AppColors.primaryDeeper).withValues(alpha: 0.18),
+          const Color(AppColors.primaryDeeper).withValues(alpha: 0.0),
         ],
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
@@ -733,17 +848,17 @@ class IncidentTrendsPainter extends CustomPainter {
     canvas.drawPath(fillPath, fillPaint);
     canvas.drawPath(path, paintLine);
 
-    // Draw coordinate dots on the peaks
-    final dotIndices = [0, 1, 2, 3, 4, 5, 6];
-    for (var idx in dotIndices) {
-      final p = points[idx];
+    // Draw coordinate dots on the points
+    for (final p in points) {
       canvas.drawCircle(p, 5.0, paintDot);
       canvas.drawCircle(p, 2.5, paintInnerDot);
     }
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant IncidentTrendsPainter oldDelegate) {
+    return oldDelegate.isDark != isDark || oldDelegate.counts != counts;
+  }
 }
 
 class DonutChartPainter extends CustomPainter {

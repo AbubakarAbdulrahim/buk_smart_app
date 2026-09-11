@@ -11,7 +11,6 @@ import '../../core/utils/validators.dart';
 import '../../models/lost_found_item.dart';
 import '../../services/auth_service.dart';
 import '../../services/firestore_service.dart';
-import '../../widgets/app_widgets.dart';
 
 class LostFoundWizardScreen extends StatefulWidget {
   const LostFoundWizardScreen({super.key});

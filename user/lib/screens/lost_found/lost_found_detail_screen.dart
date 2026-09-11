@@ -9,7 +9,6 @@ import '../../core/theme/app_colors.dart';
 import '../../models/lost_found_item.dart';
 import '../../services/auth_service.dart';
 import '../../services/firestore_service.dart';
-import '../common/async_state_view.dart';
 
 class LostFoundDetailScreen extends StatefulWidget {
   const LostFoundDetailScreen({super.key, required this.itemId});

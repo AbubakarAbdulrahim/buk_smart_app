@@ -13,7 +13,6 @@ import '../../widgets/app_widgets.dart';
 import '../../services/auth_service.dart';
 import '../../services/firestore_service.dart';
 import '../../widgets/smart_ai_fab.dart';
-import '../lost_found/lost_found_screen.dart';
 import '../report/report_incident_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -93,32 +92,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
     final first = name.trim().split(' ').first;
     return first.isNotEmpty ? (first[0].toUpperCase() + (first.length > 1 ? first.substring(1) : '')) : 'Student';
-  }
-
-  void _showComingSoon(BuildContext context, String serviceName) {
-    ScaffoldMessenger.of(context).clearSnackBars();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const Icon(PhosphorIconsRegular.sparkle, color: Colors.amber, size: 20),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                '$serviceName portal will be available in the next app update!',
-                style: const TextStyle(fontWeight: FontWeight.w600, color: Colors.white),
-              ),
-            ),
-          ],
-        ),
-        behavior: SnackBarBehavior.floating,
-        backgroundColor: Theme.of(context).brightness == Brightness.dark
-            ? const Color(AppColors.darkCard)
-            : const Color(0xFF1E293B),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        duration: const Duration(seconds: 2),
-      ),
-    );
   }
 
   @override
@@ -326,7 +299,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                             Container(
                                               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                                               decoration: BoxDecoration(
-                                                color: const Color(AppColors.primaryDeeper).withOpacity(0.08),
+                                                color: const Color(AppColors.primaryDeeper).withValues(alpha: 0.08),
                                                 borderRadius: BorderRadius.circular(999),
                                               ),
                                               child: Text(
@@ -428,7 +401,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               const SizedBox(height: 20),
               AppSectionHeader(
-                title: 'Recent Activity',
+                title: 'Recent Incidents',
                 trailing: InkWell(
                   onTap: () => Navigator.pushNamed(context, AppRoutes.notifications),
                   borderRadius: BorderRadius.circular(4),
@@ -448,6 +421,49 @@ class _HomeScreenState extends State<HomeScreen> {
               Consumer<NotificationProvider>(
                 builder: (context, notificationProvider, child) {
                   final recentReports = notificationProvider.notifications.take(3).toList();
+
+                  if (recentReports.isEmpty) {
+                    return Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+                      decoration: BoxDecoration(
+                        color: isDark ? const Color(AppColors.darkCard) : Colors.white,
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                          color: isDark ? const Color(AppColors.darkBorder) : const Color(0xFFEFF1F4),
+                        ),
+                      ),
+                      child: Center(
+                        child: Column(
+                          children: [
+                            Icon(
+                              PhosphorIconsRegular.shieldCheck,
+                              size: 32,
+                              color: isDark ? const Color(AppColors.primaryLight) : const Color(AppColors.primaryDeeper),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'No recent incidents reported.',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: isDark ? const Color(AppColors.darkTextPrimary) : const Color(AppColors.textPrimary),
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              'Campus is peaceful. Tap "Report Incident" above to report a concern.',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 11.5,
+                                color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }
 
                   return ListView.separated(
                     shrinkWrap: true,

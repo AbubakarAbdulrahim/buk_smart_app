@@ -40,11 +40,11 @@ class ProfileScreen extends StatelessWidget {
         stream: user == null ? const Stream.empty() : firestore.userProfile(user.uid),
         builder: (context, snapshot) {
           final profileData = snapshot.data?.data() ?? {};
-          final name = profileData['name'] as String? ?? 'Abubakar Muhammad';
-          final email = profileData['email'] as String? ?? (user?.email ?? 'abubakar.cs@buk.edu.ng');
-          final department = profileData['department'] as String? ?? 'Computer Science';
-          final faculty = profileData['faculty'] as String? ?? 'Faculty of Computing';
-          final photoUrl = profileData['photoUrl'] as String?;
+          final name = profileData['name'] as String? ?? (user?.displayName ?? 'Student');
+          final email = profileData['email'] as String? ?? (user?.email ?? '');
+          final department = profileData['department'] as String? ?? 'Department not set';
+          final faculty = profileData['faculty'] as String? ?? 'Faculty not set';
+          final photoUrl = profileData['photoUrl'] as String? ?? user?.photoURL;
 
           return ListView(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
@@ -535,10 +535,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           String initialPhotoUrl = '';
           if (!_isInitialized && snapshot.hasData) {
             final data = snapshot.data?.data() ?? {};
-            _nameController.text = data['name'] as String? ?? 'Abubakar Muhammad';
+            _nameController.text = data['name'] as String? ?? (user.displayName ?? '');
             _matricController.text = data['matricNumber'] as String? ?? '';
-            _facultyController.text = data['faculty'] as String? ?? 'Faculty of Computing';
-            _departmentController.text = data['department'] as String? ?? 'Computer Science';
+            _facultyController.text = data['faculty'] as String? ?? '';
+            _departmentController.text = data['department'] as String? ?? '';
             _programController.text = data['program'] as String? ?? '';
             _levelController.text = data['level'] as String? ?? '';
             _uploadedPhotoUrl = data['photoUrl'] as String?;

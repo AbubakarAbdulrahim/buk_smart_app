@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/providers/notification_provider.dart';
 import '../../core/routes/app_routes.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/utils/validators.dart';
@@ -78,14 +79,21 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
     }
     setState(() => _submitting = true);
     final firestore = context.read<FirestoreService>();
-    final uid = context.read<AuthService>().currentUser?.uid ?? 'guest';
+    final user = context.read<AuthService>().currentUser;
+    final uid = user?.uid ?? 'guest';
+    final reporterName = (user?.displayName != null && user!.displayName!.isNotEmpty)
+        ? user.displayName!
+        : (user?.email != null && user!.email!.contains('@')
+            ? user.email!.split('@').first
+            : 'BUK Student');
 
     try {
       String? url;
       if (_image != null) {
         url = await firestore.uploadImage(_image!, 'incident_images');
       }
-      await firestore.createIncident(Incident(
+
+      final newIncident = Incident(
         id: '',
         userId: uid,
         type: _type == 'Other' ? _customTypeController.text.trim() : _type,
@@ -93,7 +101,18 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
         location: _location.text.trim(),
         imageUrl: url,
         createdAt: DateTime.now(),
-      ));
+        reporterName: reporterName,
+        status: 'pending',
+      );
+
+      final docId = await firestore.createIncident(newIncident);
+
+      if (mounted) {
+        context.read<NotificationProvider>().addIncidentLocally(
+          newIncident.copyWith(id: docId),
+        );
+      }
+
       if (!mounted) return;
       await showSuccessModal(
         context: context,
@@ -297,7 +316,7 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
                   boxShadow: isSelected
                       ? [
                           BoxShadow(
-                            color: const Color(AppColors.primaryDeeper).withOpacity(0.04),
+                            color: const Color(AppColors.primaryDeeper).withValues(alpha: 0.04),
                             blurRadius: 10,
                             offset: const Offset(0, 4),
                           )
@@ -770,7 +789,7 @@ class _ReportIncidentScreenState extends State<ReportIncidentScreen> {
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: iconColor.withOpacity(0.08),
+            color: iconColor.withValues(alpha: 0.08),
             shape: BoxShape.circle,
           ),
           child: Icon(icon, size: 16, color: iconColor),

@@ -27,6 +27,9 @@ class CampusUpdate {
   String? userReaction;
 }
 
+// TODO(real-data): No Firestore 'campus_updates' collection exists in the current backend schema.
+// When the 'campus_updates' Firestore collection is provisioned with server-side authoring,
+// wire CampusUpdatesProvider to listen to Firestore snapshots and persist reactions.
 class CampusUpdatesProvider extends ChangeNotifier {
   final List<CampusUpdate> _updates = [
     CampusUpdate(

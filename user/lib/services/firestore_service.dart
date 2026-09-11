@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../models/incident.dart';
@@ -9,9 +8,7 @@ import 'cloudinary_service.dart';
 
 class FirestoreService {
   final _db = FirebaseFirestore.instance;
-  final _storage = FirebaseStorage.instance;
   final _cloudinary = CloudinaryService();
-  static const _maxUploadBytes = 2 * 1024 * 1024;
 
   Future<String?> uploadImage(XFile file, String folder) async {
     try {
@@ -25,11 +22,12 @@ class FirestoreService {
     }
   }
 
-  Future<void> createIncident(Incident incident) async {
-    await _db.collection('incidents').add({
+  Future<String> createIncident(Incident incident) async {
+    final docRef = await _db.collection('incidents').add({
       ...incident.toMap(),
       'createdAt': FieldValue.serverTimestamp(),
     });
+    return docRef.id;
   }
 
   Future<void> createLostFound(LostFoundItem item) async {
@@ -110,6 +108,14 @@ class FirestoreService {
     });
   }
 
+  Stream<List<Incident>> allIncidents() {
+    return _db
+        .collection('incidents')
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .map((s) => s.docs.map((d) => Incident.fromMap(d.id, d.data())).toList());
+  }
+
   Stream<List<Incident>> myIncidents(String uid) {
     return _db
         .collection('incidents')
@@ -117,6 +123,23 @@ class FirestoreService {
         .orderBy('createdAt', descending: true)
         .snapshots()
         .map((s) => s.docs.map((d) => Incident.fromMap(d.id, d.data())).toList());
+  }
+
+  Stream<Incident> incident(String id) {
+    return _db
+        .collection('incidents')
+        .doc(id)
+        .snapshots()
+        .map((s) => Incident.fromMap(s.id, s.data() ?? {}));
+  }
+
+  Future<void> reactToIncident(String incidentId, String reaction) async {
+    final docRef = _db.collection('incidents').doc(incidentId);
+    if (reaction == 'accurate') {
+      await docRef.update({'accurateCount': FieldValue.increment(1)});
+    } else if (reaction == 'inaccurate') {
+      await docRef.update({'inaccurateCount': FieldValue.increment(1)});
+    }
   }
 
   Stream<List<LostFoundItem>> lostFound(String type) {

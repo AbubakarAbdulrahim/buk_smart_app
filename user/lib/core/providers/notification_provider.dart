@@ -1,5 +1,10 @@
+import 'dart:async';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
+
+import '../theme/app_colors.dart';
+import '../../models/incident.dart';
 
 class BUKNotification {
   BUKNotification({
@@ -38,78 +43,119 @@ class BUKNotification {
 }
 
 class NotificationProvider extends ChangeNotifier {
-  final List<BUKNotification> _notifications = [
-    BUKNotification(
-      id: 'n1',
-      title: 'Security Alert: Theft Incident',
-      message: 'A minor theft of study materials was reported at the Old Site library hall. Students are advised to monitor personal items.',
-      timeAgo: '5m ago',
-      category: 'Security',
-      icon: PhosphorIconsRegular.shieldWarning,
-      color: const Color(0xFFE63946),
-      reporter: 'Abubakar Ali',
-      location: 'Old Site Library Hall',
-      accurateCount: 14,
-      inaccurateCount: 2,
-      status: 'unverified',
-      imageUrl: 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=500&auto=format&fit=crop&q=60',
-      isRead: false,
-    ),
-    BUKNotification(
-      id: 'n2',
-      title: 'Lost Found item matching',
-      message: 'A student identity card belonging to Ibrahim Bello was found at the Faculty of Science and turned in.',
-      timeAgo: '1h ago',
-      category: 'Lost & Found',
-      icon: PhosphorIconsRegular.magnifyingGlass,
-      color: const Color(0xFFF59E0B),
-      reporter: 'Fatima Umar',
-      location: 'Faculty of Science Room C',
-      accurateCount: 8,
-      inaccurateCount: 0,
-      status: 'verified',
-      imageUrl: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=500&auto=format&fit=crop&q=60',
-      isRead: false,
-    ),
-    BUKNotification(
-      id: 'n3',
-      title: 'AI Ethics Seminar Scheduled',
-      message: 'The Faculty of Computer Science invites all undergraduate students to attend the upcoming AI ethics seminar at CITS Hall tomorrow.',
-      timeAgo: '4h ago',
-      category: 'Academic',
-      icon: PhosphorIconsRegular.bookOpen,
-      color: const Color(0xFF3B82F6),
-      reporter: 'Dr. Kabir Bashir',
-      location: 'CITS Hall, New Site',
-      accurateCount: 32,
-      inaccurateCount: 1,
-      status: 'resolved',
-      imageUrl: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=500&auto=format&fit=crop&q=60',
-      isRead: true,
-    ),
-    BUKNotification(
-      id: 'n4',
-      title: 'Emergency Drill Schedule',
-      message: 'Routine emergency response and evacuation preparedness drill is scheduled for Friday morning at the Administrative Complex.',
-      timeAgo: 'Yesterday',
-      category: 'Updates',
-      icon: PhosphorIconsRegular.megaphone,
-      color: const Color(0xFF10B981),
-      reporter: 'Chief Security Officer',
-      location: 'Administrative Complex',
-      accurateCount: 25,
-      inaccurateCount: 3,
-      status: 'unverified',
-      imageUrl: 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=500&auto=format&fit=crop&q=60',
-      isRead: true,
-    ),
-  ];
+  NotificationProvider() {
+    _initIncidentsStream();
+  }
+
+  StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? _incidentsSub;
+  final Set<String> _readIds = {};
+  final Map<String, String> _userReactions = {};
+
+  List<BUKNotification> _notifications = [];
 
   List<BUKNotification> get notifications => _notifications;
 
   int get unreadCount => _notifications.where((n) => !n.isRead).length;
 
+  static final Map<String, Color> _categoryColors = {
+    'Insecurity': const Color(0xFFEF4444),
+    'Theft': const Color(0xFFF59E0B),
+    'Emergency': const Color(0xFFEC4899),
+    'Power Outage': const Color(0xFF6366F1),
+    'Water Outage': const Color(0xFF06B6D4),
+    'Fire Outbreak': const Color(0xFFF97316),
+    'Waste Dumps': const Color(0xFF84CC16),
+    'Security': const Color(0xFFEF4444),
+    'Other': const Color(0xFF8B5CF6),
+  };
+
+  static final Map<String, IconData> _categoryIcons = {
+    'Insecurity': PhosphorIconsRegular.shieldWarning,
+    'Theft': PhosphorIconsRegular.lockSimple,
+    'Emergency': PhosphorIconsRegular.firstAid,
+    'Power Outage': PhosphorIconsRegular.lightning,
+    'Water Outage': PhosphorIconsRegular.drop,
+    'Fire Outbreak': PhosphorIconsRegular.fire,
+    'Waste Dumps': PhosphorIconsRegular.trash,
+    'Security': PhosphorIconsRegular.shieldWarning,
+    'Other': PhosphorIconsRegular.warningCircle,
+  };
+
+  void _initIncidentsStream() {
+    try {
+      _incidentsSub = FirebaseFirestore.instance
+          .collection('incidents')
+          .orderBy('createdAt', descending: true)
+          .snapshots()
+          .listen(
+        (snapshot) {
+          final List<BUKNotification> list = [];
+          for (final doc in snapshot.docs) {
+            final incident = Incident.fromMap(doc.id, doc.data());
+            list.add(_incidentToNotification(incident));
+          }
+          _notifications = list;
+          notifyListeners();
+        },
+        onError: (error) {
+          debugPrint('Firestore incidents stream error: $error');
+        },
+      );
+    } catch (e) {
+      debugPrint('Failed to subscribe to Firestore incidents: $e');
+    }
+  }
+
+  BUKNotification _incidentToNotification(Incident inc) {
+    final cat = inc.type.trim().isEmpty ? 'Security' : inc.type.trim();
+    final catColor = _categoryColors[cat] ?? const Color(AppColors.primaryDeeper);
+    final catIcon = _categoryIcons[cat] ?? PhosphorIconsRegular.shieldWarning;
+
+    return BUKNotification(
+      id: inc.id,
+      title: '$cat Incident',
+      message: inc.description.isNotEmpty ? inc.description : 'Incident reported at ${inc.location}',
+      timeAgo: _formatTimeAgo(inc.createdAt),
+      category: cat,
+      icon: catIcon,
+      color: catColor,
+      reporter: (inc.reporterName != null && inc.reporterName!.isNotEmpty)
+          ? inc.reporterName!
+          : 'BUK Student',
+      location: inc.location,
+      accurateCount: inc.accurateCount,
+      inaccurateCount: inc.inaccurateCount,
+      status: inc.isResolved
+          ? 'resolved'
+          : (inc.isVerified ? 'verified' : (inc.status.isNotEmpty ? inc.status : 'unverified')),
+      imageUrl: inc.imageUrl,
+      isRead: _readIds.contains(inc.id),
+      userReaction: _userReactions[inc.id],
+    );
+  }
+
+  BUKNotification incidentToNotification(Incident inc) => _incidentToNotification(inc);
+
+  String _formatTimeAgo(DateTime dt) {
+    final diff = DateTime.now().difference(dt);
+    if (diff.inSeconds < 60) return 'Just now';
+    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
+    if (diff.inHours < 24) return '${diff.inHours}h ago';
+    if (diff.inDays < 7) return '${diff.inDays}d ago';
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return '${months[dt.month - 1]} ${dt.day}';
+  }
+
+  /// Optimistically adds a newly reported incident immediately to the top of the feed
+  void addIncidentLocally(Incident incident) {
+    final notif = _incidentToNotification(incident);
+    _notifications.removeWhere((n) => n.id == incident.id);
+    _notifications.insert(0, notif);
+    notifyListeners();
+  }
+
   void markAsRead(String id) {
+    _readIds.add(id);
     final idx = _notifications.indexWhere((n) => n.id == id);
     if (idx != -1 && idx < _notifications.length) {
       if (!_notifications[idx].isRead) {
@@ -122,6 +168,7 @@ class NotificationProvider extends ChangeNotifier {
   void markAllAsRead() {
     bool updated = false;
     for (var n in _notifications) {
+      _readIds.add(n.id);
       if (!n.isRead) {
         n.isRead = true;
         updated = true;
@@ -138,29 +185,47 @@ class NotificationProvider extends ChangeNotifier {
 
     final notif = _notifications[idx];
     if (notif.userReaction == reaction) {
-      // Toggle off the active reaction
       notif.userReaction = null;
+      _userReactions.remove(id);
       if (reaction == 'accurate') {
-        notif.accurateCount--;
+        notif.accurateCount = (notif.accurateCount - 1).clamp(0, 9999);
       } else {
-        notif.inaccurateCount--;
+        notif.inaccurateCount = (notif.inaccurateCount - 1).clamp(0, 9999);
       }
     } else {
-      // Toggle on/change the active reaction
       if (notif.userReaction == 'accurate') {
-        notif.accurateCount--;
+        notif.accurateCount = (notif.accurateCount - 1).clamp(0, 9999);
       } else if (notif.userReaction == 'inaccurate') {
-        notif.inaccurateCount--;
+        notif.inaccurateCount = (notif.inaccurateCount - 1).clamp(0, 9999);
       }
 
       notif.userReaction = reaction;
+      _userReactions[id] = reaction;
       if (reaction == 'accurate') {
         notif.accurateCount++;
       } else {
         notif.inaccurateCount++;
       }
+
+      // Persist reaction count to Firestore if the document exists
+      try {
+        FirebaseFirestore.instance.collection('incidents').doc(id).update({
+          if (reaction == 'accurate') 'accurateCount': FieldValue.increment(1),
+          if (reaction == 'inaccurate') 'inaccurateCount': FieldValue.increment(1),
+        }).catchError((e) {
+          debugPrint('Could not persist reaction to Firestore: $e');
+        });
+      } catch (e) {
+        debugPrint('Firestore reaction update error: $e');
+      }
     }
 
     notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _incidentsSub?.cancel();
+    super.dispose();
   }
 }

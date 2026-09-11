@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:provider/provider.dart';
 
-import '../../core/constants/app_data.dart';
 import '../../core/routes/app_routes.dart';
 import '../../core/theme/app_colors.dart';
 import '../../models/past_question.dart';
@@ -231,87 +230,6 @@ class _PastQuestionsScreenState extends State<PastQuestionsScreen> {
   String? _selectedLevel;
   String? _selectedSemester;
   String? _selectedCourse;
-
-  static final List<PastQuestion> _dummyPastQuestions = [
-    PastQuestion(
-      id: 'dummy_1',
-      title: 'CSC 202 - Data Structures Exam 2024',
-      faculty: 'Computing',
-      department: 'Computer Science',
-      program: 'B.Sc. Computer Science',
-      level: '200 Level',
-      semester: 'First Semester',
-      course: 'Data Structures (CSC 202)',
-      fileUrl: 'https://example.com/dummy.pdf',
-      fileSize: '1.2 MB',
-      createdAt: DateTime.now().subtract(const Duration(days: 30)),
-    ),
-    PastQuestion(
-      id: 'dummy_2',
-      title: 'CSC 301 - Algorithms & Complexity 2023',
-      faculty: 'Computing',
-      department: 'Computer Science',
-      program: 'B.Sc. Computer Science',
-      level: '300 Level',
-      semester: 'Second Semester',
-      course: 'Algorithms (CSC 301)',
-      fileUrl: 'https://example.com/dummy.pdf',
-      fileSize: '950 KB',
-      createdAt: DateTime.now().subtract(const Duration(days: 45)),
-    ),
-    PastQuestion(
-      id: 'dummy_3',
-      title: 'MTH 101 - Calculus & Algebra 2024',
-      faculty: 'Science',
-      department: 'Mathematical Sciences',
-      program: 'B.Sc. Mathematics',
-      level: '100 Level',
-      semester: 'First Semester',
-      course: 'Calculus (MTH 101)',
-      fileUrl: 'https://example.com/dummy.pdf',
-      fileSize: '2.1 MB',
-      createdAt: DateTime.now().subtract(const Duration(days: 15)),
-    ),
-    PastQuestion(
-      id: 'dummy_4',
-      title: 'CSC 401 - Artificial Intelligence 2023',
-      faculty: 'Computing',
-      department: 'Computer Science',
-      program: 'B.Sc. Computer Science',
-      level: '400 Level',
-      semester: 'First Semester',
-      course: 'Artificial Intelligence (CSC 401)',
-      fileUrl: 'https://example.com/dummy.pdf',
-      fileSize: '1.8 MB',
-      createdAt: DateTime.now().subtract(const Duration(days: 60)),
-    ),
-    PastQuestion(
-      id: 'dummy_5',
-      title: 'GST 111 - Communication in English 2024',
-      faculty: 'Arts',
-      department: 'General Studies',
-      program: 'All Programs',
-      level: '100 Level',
-      semester: 'First Semester',
-      course: 'Communication (GST 111)',
-      fileUrl: 'https://example.com/dummy.pdf',
-      fileSize: '650 KB',
-      createdAt: DateTime.now().subtract(const Duration(days: 10)),
-    ),
-    PastQuestion(
-      id: 'dummy_6',
-      title: 'CSC 204 - Object Oriented Programming 2023',
-      faculty: 'Computing',
-      department: 'Computer Science',
-      program: 'B.Sc. Computer Science',
-      level: '200 Level',
-      semester: 'Second Semester',
-      course: 'Object Oriented Programming (CSC 204)',
-      fileUrl: 'https://example.com/dummy.pdf',
-      fileSize: '1.4 MB',
-      createdAt: DateTime.now().subtract(const Duration(days: 50)),
-    ),
-  ];
 
   @override
   void dispose() {
@@ -591,10 +509,7 @@ class _PastQuestionsScreenState extends State<PastQuestionsScreen> {
       body: StreamBuilder<List<PastQuestion>>(
         stream: context.read<FirestoreService>().allPastQuestions(),
         builder: (context, snapshot) {
-          var papers = snapshot.data ?? const <PastQuestion>[];
-          if (papers.isEmpty) {
-            papers = _dummyPastQuestions;
-          }
+          final papers = snapshot.data ?? const <PastQuestion>[];
 
           // Dynamic unique courses from fetched data
           final uniqueCourses = papers.map((p) => p.course).toSet().toList();
@@ -806,6 +721,7 @@ class StudentHandbookScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // TODO(real-data): Connect to Firestore 'handbooks' collection and Storage once backend is provisioned.
     return const _PlaceholderResource(title: 'Student Handbook');
   }
 }
@@ -815,6 +731,7 @@ class OpportunitiesScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // TODO(real-data): Connect to Firestore 'opportunities' collection once backend is provisioned.
     return const _PlaceholderResource(title: 'Opportunities');
   }
 }
@@ -824,6 +741,7 @@ class ELibraryScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // TODO(real-data): Connect to Firestore 'e_library' collection once backend is provisioned.
     return const _PlaceholderResource(title: 'E-Library');
   }
 }

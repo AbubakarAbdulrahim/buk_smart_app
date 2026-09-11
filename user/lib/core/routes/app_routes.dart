@@ -19,7 +19,6 @@ import '../../screens/profile/change_password_screen.dart';
 import '../../screens/profile/terms_of_service_screen.dart';
 import '../../screens/profile/privacy_policy_screen.dart';
 import '../../screens/resources/resources_screen.dart';
-import '../../screens/report/cloudinary_upload_demo_screen.dart';
 import '../../screens/lost_found/lost_found_detail_screen.dart';
 import '../../screens/lost_found/lost_found_wizard_screen.dart';
 import '../../screens/lost_found/lost_found_bookmarks_screen.dart';
@@ -49,7 +48,6 @@ class AppRoutes {
   static const analytics = '/analytics';
   static const campusUpdates = '/updates';
   static const campusUpdateDetail = '/updates/detail';
-  static const cloudinaryUploadDemo = '/cloudinary-upload-demo';
   static const lostFoundDetail = '/lost-found/detail';
   static const lostFoundWizard = '/lost-found/report';
   static const lostFoundBookmarks = '/lost-found/bookmarks';
@@ -106,8 +104,6 @@ class AppRoutes {
             return const CampusUpdatesScreen();
           case campusUpdateDetail:
             return CampusUpdateDetailScreen(updateId: settings.arguments! as String);
-          case cloudinaryUploadDemo:
-            return const CloudinaryUploadDemoScreen();
           case lostFoundDetail:
             return LostFoundDetailScreen(itemId: settings.arguments! as String);
           case lostFoundWizard:

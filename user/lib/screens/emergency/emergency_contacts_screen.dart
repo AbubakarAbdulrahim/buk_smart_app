@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../core/theme/app_colors.dart';
-import '../../widgets/app_widgets.dart';
 
 class EmergencyContact {
   const EmergencyContact({
@@ -31,6 +30,9 @@ class EmergencyContactsScreen extends StatefulWidget {
 }
 
 class _EmergencyContactsScreenState extends State<EmergencyContactsScreen> {
+  // TODO(real-data): No Firestore 'emergency_contacts' collection exists in current schema.
+  // When an 'emergency_contacts' collection or remote config is provisioned,
+  // load contacts dynamically and keep these official BUK numbers as an offline fallback.
   final List<EmergencyContact> _contacts = const [
     EmergencyContact(
       name: 'Campus Security (New Site)',
