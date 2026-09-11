@@ -1,9 +1,47 @@
+import 'dart:io';
+import 'package:flutter/foundation.dart';
+
 class GeminiConfig {
-  // Storing the API Key securely. In production this would be set via --dart-define or Remote Config.
-  static const String apiKey = String.fromEnvironment(
-    'GEMINI_API_KEY',
-    defaultValue: '', // User can pass --dart-define=GEMINI_API_KEY=xxx or --dart-define-from-file=.env
-  );
+  static String? _cachedKey;
+
+  /// Retrieves the Gemini API key securely.
+  /// 1. Prioritizes compile-time environment variable (--dart-define-from-file=.env or --dart-define=GEMINI_API_KEY=xxx).
+  /// 2. Falls back to reading the local git-ignored .env file during development/testing.
+  static String get apiKey {
+    if (_cachedKey != null && _cachedKey!.isNotEmpty) {
+      return _cachedKey!;
+    }
+
+    const compileTimeKey = String.fromEnvironment('GEMINI_API_KEY');
+    if (compileTimeKey.trim().isNotEmpty) {
+      _cachedKey = compileTimeKey.trim();
+      return _cachedKey!;
+    }
+
+    _cachedKey = _readLocalEnvFile();
+    return _cachedKey ?? '';
+  }
+
+  static String? _readLocalEnvFile() {
+    if (kIsWeb) return null;
+    try {
+      final candidates = ['.env', 'user/.env', '../.env'];
+      for (final p in candidates) {
+        final file = File(p);
+        if (file.existsSync()) {
+          final lines = file.readAsLinesSync();
+          for (final line in lines) {
+            final trimmed = line.trim();
+            if (trimmed.startsWith('GEMINI_API_KEY=')) {
+              final val = trimmed.substring('GEMINI_API_KEY='.length).trim();
+              if (val.isNotEmpty) return val;
+            }
+          }
+        }
+      }
+    } catch (_) {}
+    return null;
+  }
 
   static const String systemInstruction = '''
 You are Smart AI, the highly intelligent, dedicated, and extremely knowledgeable AI student and academic assistant for the SmartBUK (Bayero University Kano) mobile application. 

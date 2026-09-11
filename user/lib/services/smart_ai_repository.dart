@@ -89,17 +89,25 @@ class SmartAiRepository {
     });
   }
 
-  /// Creates a new chat session using a snippet of the first user message as the title.
-  Future<String> createSession(String uid, String firstMsg) async {
-    final chatRef = _db.collection('users').doc(uid).collection('chats').doc();
-    final title = firstMsg.length > 30 ? '${firstMsg.substring(0, 27).trim()}...' : firstMsg;
+  /// Generates a unique session document ID synchronously on the client.
+  String generateSessionId(String uid) {
+    return _db.collection('users').doc(uid).collection('chats').doc().id;
+  }
 
-    await chatRef.set({
+  /// Persists a new chat session metadata using an existing session ID.
+  Future<void> saveSession(String uid, String sessionId, String firstMsg) async {
+    final title = firstMsg.length > 30 ? '${firstMsg.substring(0, 27).trim()}...' : firstMsg;
+    await _db.collection('users').doc(uid).collection('chats').doc(sessionId).set({
       'title': title,
       'updatedAt': FieldValue.serverTimestamp(),
     });
+  }
 
-    return chatRef.id;
+  /// Creates a new chat session using a snippet of the first user message as the title.
+  Future<String> createSession(String uid, String firstMsg) async {
+    final sessionId = generateSessionId(uid);
+    await saveSession(uid, sessionId, firstMsg);
+    return sessionId;
   }
 
   /// Adds a message in a session subcollection and updates session timestamp.

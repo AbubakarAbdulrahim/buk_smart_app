@@ -10,7 +10,6 @@ import '../../core/theme/app_colors.dart';
 import '../../services/auth_service.dart';
 import '../../services/gemini_service.dart';
 import '../../services/smart_ai_repository.dart';
-import '../../config/gemini_config.dart';
 
 class SmartAiPage extends StatefulWidget {
   const SmartAiPage({super.key});
@@ -30,6 +29,8 @@ class _SmartAiPageState extends State<SmartAiPage> {
   bool _isTyping = false;
   String _streamingText = '';
   String? _savingMessageText;
+  String? _optimisticUserMessage;
+  List<ChatMessage> _lastKnownMessages = [];
   StreamSubscription? _streamingSubscription;
 
   final List<String> _suggestionPool = const [
@@ -92,6 +93,9 @@ class _SmartAiPageState extends State<SmartAiPage> {
       _messagesStream = null;
       _streamingText = '';
       _isTyping = false;
+      _optimisticUserMessage = null;
+      _savingMessageText = null;
+      _lastKnownMessages = [];
       _randomizeSuggestions();
     });
     _inputController.clear();
@@ -172,200 +176,50 @@ class _SmartAiPageState extends State<SmartAiPage> {
     }
   }
 
-  Future<void> _showApiKeySetupSheet(BuildContext context, GeminiService gemini) async {
-    final existingKey = await gemini.resolveApiKey();
-    final isCompileTime = GeminiConfig.apiKey.isNotEmpty;
-    final controller = TextEditingController(text: isCompileTime ? '' : existingKey);
-    if (!mounted) return;
-
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    await showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) {
-        return Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(ctx).viewInsets.bottom,
-          ),
-          child: Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: isDark ? const Color(AppColors.darkSurface) : Colors.white,
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    const Icon(PhosphorIconsFill.key, color: Color(AppColors.primaryDeeper), size: 22),
-                    const SizedBox(width: 10),
-                    Text(
-                      'Gemini AI Key Setup',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: isDark ? const Color(AppColors.darkTextPrimary) : const Color(AppColors.textPrimary),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                if (isCompileTime)
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    margin: const EdgeInsets.only(bottom: 12),
-                    decoration: BoxDecoration(
-                      color: isDark ? const Color(AppColors.darkCardSubtle) : const Color(AppColors.cardSubtle),
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: const Color(AppColors.primary).withAlpha(80)),
-                    ),
-                    child: const Row(
-                      children: [
-                        Icon(PhosphorIconsRegular.checkCircle, color: Color(AppColors.primaryDeeper), size: 18),
-                        SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            'Active Gemini API key is loaded via build environment (--dart-define / .env).',
-                            style: TextStyle(fontSize: 12.5, color: Color(AppColors.primaryDeeper)),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                Text(
-                  isCompileTime
-                      ? 'You can optionally override it below with a custom key saved locally on this device:'
-                      : 'To chat with Smart AI, provide your Gemini API key. Your key is stored securely in local storage on this device.',
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary),
-                    height: 1.4,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: controller,
-                  obscureText: true,
-                  decoration: InputDecoration(
-                    hintText: 'Paste Gemini API Key (e.g. AQ... or AIza...)',
-                    prefixIcon: const Icon(PhosphorIconsRegular.password, size: 20),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                  ),
-                ),
-                const SizedBox(height: 18),
-                Row(
-                  children: [
-                    if (existingKey.isNotEmpty && !isCompileTime) ...[
-                      OutlinedButton(
-                        onPressed: () async {
-                          await gemini.clearSavedApiKey();
-                          if (ctx.mounted) Navigator.pop(ctx);
-                          if (mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Saved key removed')),
-                            );
-                          }
-                        },
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: Colors.red,
-                          side: const BorderSide(color: Colors.red),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                        ),
-                        child: const Text('Clear'),
-                      ),
-                      const SizedBox(width: 10),
-                    ],
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () async {
-                          final input = controller.text.trim();
-                          if (input.isNotEmpty) {
-                            await gemini.saveApiKey(input);
-                            if (ctx.mounted) Navigator.pop(ctx);
-                            if (mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('API Key saved successfully')),
-                              );
-                            }
-                          }
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(AppColors.primaryDeeper),
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                        ),
-                        child: const Text('Save Key', style: TextStyle(fontWeight: FontWeight.bold)),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
   Future<void> _sendMessage(String text, String uid, SmartAiRepository repository, GeminiService gemini) async {
-    if (text.trim().isEmpty) return;
-
-    final hasKey = await gemini.hasValidApiKey();
-    if (!hasKey) {
-      if (!mounted) return;
-      await _showApiKeySetupSheet(context, gemini);
-      if (!(await gemini.hasValidApiKey())) {
-        return;
-      }
-    }
+    final messageContent = text.trim();
+    if (messageContent.isEmpty) return;
 
     // Trigger soft haptic feedback
     HapticFeedback.lightImpact();
 
-    final messageContent = text.trim();
     _inputController.clear();
     _focusNode.unfocus();
 
-    // 1. Ensure user session exists
-    String sessionId = _currentSessionId ?? '';
-    if (sessionId.isEmpty) {
-      sessionId = await repository.createSession(uid, messageContent);
-      setState(() {
-        _currentSessionId = sessionId;
-        _messagesStream = repository.getMessages(uid, sessionId);
-      });
-    }
+    // 1. Immediately determine or generate session ID synchronously
+    final bool isNewSession = (_currentSessionId == null || _currentSessionId!.isEmpty);
+    final String sessionId = isNewSession ? repository.generateSessionId(uid) : _currentSessionId!;
 
-    // 2. Save user message in Firestore
-    await repository.addMessage(uid, sessionId, 'user', messageContent);
-    _scrollToBottom();
-
-    // 3. Initiate typing state
-    setState(() {
-      _isTyping = true;
-      _streamingText = '';
-    });
-
-    // 4. Fetch session dialogue history for model context
-    final messagesSnapshot = await repository.getMessages(uid, sessionId).first;
-    final historyList = messagesSnapshot.map((m) => {
+    // 2. Prepare conversation history for prompt context
+    final historyList = _lastKnownMessages.map((m) => {
       'role': m.role,
       'content': m.content,
     }).toList();
+    historyList.add({
+      'role': 'user',
+      'content': messageContent,
+    });
 
-    // 5. Call API
+    // 3. Immediately transition UI to active chat state with user message & typing indicator (0ms latency)
+    setState(() {
+      _currentSessionId = sessionId;
+      _messagesStream = repository.getMessages(uid, sessionId);
+      _optimisticUserMessage = messageContent;
+      _isTyping = true;
+      _streamingText = '';
+      _savingMessageText = null;
+    });
+    _scrollToBottom();
+
+    // 4. Persist session and user message in Firestore asynchronously (unblocked)
+    if (isNewSession) {
+      unawaited(repository.saveSession(uid, sessionId, messageContent));
+    }
+    unawaited(repository.addMessage(uid, sessionId, 'user', messageContent));
+
+    // 5. Call API immediately
     try {
+      _streamingSubscription?.cancel();
       _streamingSubscription = gemini.generateContentStream(historyList).listen(
         (chunk) {
           setState(() {
@@ -383,6 +237,7 @@ class _SmartAiPageState extends State<SmartAiPage> {
               _isTyping = false;
               _streamingText = '';
               _savingMessageText = savedText;
+              _optimisticUserMessage = null;
             });
             await repository.addMessage(uid, sessionId, 'model', savedText);
             if (mounted) {
@@ -393,6 +248,7 @@ class _SmartAiPageState extends State<SmartAiPage> {
           } else {
             setState(() {
               _isTyping = false;
+              _optimisticUserMessage = null;
             });
           }
           _scrollToBottom();
@@ -411,7 +267,7 @@ class _SmartAiPageState extends State<SmartAiPage> {
     final errMsg = err.toString().toLowerCase();
 
     if (errMsg.contains('api key') || errMsg.contains('not configured')) {
-      friendlyError = 'Gemini API key is not configured. Tap the key icon in the top right to configure your API key, or launch with --dart-define-from-file=.env.';
+      friendlyError = 'AI service configuration error. Please try again later.';
     } else if (errMsg.contains('quota') || errMsg.contains('429') || errMsg.contains('exhausted') || errMsg.contains('resource_exhausted')) {
       friendlyError = 'Service is temporarily busy. Please wait a moment and try again.';
     } else if (errMsg.contains('failed to fetch') || 
@@ -430,6 +286,7 @@ class _SmartAiPageState extends State<SmartAiPage> {
       setState(() {
         _isTyping = false;
         _streamingText = '';
+        _optimisticUserMessage = null;
       });
       _scrollToBottom();
     }
@@ -437,7 +294,6 @@ class _SmartAiPageState extends State<SmartAiPage> {
 
   Widget _buildMarkdown(String content, bool isDarkText) {
     // Custom light markdown formatter: handles headers, bold text, listing items
-    final boldRegex = RegExp(r'\*\*(.*?)\*\*');
     final headerRegex = RegExp(r'^###\s*(.*)$');
     final bulletRegex = RegExp(r'^\s*[\-\*]\s+(.*)$');
 
@@ -663,7 +519,7 @@ class _SmartAiPageState extends State<SmartAiPage> {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       child: Material(
-        color: isSelected ? const Color(AppColors.primaryDeeper).withOpacity(0.06) : Colors.transparent,
+        color: isSelected ? const Color(AppColors.primaryDeeper).withValues(alpha: 0.06) : Colors.transparent,
         borderRadius: BorderRadius.circular(8),
         child: InkWell(
           borderRadius: BorderRadius.circular(8),
@@ -813,7 +669,7 @@ class _SmartAiPageState extends State<SmartAiPage> {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: const Color(AppColors.primaryDeeper).withOpacity(0.08),
+              color: const Color(AppColors.primaryDeeper).withValues(alpha: 0.08),
               shape: BoxShape.circle,
             ),
             child: const Icon(PhosphorIconsFill.sparkle, size: 16, color: Color(AppColors.primaryDeeper)),
@@ -849,7 +705,24 @@ class _SmartAiPageState extends State<SmartAiPage> {
   }
 
   Widget _buildMessageList(List<ChatMessage> messages) {
+    _lastKnownMessages = messages;
     final displayMessages = List<ChatMessage>.from(messages);
+
+    // Render optimistic user message immediately if not yet synced from Firestore
+    if (_optimisticUserMessage != null) {
+      final alreadyPresent = messages.isNotEmpty &&
+          messages.last.role == 'user' &&
+          messages.last.content == _optimisticUserMessage;
+      if (!alreadyPresent) {
+        displayMessages.add(ChatMessage(
+          id: 'temp_user',
+          role: 'user',
+          content: _optimisticUserMessage!,
+          createdAt: DateTime.now(),
+        ));
+      }
+    }
+
     if (_savingMessageText != null) {
       final alreadySaved = messages.isNotEmpty &&
           messages.last.role == 'model' &&
@@ -910,7 +783,7 @@ class _SmartAiPageState extends State<SmartAiPage> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: const Color(AppColors.primaryDeeper).withOpacity(0.08),
+                  color: const Color(AppColors.primaryDeeper).withValues(alpha: 0.08),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(PhosphorIconsFill.sparkle, size: 16, color: Color(AppColors.primaryDeeper)),
@@ -950,7 +823,7 @@ class _SmartAiPageState extends State<SmartAiPage> {
                           time,
                           style: TextStyle(
                             fontSize: 9.5,
-                            color: isMe ? Colors.white.withOpacity(0.7) : const Color(AppColors.textSecondary),
+                            color: isMe ? Colors.white.withValues(alpha: 0.7) : const Color(AppColors.textSecondary),
                           ),
                         ),
                       ],
@@ -1171,12 +1044,8 @@ class _SmartAiPageState extends State<SmartAiPage> {
           centerTitle: true,
           actions: [
             IconButton(
-              icon: const Icon(PhosphorIconsRegular.key, size: 20),
-              tooltip: 'Configure Gemini API Key',
-              onPressed: () => _showApiKeySetupSheet(context, gemini),
-            ),
-            IconButton(
               icon: const Icon(PhosphorIconsRegular.notePencil),
+              tooltip: 'New Chat',
               onPressed: () => _startNewChat(uid, repository),
             ),
           ],
@@ -1188,17 +1057,17 @@ class _SmartAiPageState extends State<SmartAiPage> {
                 if (_currentSessionId != null && _messagesStream == null) {
                   _messagesStream = repository.getMessages(uid, _currentSessionId!);
                 }
-                return _currentSessionId == null
+                return (_currentSessionId == null && _optimisticUserMessage == null)
                     ? _buildEmptyState(uid, repository, gemini)
                     : StreamBuilder<List<ChatMessage>>(
                         stream: _messagesStream,
                         builder: (context, snapshot) {
-                          if (snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) {
+                          if (snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData && _optimisticUserMessage == null) {
                             return const Center(child: CircularProgressIndicator());
                           }
         
                           final messages = snapshot.data ?? [];
-                          if (messages.isEmpty && !_isTyping) {
+                          if (messages.isEmpty && !_isTyping && _optimisticUserMessage == null) {
                             return _buildEmptyState(uid, repository, gemini);
                           }
         
