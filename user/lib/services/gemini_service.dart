@@ -12,6 +12,10 @@ class GeminiService {
     if (customApiKey != null && customApiKey.trim().isNotEmpty) {
       return customApiKey.trim();
     }
+    if (GeminiConfig.apiKey.isNotEmpty) {
+      return GeminiConfig.apiKey.trim();
+    }
+    await GeminiConfig.init();
     return GeminiConfig.apiKey.trim();
   }
 

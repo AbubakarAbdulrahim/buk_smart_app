@@ -1,12 +1,36 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 
 class GeminiConfig {
   static String? _cachedKey;
 
-  /// Retrieves the Gemini API key securely.
-  /// 1. Prioritizes compile-time environment variable (--dart-define-from-file=.env or --dart-define=GEMINI_API_KEY=xxx).
-  /// 2. Falls back to reading the local git-ignored .env file during development/testing.
+  /// Loads the API key into memory from compile-time defines, bundled .env asset, or local file.
+  static Future<void> init() async {
+    if (_cachedKey != null && _cachedKey!.isNotEmpty) return;
+
+    // 1. Prioritize compile-time define (--dart-define-from-file=.env)
+    const compileTimeKey = String.fromEnvironment('GEMINI_API_KEY');
+    if (compileTimeKey.trim().isNotEmpty) {
+      _cachedKey = compileTimeKey.trim();
+      return;
+    }
+
+    // 2. Check bundled asset (.env included in pubspec assets)
+    try {
+      final assetContent = await rootBundle.loadString('.env');
+      final parsed = _parseKeyFromContent(assetContent);
+      if (parsed != null && parsed.isNotEmpty) {
+        _cachedKey = parsed;
+        return;
+      }
+    } catch (_) {}
+
+    // 3. Fallback to local file on disk (for desktop and tests)
+    _cachedKey = _readLocalEnvFile();
+  }
+
+  /// Retrieves the Gemini API key synchronously if already loaded.
   static String get apiKey {
     if (_cachedKey != null && _cachedKey!.isNotEmpty) {
       return _cachedKey!;
@@ -22,6 +46,17 @@ class GeminiConfig {
     return _cachedKey ?? '';
   }
 
+  static String? _parseKeyFromContent(String content) {
+    for (final line in content.split('\n')) {
+      final trimmed = line.trim();
+      if (trimmed.startsWith('GEMINI_API_KEY=')) {
+        final val = trimmed.substring('GEMINI_API_KEY='.length).trim();
+        if (val.isNotEmpty) return val;
+      }
+    }
+    return null;
+  }
+
   static String? _readLocalEnvFile() {
     if (kIsWeb) return null;
     try {
@@ -29,14 +64,8 @@ class GeminiConfig {
       for (final p in candidates) {
         final file = File(p);
         if (file.existsSync()) {
-          final lines = file.readAsLinesSync();
-          for (final line in lines) {
-            final trimmed = line.trim();
-            if (trimmed.startsWith('GEMINI_API_KEY=')) {
-              final val = trimmed.substring('GEMINI_API_KEY='.length).trim();
-              if (val.isNotEmpty) return val;
-            }
-          }
+          final parsed = _parseKeyFromContent(file.readAsStringSync());
+          if (parsed != null && parsed.isNotEmpty) return parsed;
         }
       }
     } catch (_) {}
