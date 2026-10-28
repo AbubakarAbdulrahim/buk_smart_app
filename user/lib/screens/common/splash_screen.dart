@@ -73,8 +73,8 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                 center: Alignment.center,
                 radius: 0.72,
                 colors: [
-                  Colors.white.withOpacity(0.28),
-                  Colors.white.withOpacity(0.08),
+                  Colors.white.withValues(alpha: 0.28),
+                  Colors.white.withValues(alpha: 0.08),
                   Colors.transparent,
                 ],
                 stops: const [0, 0.42, 1],
@@ -90,7 +90,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                   begin: Alignment.bottomCenter,
                   end: Alignment.topCenter,
                   colors: [
-                    Colors.black.withOpacity(0.16),
+                    Colors.black.withValues(alpha: 0.16),
                     Colors.transparent,
                   ],
                 ),
@@ -112,10 +112,10 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                           height: 176,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: Colors.white.withOpacity(0.10),
+                            color: Colors.white.withValues(alpha: 0.10),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.white.withOpacity(0.22),
+                                color: Colors.white.withValues(alpha: 0.22),
                                 blurRadius: 42,
                                 spreadRadius: 4,
                               ),
@@ -169,7 +169,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                           borderRadius: BorderRadius.circular(36),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.20),
+                              color: Colors.black.withValues(alpha: 0.20),
                               blurRadius: 32,
                               offset: const Offset(0, 18),
                             ),
@@ -210,7 +210,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                             minHeight: 4,
                             backgroundColor: Colors.white24,
                             valueColor: AlwaysStoppedAnimation<Color>(
-                              Colors.white.withOpacity(0.92),
+                              Colors.white.withValues(alpha: 0.92),
                             ),
                           ),
                         ),

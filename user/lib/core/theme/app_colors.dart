@@ -4,6 +4,7 @@ class AppColors {
   static const primaryDark = 0xFF0085D0;
   static const primaryDeeper = 0xFF0085D0;
   static const primaryLight = 0xFF2997E3;     // Tuned brand blue for dark mode contrast
+  static const primaryAction = 0xFF006EA8;
 
   // Light Theme Palette
   static const background = 0xFFF8FAFC;      // Slate 50 (clean light background)
@@ -13,7 +14,7 @@ class AppColors {
   static const border = 0xFFE2E8F0;          // Slate 200 (light border)
   static const textPrimary = 0xFF0F172A;      // Slate 900 (sharp primary text)
   static const textSecondary = 0xFF64748B;    // Slate 500 (balanced subtext)
-  static const textMuted = 0xFF94A3B8;        // Slate 400
+  static const textMuted = 0xFF64748B;        // Slate 500 for readable secondary metadata
 
   // Semantic Status Colors (Light Theme)
   static const success = 0xFF10B981;         // Emerald Green

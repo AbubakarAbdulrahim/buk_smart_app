@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:phosphor_icons/phosphor_icons.dart';
+import 'package:smartbuk/core/theme/phosphor_compat.dart';
 
 import '../core/theme/app_colors.dart';
 
@@ -13,7 +13,7 @@ Future<void> showSuccessModal({
     context: context,
     barrierDismissible: false,
     barrierLabel: title,
-    barrierColor: Colors.black.withOpacity(0.42),
+    barrierColor: Colors.black.withValues(alpha: 0.42),
     transitionDuration: const Duration(milliseconds: 320),
     pageBuilder: (context, animation, secondaryAnimation) {
       return Center(
@@ -69,7 +69,7 @@ class _SuccessModalContent extends StatelessWidget {
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(isDark ? 0.35 : 0.18),
+              color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.18),
               blurRadius: 34,
               offset: const Offset(0, 18),
             ),
@@ -89,7 +89,7 @@ class _SuccessModalContent extends StatelessWidget {
                 width: 86,
                 height: 86,
                 decoration: BoxDecoration(
-                  color: const Color(AppColors.primary).withOpacity(0.10),
+                  color: const Color(AppColors.primary).withValues(alpha: 0.10),
                   shape: BoxShape.circle,
                 ),
                 child: Center(

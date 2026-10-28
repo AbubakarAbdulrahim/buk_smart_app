@@ -7,10 +7,10 @@ import '../config/cloudinary_config.dart';
 
 class ProgressMultipartRequest extends http.MultipartRequest {
   ProgressMultipartRequest(
-    String method,
-    Uri url, {
+    super.method,
+    super.url, {
     required this.onProgress,
-  }) : super(method, url);
+  });
 
   final void Function(double progress) onProgress;
 

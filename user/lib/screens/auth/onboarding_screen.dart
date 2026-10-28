@@ -113,9 +113,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    Colors.black.withOpacity(0.04),
-                    Colors.black.withOpacity(0.18),
-                    const Color(0xFF02060C).withOpacity(0.72),
+                    Colors.black.withValues(alpha: 0.04),
+                    Colors.black.withValues(alpha: 0.18),
+                    const Color(0xFF02060C).withValues(alpha: 0.72),
                     Colors.black,
                   ],
                   stops: const [0, 0.42, 0.68, 1],
@@ -130,7 +130,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   center: const Alignment(-0.85, -0.55),
                   radius: 1,
                   colors: [
-                    const Color(AppColors.primary).withOpacity(0.28),
+                    const Color(AppColors.primary).withValues(alpha: 0.28),
                     Colors.transparent,
                   ],
                 ),
@@ -188,7 +188,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         height: 7,
                         margin: const EdgeInsets.symmetric(horizontal: 4),
                         decoration: BoxDecoration(
-                          color: active ? Colors.white : Colors.white.withOpacity(0.36),
+                          color: active ? Colors.white : Colors.white.withValues(alpha: 0.36),
                           borderRadius: BorderRadius.circular(999),
                         ),
                       );
@@ -200,7 +200,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(AppColors.primary).withOpacity(0.44),
+                          color: const Color(AppColors.primary).withValues(alpha: 0.44),
                           blurRadius: 28,
                           offset: const Offset(0, 14),
                         ),

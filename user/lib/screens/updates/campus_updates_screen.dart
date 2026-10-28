@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:phosphor_icons/phosphor_icons.dart';
+import 'package:smartbuk/core/theme/phosphor_compat.dart';
 import 'package:provider/provider.dart';
 import '../../core/routes/app_routes.dart';
 import '../../core/theme/app_colors.dart';
@@ -173,7 +173,7 @@ class _CampusUpdatesScreenState extends State<CampusUpdatesScreen> {
                           boxShadow: isSelected
                               ? [
                                   BoxShadow(
-                                    color: const Color(AppColors.primary).withOpacity(0.18),
+                                    color: const Color(AppColors.primary).withValues(alpha: 0.18),
                                     blurRadius: 6,
                                     offset: const Offset(0, 3),
                                   ),
@@ -259,7 +259,7 @@ class _CampusUpdatesScreenState extends State<CampusUpdatesScreen> {
         ),
         boxShadow: [
           BoxShadow(
-            color: update.gradient.first.withOpacity(0.24),
+            color: update.gradient.first.withValues(alpha: 0.24),
             blurRadius: 14,
             offset: const Offset(0, 8),
           ),
@@ -277,7 +277,7 @@ class _CampusUpdatesScreenState extends State<CampusUpdatesScreen> {
                 child: Icon(
                   update.icon,
                   size: 130,
-                  color: Colors.white.withOpacity(0.09),
+                  color: Colors.white.withValues(alpha: 0.09),
                 ),
               ),
               Padding(
@@ -290,7 +290,7 @@ class _CampusUpdatesScreenState extends State<CampusUpdatesScreen> {
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
+                            color: Colors.white.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(999),
                           ),
                           child: const Row(
@@ -318,7 +318,7 @@ class _CampusUpdatesScreenState extends State<CampusUpdatesScreen> {
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.14),
+                            color: Colors.white.withValues(alpha: 0.14),
                             borderRadius: BorderRadius.circular(999),
                           ),
                           child: Text(
@@ -448,7 +448,7 @@ class _CampusUpdatesScreenState extends State<CampusUpdatesScreen> {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: update.gradient.first.withOpacity(0.08),
+                        color: update.gradient.first.withValues(alpha: 0.08),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(

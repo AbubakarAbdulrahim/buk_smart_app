@@ -1,6 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:phosphor_icons/phosphor_icons.dart';
+import 'package:smartbuk/core/theme/phosphor_compat.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/constants/app_data.dart';
@@ -243,7 +243,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   const SizedBox(height: 8),
                   DropdownButtonFormField<String>(
                     isExpanded: true,
-                    value: _selectedFaculty,
+                    initialValue: _selectedFaculty,
                     validator: (value) => value == null || value.isEmpty ? 'Faculty is required' : null,
                     decoration: const InputDecoration(
                        hintText: 'Select your faculty',
@@ -266,7 +266,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   const SizedBox(height: 8),
                   DropdownButtonFormField<String>(
                     isExpanded: true,
-                    value: _selectedDepartment,
+                    initialValue: _selectedDepartment,
                     validator: (value) => value == null || value.isEmpty ? 'Department is required' : null,
                     decoration: InputDecoration(
                       hintText: _selectedFaculty == null ? 'Select faculty first' : 'Select your department',
@@ -290,7 +290,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   const SizedBox(height: 8),
                   DropdownButtonFormField<String>(
                     isExpanded: true,
-                    value: _selectedProgram,
+                    initialValue: _selectedProgram,
                     validator: (value) => value == null || value.isEmpty ? 'Program is required' : null,
                     decoration: InputDecoration(
                       hintText: _selectedDepartment == null ? 'Select department first' : 'Select your program',
@@ -309,7 +309,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   const SizedBox(height: 8),
                   DropdownButtonFormField<String>(
                     isExpanded: true,
-                    value: _selectedLevel,
+                    initialValue: _selectedLevel,
                     validator: (value) => value == null || value.isEmpty ? 'Level is required' : null,
                     decoration: const InputDecoration(
                       hintText: 'Select your level',

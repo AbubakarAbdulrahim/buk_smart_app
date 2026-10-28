@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:phosphor_icons/phosphor_icons.dart';
+import 'package:smartbuk/core/theme/phosphor_compat.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 
@@ -182,8 +182,8 @@ class _LostFoundWizardScreenState extends State<LostFoundWizardScreen> {
 
       // Format location detail
       final compositeLocation = _customLocationController.text.isNotEmpty
-          ? '${_customLocationController.text.trim()} (${_faculty} Faculty)'
-          : '${_faculty} Faculty, ${_buildingController.text.trim()}';
+          ? '${_customLocationController.text.trim()} ($_faculty Faculty)'
+          : '$_faculty Faculty, ${_buildingController.text.trim()}';
 
       // Pick contact details
       final resolvedContactValue = _contactPreference == 'Anonymous'
@@ -437,7 +437,7 @@ class _LostFoundWizardScreenState extends State<LostFoundWizardScreen> {
         if (_isPublishing)
           Positioned.fill(
             child: Container(
-              color: Theme.of(context).scaffoldBackgroundColor.withOpacity(0.85),
+              color: Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.85),
               child: Center(
                 child: Card(
                   elevation: 6,
@@ -537,7 +537,7 @@ class _LostFoundWizardScreenState extends State<LostFoundWizardScreen> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFEF4444).withOpacity(0.12),
+                    color: const Color(0xFFEF4444).withValues(alpha: 0.12),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
@@ -605,7 +605,7 @@ class _LostFoundWizardScreenState extends State<LostFoundWizardScreen> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF10B981).withOpacity(0.12),
+                    color: const Color(0xFF10B981).withValues(alpha: 0.12),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
@@ -778,7 +778,7 @@ class _LostFoundWizardScreenState extends State<LostFoundWizardScreen> {
 
         // Category dropdown
         DropdownButtonFormField<String>(
-          value: _category,
+          initialValue: _category,
           items: _categories
               .map((c) => DropdownMenuItem(value: c, child: Text(c)))
               .toList(),
@@ -866,7 +866,7 @@ class _LostFoundWizardScreenState extends State<LostFoundWizardScreen> {
 
         // Faculty Selection
         DropdownButtonFormField<String>(
-          value: _faculty,
+          initialValue: _faculty,
           items: _faculties
               .map((f) => DropdownMenuItem(value: f, child: Text(f)))
               .toList(),
@@ -1073,7 +1073,7 @@ class _LostFoundWizardScreenState extends State<LostFoundWizardScreen> {
 
         // Preferences dropDown
         DropdownButtonFormField<String>(
-          value: _contactPreference,
+          initialValue: _contactPreference,
           items: const [
             DropdownMenuItem(value: 'Anonymous', child: Text('Anonymous (Students must request details)')),
             DropdownMenuItem(value: 'Show Name', child: Text('Show Account Name')),

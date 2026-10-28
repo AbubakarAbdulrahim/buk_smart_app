@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../core/theme/app_colors.dart';
+import '../core/theme/app_tokens.dart';
 
 class AppButton extends StatelessWidget {
   const AppButton({
@@ -18,14 +19,16 @@ class AppButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       width: double.infinity,
-      height: 52,
+      height: 48,
       child: ElevatedButton(
         onPressed: isLoading ? null : onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(AppColors.primaryDeeper),
+          backgroundColor: const Color(AppColors.primaryAction),
           foregroundColor: Colors.white,
           elevation: 0,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadii.medium),
+          ),
         ),
         child: isLoading
             ? const SizedBox(
@@ -43,7 +46,11 @@ class AppButton extends StatelessWidget {
 }
 
 class SectionCard extends StatelessWidget {
-  const SectionCard({super.key, required this.child, this.padding = const EdgeInsets.all(12)});
+  const SectionCard({
+    super.key,
+    required this.child,
+    this.padding = const EdgeInsets.all(12),
+  });
 
   final Widget child;
   final EdgeInsets padding;
@@ -55,7 +62,7 @@ class SectionCard extends StatelessWidget {
       padding: padding,
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppRadii.large),
         border: Border.all(
           color: isDark
               ? const Color(AppColors.darkBorder)
@@ -65,7 +72,11 @@ class SectionCard extends StatelessWidget {
         boxShadow: isDark
             ? []
             : const [
-                BoxShadow(color: Color(0x020B1A2B), blurRadius: 16, offset: Offset(0, 6)),
+                BoxShadow(
+                  color: Color(0x020B1A2B),
+                  blurRadius: 16,
+                  offset: Offset(0, 6),
+                ),
               ],
       ),
       child: child,
@@ -111,7 +122,10 @@ class AppSectionHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Text(title, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 19)),
+        Text(
+          title,
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(fontSize: 18),
+        ),
         const Spacer(),
         if (trailing != null) trailing!,
       ],
@@ -146,154 +160,94 @@ class AppInput extends StatelessWidget {
   }
 }
 
-// Intentionally fixed color — excluded from dark mode by design
-class QuickActionCard extends StatefulWidget {
+class QuickActionCard extends StatelessWidget {
   const QuickActionCard({
     super.key,
     required this.title,
     required this.description,
     required this.icon,
-    required this.accentColor,
     required this.onTap,
   });
 
   final String title;
   final String description;
   final IconData icon;
-  final Color accentColor;
   final VoidCallback onTap;
 
   @override
-  State<QuickActionCard> createState() => _QuickActionCardState();
-}
-
-class _QuickActionCardState extends State<QuickActionCard> {
-  bool _isPressed = false;
-  bool _isHovered = false;
-
-  @override
   Widget build(BuildContext context) {
-    final active = _isPressed || _isHovered;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final borderColor = isDark
+        ? const Color(AppColors.darkBorder)
+        : const Color(AppColors.border);
+    final mutedColor = isDark
+        ? const Color(AppColors.darkTextSecondary)
+        : const Color(AppColors.textSecondary);
 
-    // Intentionally fixed vibrant color gradient — excluded from dark mode by design
-    final startColor = widget.accentColor;
-    final endColor = Color.alphaBlend(Colors.black.withOpacity(0.18), widget.accentColor);
-
-    return Listener(
-      onPointerDown: (_) => setState(() => _isPressed = true),
-      onPointerUp: (_) => setState(() => _isPressed = false),
-      onPointerCancel: (_) => setState(() => _isPressed = false),
-      child: MouseRegion(
-        onEnter: (_) => setState(() => _isHovered = true),
-        onExit: (_) => setState(() => _isHovered = false),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          curve: Curves.easeOutCubic,
-          transform: Matrix4.identity()..translate(0.0, active ? -4.0 : 0.0),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [startColor, endColor],
+    return Material(
+      color: Theme.of(context).cardColor,
+      elevation: isDark ? 0 : 1,
+      shadowColor: const Color(0x100F172A),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppRadii.xLarge),
+        side: BorderSide(color: borderColor),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: Stack(
+          children: [
+            Positioned(
+              right: -8,
+              bottom: -16,
+              child: Icon(
+                icon,
+                size: 160,
+                color: mutedColor.withValues(alpha: isDark ? 0.045 : 0.055),
+              ),
             ),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: active 
-                  ? Colors.white.withOpacity(0.4) 
-                  : Colors.transparent,
-              width: 1.5,
-            ),
-            boxShadow: [
-              if (active)
-                BoxShadow(
-                  color: widget.accentColor.withOpacity(0.35),
-                  blurRadius: 16,
-                  offset: const Offset(0, 8),
-                )
-              else
-                BoxShadow(
-                  color: widget.accentColor.withOpacity(0.18),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                ),
-            ],
-          ),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              borderRadius: BorderRadius.circular(20),
-              onTap: widget.onTap,
-              splashColor: Colors.white.withOpacity(0.1),
-              highlightColor: Colors.white.withOpacity(0.05),
-              child: Stack(
-                clipBehavior: Clip.antiAlias,
+            Padding(
+              padding: const EdgeInsets.all(AppSpacing.medium),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Large service icon in the bottom-right corner with low-opacity decorative background
-                  Positioned(
-                    right: -12,
-                    bottom: -12,
-                    child: Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.04),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        widget.icon,
-                        size: 76,
-                        color: Colors.white.withOpacity(0.07),
-                      ),
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? const Color(AppColors.darkCardSubtle)
+                          : const Color(AppColors.cardSubtle),
+                      borderRadius: BorderRadius.circular(AppRadii.large),
                     ),
+                    alignment: Alignment.center,
+                    child: Icon(icon, size: 22, color: mutedColor),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.all(18),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Top-left translucent icon container
-                        Container(
-                          width: 36,
-                          height: 36,
-                          margin: const EdgeInsets.only(bottom: 12),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.18),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Icon(
-                            widget.icon,
-                            size: 18,
-                            color: Colors.white,
-                          ),
-                        ),
-                        Text(
-                          widget.title,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w800,
-                            fontSize: 15,
-                            color: Colors.white,
-                            letterSpacing: -0.2,
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        Expanded(
-                          child: Text(
-                            widget.description,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              color: Colors.white.withOpacity(0.85),
-                              fontSize: 11.5,
-                              height: 1.3,
-                            ),
-                          ),
-                        ),
-                      ],
+                  const SizedBox(height: AppSpacing.medium),
+                  Text(
+                    title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(
+                      context,
+                    ).textTheme.titleMedium?.copyWith(fontSize: 15),
+                  ),
+                  const SizedBox(height: AppSpacing.xSmall),
+                  Expanded(
+                    child: Text(
+                      description,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: mutedColor,
+                        fontSize: 12,
+                      ),
                     ),
                   ),
                 ],
               ),
             ),
-          ),
+          ],
         ),
       ),
     );

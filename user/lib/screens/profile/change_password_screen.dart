@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:phosphor_icons/phosphor_icons.dart';
+import 'package:smartbuk/core/theme/phosphor_compat.dart';
 import '../../core/routes/app_routes.dart';
 import '../../core/theme/app_colors.dart';
 import '../../services/auth_service.dart';

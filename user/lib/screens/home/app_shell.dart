@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:phosphor_icons/phosphor_icons.dart';
+import 'package:smartbuk/core/theme/phosphor_compat.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../lost_found/lost_found_screen.dart';
@@ -38,8 +38,8 @@ class _AppShellState extends State<AppShell> {
           border: Border(
             top: BorderSide(
               color: isDark
-                  ? const Color(AppColors.darkBorder).withOpacity(0.6)
-                  : const Color(AppColors.border).withOpacity(0.8),
+                  ? const Color(AppColors.darkBorder).withValues(alpha: 0.6)
+                  : const Color(AppColors.border).withValues(alpha: 0.8),
               width: 1.0,
             ),
           ),

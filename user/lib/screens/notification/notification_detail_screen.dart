@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:phosphor_icons/phosphor_icons.dart';
+import 'package:smartbuk/core/theme/phosphor_compat.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/providers/notification_provider.dart';
 
@@ -81,12 +81,12 @@ class NotificationDetailScreen extends StatelessWidget {
                             decoration: BoxDecoration(
                               color: isDark
                                   ? const Color(AppColors.darkCardSubtle)
-                                  : item.color.withOpacity(0.12),
+                                  : item.color.withValues(alpha: 0.12),
                               borderRadius: BorderRadius.circular(999),
                               border: Border.all(
                                 color: isDark
                                     ? const Color(AppColors.darkBorder)
-                                    : item.color.withOpacity(0.24),
+                                    : item.color.withValues(alpha: 0.24),
                               ),
                             ),
                             child: Text(
@@ -287,8 +287,8 @@ class NotificationDetailScreen extends StatelessWidget {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  item.color.withOpacity(0.08),
-                  item.color.withOpacity(0.18),
+                  item.color.withValues(alpha: 0.08),
+                  item.color.withValues(alpha: 0.18),
                 ],
               ),
       ),
@@ -320,7 +320,7 @@ class NotificationDetailScreen extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
           color: isSelected
-              ? activeColor.withOpacity(isDark ? 0.16 : 0.08)
+              ? activeColor.withValues(alpha: isDark ? 0.16 : 0.08)
               : (isDark ? const Color(AppColors.darkCard) : Colors.transparent),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
@@ -352,7 +352,7 @@ class NotificationDetailScreen extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(
                 color: isSelected
-                    ? activeColor.withOpacity(0.18)
+                    ? activeColor.withValues(alpha: 0.18)
                     : (isDark ? const Color(AppColors.darkCardSubtle) : const Color(0xFFEFF1F4)),
                 borderRadius: BorderRadius.circular(6),
               ),

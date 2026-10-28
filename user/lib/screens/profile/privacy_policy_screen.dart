@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:phosphor_icons/phosphor_icons.dart';
+import 'package:smartbuk/core/theme/phosphor_compat.dart';
 import '../../core/theme/app_colors.dart';
 
 class PrivacyPolicyScreen extends StatelessWidget {

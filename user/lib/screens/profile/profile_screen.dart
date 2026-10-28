@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:phosphor_icons/phosphor_icons.dart';
+import 'package:smartbuk/core/theme/phosphor_compat.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -208,7 +208,7 @@ class ProfileScreen extends StatelessWidget {
                       ? []
                       : [
                           BoxShadow(
-                            color: const Color(0xFFB91C1C).withOpacity(0.06),
+                            color: const Color(0xFFB91C1C).withValues(alpha: 0.06),
                             blurRadius: 8,
                             offset: const Offset(0, 2),
                           ),

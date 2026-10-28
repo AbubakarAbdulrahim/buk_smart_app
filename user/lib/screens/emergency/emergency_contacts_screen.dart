@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:phosphor_icons/phosphor_icons.dart';
+import 'package:smartbuk/core/theme/phosphor_compat.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../core/theme/app_colors.dart';
 
@@ -162,7 +162,7 @@ class _EmergencyContactsScreenState extends State<EmergencyContactsScreen> {
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFFEF4444).withOpacity(0.24),
+                    color: const Color(0xFFEF4444).withValues(alpha: 0.24),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),
@@ -180,7 +180,7 @@ class _EmergencyContactsScreenState extends State<EmergencyContactsScreen> {
                         Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
+                            color: Colors.white.withValues(alpha: 0.2),
                             shape: BoxShape.circle,
                           ),
                           child: const Icon(
@@ -345,7 +345,7 @@ class _EmergencyContactsScreenState extends State<EmergencyContactsScreen> {
                         // Direct Call CTA button (Circular Blue call trigger)
                         ClipOval(
                           child: Material(
-                            color: const Color(AppColors.primaryDeeper).withOpacity(0.08),
+                            color: const Color(AppColors.primaryDeeper).withValues(alpha: 0.08),
                             child: InkWell(
                               onTap: () => _makePhoneCall(c.phone),
                               child: const Padding(

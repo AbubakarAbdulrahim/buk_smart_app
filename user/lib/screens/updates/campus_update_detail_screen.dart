@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:phosphor_icons/phosphor_icons.dart';
+import 'package:smartbuk/core/theme/phosphor_compat.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/providers/campus_updates_provider.dart';
@@ -127,7 +127,7 @@ class _CampusUpdateDetailScreenState extends State<CampusUpdateDetailScreen> wit
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: update.gradient.first.withOpacity(0.22),
+                            color: update.gradient.first.withValues(alpha: 0.22),
                             blurRadius: 14,
                             offset: const Offset(0, 8),
                           ),
@@ -143,7 +143,7 @@ class _CampusUpdateDetailScreenState extends State<CampusUpdateDetailScreen> wit
                               child: Icon(
                                 update.icon,
                                 size: 140,
-                                color: Colors.white.withOpacity(0.08),
+                                color: Colors.white.withValues(alpha: 0.08),
                               ),
                             ),
                             Padding(
@@ -156,7 +156,7 @@ class _CampusUpdateDetailScreenState extends State<CampusUpdateDetailScreen> wit
                                       Container(
                                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                                         decoration: BoxDecoration(
-                                          color: Colors.white.withOpacity(0.2),
+                                          color: Colors.white.withValues(alpha: 0.2),
                                           borderRadius: BorderRadius.circular(999),
                                         ),
                                         child: Text(

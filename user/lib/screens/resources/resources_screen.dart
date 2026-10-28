@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:phosphor_icons/phosphor_icons.dart';
+import 'package:smartbuk/core/theme/phosphor_compat.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/routes/app_routes.dart';
@@ -43,7 +43,7 @@ class ResourcesScreen extends StatelessWidget {
               borderRadius: BorderRadius.circular(24),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(AppColors.primary).withOpacity(0.2),
+                  color: const Color(AppColors.primary).withValues(alpha: 0.2),
                   blurRadius: 16,
                   offset: const Offset(0, 8),
                 ),
@@ -55,7 +55,7 @@ class ResourcesScreen extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
+                    color: Colors.white.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(999),
                   ),
                   child: const Row(
@@ -83,7 +83,7 @@ class ResourcesScreen extends StatelessWidget {
                 Text(
                   'Prepare for exams with verified question papers cataloged by department, semester, and level.',
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.85),
+                    color: Colors.white.withValues(alpha: 0.85),
                     fontSize: 13,
                     height: 1.35,
                   ),
@@ -158,7 +158,7 @@ class ResourcesScreen extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: accentColor.withOpacity(0.08),
+                    color: accentColor.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Icon(icon, color: accentColor, size: 24),
@@ -312,12 +312,12 @@ class _PastQuestionsScreenState extends State<PastQuestionsScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
           color: isActive
-              ? const Color(AppColors.primaryDeeper).withOpacity(0.08)
+              ? const Color(AppColors.primaryDeeper).withValues(alpha: 0.08)
               : (isDark ? const Color(AppColors.darkCardSubtle) : const Color(0xFFF1F5F9)),
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
             color: isActive
-                ? (isDark ? const Color(AppColors.primaryLight).withOpacity(0.3) : const Color(AppColors.primaryDeeper).withOpacity(0.2))
+                ? (isDark ? const Color(AppColors.primaryLight).withValues(alpha: 0.3) : const Color(AppColors.primaryDeeper).withValues(alpha: 0.2))
                 : (isDark ? const Color(AppColors.darkBorder) : const Color(0xFFE2E8F0)),
           ),
         ),

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:phosphor_icons/phosphor_icons.dart';
+import 'package:smartbuk/core/theme/phosphor_compat.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 
@@ -28,17 +28,72 @@ class _LostFoundScreenState extends State<LostFoundScreen> {
 
   // Categories definition
   final List<Map<String, dynamic>> _categories = const [
-    {'name': 'Student ID', 'emoji': '🪪', 'icon': PhosphorIconsRegular.identificationCard, 'color': Color(0xFF3B82F6)},
-    {'name': 'Bags', 'emoji': '🎒', 'icon': PhosphorIconsRegular.backpack, 'color': Color(0xFFF59E0B)},
-    {'name': 'Phones', 'emoji': '📱', 'icon': PhosphorIconsRegular.deviceMobile, 'color': Color(0xFF10B981)},
-    {'name': 'Laptop', 'emoji': '💻', 'icon': PhosphorIconsRegular.laptop, 'color': Color(0xFF8B5CF6)},
-    {'name': 'Documents', 'emoji': '📄', 'icon': PhosphorIconsRegular.fileText, 'color': Color(0xFF6366F1)},
-    {'name': 'Keys', 'emoji': '🔑', 'icon': PhosphorIconsRegular.key, 'color': Color(0xFFEC4899)},
-    {'name': 'Wallet', 'emoji': '💳', 'icon': PhosphorIconsRegular.creditCard, 'color': Color(0xFFEF4444)},
-    {'name': 'Clothing', 'emoji': '👕', 'icon': PhosphorIconsRegular.tShirt, 'color': Color(0xFF14B8A6)},
-    {'name': 'Books', 'emoji': '📚', 'icon': PhosphorIconsRegular.bookOpen, 'color': Color(0xFFF97316)},
-    {'name': 'Accessories', 'emoji': '🎧', 'icon': PhosphorIconsRegular.headphones, 'color': Color(0xFF06B6D4)},
-    {'name': 'Others', 'emoji': '📦', 'icon': PhosphorIconsRegular.cube, 'color': Color(0xFF64748B)},
+    {
+      'name': 'Student ID',
+      'emoji': '🪪',
+      'icon': PhosphorIconsRegular.identificationCard,
+      'color': Color(0xFF3B82F6),
+    },
+    {
+      'name': 'Bags',
+      'emoji': '🎒',
+      'icon': PhosphorIconsRegular.backpack,
+      'color': Color(0xFFF59E0B),
+    },
+    {
+      'name': 'Phones',
+      'emoji': '📱',
+      'icon': PhosphorIconsRegular.deviceMobile,
+      'color': Color(0xFF10B981),
+    },
+    {
+      'name': 'Laptop',
+      'emoji': '💻',
+      'icon': PhosphorIconsRegular.laptop,
+      'color': Color(0xFF8B5CF6),
+    },
+    {
+      'name': 'Documents',
+      'emoji': '📄',
+      'icon': PhosphorIconsRegular.fileText,
+      'color': Color(0xFF6366F1),
+    },
+    {
+      'name': 'Keys',
+      'emoji': '🔑',
+      'icon': PhosphorIconsRegular.key,
+      'color': Color(0xFFEC4899),
+    },
+    {
+      'name': 'Wallet',
+      'emoji': '💳',
+      'icon': PhosphorIconsRegular.creditCard,
+      'color': Color(0xFFEF4444),
+    },
+    {
+      'name': 'Clothing',
+      'emoji': '👕',
+      'icon': PhosphorIconsRegular.tShirt,
+      'color': Color(0xFF14B8A6),
+    },
+    {
+      'name': 'Books',
+      'emoji': '📚',
+      'icon': PhosphorIconsRegular.bookOpen,
+      'color': Color(0xFFF97316),
+    },
+    {
+      'name': 'Accessories',
+      'emoji': '🎧',
+      'icon': PhosphorIconsRegular.headphones,
+      'color': Color(0xFF06B6D4),
+    },
+    {
+      'name': 'Others',
+      'emoji': '📦',
+      'icon': PhosphorIconsRegular.cube,
+      'color': Color(0xFF64748B),
+    },
   ];
 
   // Quick filters combining category tags and status types
@@ -56,7 +111,7 @@ class _LostFoundScreenState extends State<LostFoundScreen> {
     'Clothing',
     'Others',
   ];
-  
+
   String _activeQuickFilter = 'All';
 
   @override
@@ -136,17 +191,18 @@ class _LostFoundScreenState extends State<LostFoundScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Lost & Found'),
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: const Text('Lost & Found'), centerTitle: true),
       floatingActionButton: FloatingActionButton.extended(
         backgroundColor: const Color(AppColors.primary),
         elevation: 4,
         onPressed: () {
           Navigator.pushNamed(context, AppRoutes.lostFoundWizard);
         },
-        icon: const Icon(PhosphorIconsRegular.plus, color: Colors.white, size: 20),
+        icon: const Icon(
+          PhosphorIconsRegular.plus,
+          color: Colors.white,
+          size: 20,
+        ),
         label: const Text(
           'Report Item',
           style: TextStyle(
@@ -156,328 +212,428 @@ class _LostFoundScreenState extends State<LostFoundScreen> {
           ),
         ),
       ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // 2. High fidelity Search Bar & Bookmarks
-          Padding(
-            padding: const EdgeInsets.only(left: 20, right: 20, top: 16, bottom: 8),
-            child: Row(
+      body: CustomScrollView(
+        slivers: [
+          SliverToBoxAdapter(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: Container(
-                    height: 52,
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).cardColor,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: isDark
-                            ? const Color(AppColors.darkBorder)
-                            : const Color(AppColors.border),
-                      ),
-                      boxShadow: isDark
-                          ? []
-                          : const [
-                              BoxShadow(
-                                color: Color(0x040D1B2D),
-                                blurRadius: 10,
-                                offset: Offset(0, 4),
+                // 2. High fidelity Search Bar & Bookmarks
+                Padding(
+                  padding: const EdgeInsets.only(
+                    left: 20,
+                    right: 20,
+                    top: 16,
+                    bottom: 8,
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Container(
+                          height: 52,
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).cardColor,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: isDark
+                                  ? const Color(AppColors.darkBorder)
+                                  : const Color(AppColors.border),
+                            ),
+                            boxShadow: isDark
+                                ? []
+                                : const [
+                                    BoxShadow(
+                                      color: Color(0x040D1B2D),
+                                      blurRadius: 10,
+                                      offset: Offset(0, 4),
+                                    ),
+                                  ],
+                          ),
+                          child: TextField(
+                            controller: _searchController,
+                            onChanged: (val) {
+                              setState(() {
+                                _searchQuery = val;
+                              });
+                            },
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: isDark
+                                  ? const Color(AppColors.darkTextPrimary)
+                                  : const Color(AppColors.textPrimary),
+                            ),
+                            decoration: InputDecoration(
+                              filled: true,
+                              fillColor: Colors.transparent,
+                              hintText:
+                                  'Search ID card, laptop, phone, wallet, bag...',
+                              hintStyle: TextStyle(
+                                color: isDark
+                                    ? const Color(AppColors.darkTextSecondary)
+                                    : const Color(0xFF94A3B8),
+                                fontSize: 13,
                               ),
-                            ],
-                    ),
-                    child: TextField(
-                      controller: _searchController,
-                      onChanged: (val) {
-                        setState(() {
-                          _searchQuery = val;
-                        });
-                      },
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: isDark ? const Color(AppColors.darkTextPrimary) : const Color(AppColors.textPrimary),
+                              prefixIcon: Icon(
+                                PhosphorIconsRegular.magnifyingGlass,
+                                color: isDark
+                                    ? const Color(AppColors.darkTextSecondary)
+                                    : const Color(0xFF94A3B8),
+                                size: 20,
+                              ),
+                              suffixIcon: _searchQuery.isNotEmpty
+                                  ? IconButton(
+                                      icon: Icon(
+                                        PhosphorIconsRegular.xCircle,
+                                        color: isDark
+                                            ? const Color(
+                                                AppColors.darkTextSecondary,
+                                              )
+                                            : const Color(0xFF94A3B8),
+                                        size: 18,
+                                      ),
+                                      onPressed: () {
+                                        _searchController.clear();
+                                        setState(() {
+                                          _searchQuery = '';
+                                        });
+                                      },
+                                    )
+                                  : null,
+                              border: InputBorder.none,
+                              contentPadding: const EdgeInsets.symmetric(
+                                vertical: 14,
+                              ),
+                            ),
+                          ),
+                        ),
                       ),
-                      decoration: InputDecoration(
-                        filled: true,
-                        fillColor: Colors.transparent,
-                        hintText: 'Search ID card, laptop, phone, wallet, bag...',
-                        hintStyle: TextStyle(
-                          color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(0xFF94A3B8),
-                          fontSize: 13,
+                      const SizedBox(width: 10),
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.pushNamed(
+                            context,
+                            AppRoutes.lostFoundBookmarks,
+                          );
+                        },
+                        child: Container(
+                          height: 52,
+                          width: 52,
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).cardColor,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: isDark
+                                  ? const Color(AppColors.darkBorder)
+                                  : const Color(AppColors.border),
+                            ),
+                            boxShadow: isDark
+                                ? []
+                                : const [
+                                    BoxShadow(
+                                      color: Color(0x040D1B2D),
+                                      blurRadius: 10,
+                                      offset: Offset(0, 4),
+                                    ),
+                                  ],
+                          ),
+                          child: Center(
+                            child: Icon(
+                              PhosphorIconsRegular.bookmarkSimple,
+                              color: isDark
+                                  ? const Color(AppColors.darkTextPrimary)
+                                  : const Color(AppColors.textPrimary),
+                              size: 20,
+                            ),
+                          ),
                         ),
-                        prefixIcon: Icon(
-                          PhosphorIconsRegular.magnifyingGlass,
-                          color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(0xFF94A3B8),
-                          size: 20,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // 3. Sliding filter chips
+                SizedBox(
+                  height: 48,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 8,
+                    ),
+                    itemCount: _quickFilters.length,
+                    itemBuilder: (context, index) {
+                      final filter = _quickFilters[index];
+                      final isSelected = _activeQuickFilter == filter;
+                      return GestureDetector(
+                        onTap: () => _applyQuickFilter(filter),
+                        child: Container(
+                          margin: const EdgeInsets.only(right: 8),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? const Color(AppColors.primary)
+                                : (isDark
+                                      ? const Color(AppColors.darkCardSubtle)
+                                      : Colors.white),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: isSelected
+                                  ? Colors.transparent
+                                  : (isDark
+                                        ? const Color(AppColors.darkBorder)
+                                        : const Color(0xFFEFF1F4)),
+                            ),
+                            boxShadow: isSelected
+                                ? [
+                                    BoxShadow(
+                                      color: const Color(
+                                        AppColors.primary,
+                                      ).withValues(alpha: 0.18),
+                                      blurRadius: 6,
+                                      offset: const Offset(0, 3),
+                                    ),
+                                  ]
+                                : null,
+                          ),
+                          child: Center(
+                            child: Text(
+                              filter,
+                              style: TextStyle(
+                                color: isSelected
+                                    ? Colors.white
+                                    : (isDark
+                                          ? const Color(
+                                              AppColors.darkTextSecondary,
+                                            )
+                                          : const Color(
+                                              AppColors.textSecondary,
+                                            )),
+                                fontWeight: FontWeight.bold,
+                                fontSize: 10,
+                              ),
+                            ),
+                          ),
                         ),
-                        suffixIcon: _searchQuery.isNotEmpty
-                            ? IconButton(
-                                icon: Icon(
-                                  PhosphorIconsRegular.xCircle,
-                                  color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(0xFF94A3B8),
-                                  size: 18,
-                                ),
-                                onPressed: () {
-                                  _searchController.clear();
-                                  setState(() {
-                                    _searchQuery = '';
-                                  });
-                                },
-                              )
-                            : null,
-                        border: InputBorder.none,
-                        contentPadding: const EdgeInsets.symmetric(vertical: 14),
+                      );
+                    },
+                  ),
+                ),
+
+                // 4. Categories list (Circular colorful icons)
+                if (_searchQuery.isEmpty && _selectedCategory == 'All') ...[
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 10, 20, 6),
+                    child: Text(
+                      'Browse Categories',
+                      style: TextStyle(
+                        fontSize: 12.5,
+                        color: isDark
+                            ? const Color(AppColors.darkTextSecondary)
+                            : const Color(AppColors.textSecondary),
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.2,
                       ),
                     ),
                   ),
-                ),
-                const SizedBox(width: 10),
-                GestureDetector(
-                  onTap: () {
-                    Navigator.pushNamed(context, AppRoutes.lostFoundBookmarks);
-                  },
-                  child: Container(
-                    height: 52,
-                    width: 52,
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).cardColor,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: isDark
-                            ? const Color(AppColors.darkBorder)
-                            : const Color(AppColors.border),
-                      ),
-                      boxShadow: isDark
-                          ? []
-                          : const [
-                              BoxShadow(
-                                color: Color(0x040D1B2D),
-                                blurRadius: 10,
-                                offset: Offset(0, 4),
-                              ),
-                            ],
+                  SizedBox(
+                    height: 94,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      itemCount: _categories.length,
+                      itemBuilder: (context, index) {
+                        final cat = _categories[index];
+                        final isCategorySelected =
+                            _selectedCategory == cat['name'];
+
+                        return GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _selectedCategory = cat['name'];
+                              _activeQuickFilter = cat['name'] == 'Student ID'
+                                  ? 'ID Cards'
+                                  : cat['name'];
+                            });
+                          },
+                          child: Container(
+                            margin: const EdgeInsets.only(right: 18),
+                            child: Column(
+                              children: [
+                                Container(
+                                  height: 52,
+                                  width: 52,
+                                  decoration: BoxDecoration(
+                                    color: isCategorySelected
+                                        ? const Color(AppColors.primary)
+                                        : (isDark
+                                              ? const Color(
+                                                  AppColors.darkCardSubtle,
+                                                )
+                                              : const Color(0xFFF1F5F9)),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Center(
+                                    child: Icon(
+                                      cat['icon'] as IconData,
+                                      color: isCategorySelected
+                                          ? Colors.white
+                                          : (isDark
+                                                ? const Color(
+                                                    AppColors.darkTextSecondary,
+                                                  )
+                                                : const Color(
+                                                    AppColors.textSecondary,
+                                                  )),
+                                      size: 20,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  cat['name'] as String,
+                                  style: TextStyle(
+                                    fontSize: 9.5,
+                                    fontWeight: isCategorySelected
+                                        ? FontWeight.bold
+                                        : FontWeight.w600,
+                                    color: isCategorySelected
+                                        ? const Color(AppColors.primary)
+                                        : (isDark
+                                              ? const Color(
+                                                  AppColors.darkTextPrimary,
+                                                )
+                                              : const Color(
+                                                  AppColors.textPrimary,
+                                                )),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
                     ),
-                    child: Center(
-                      child: Icon(
-                        PhosphorIconsRegular.bookmarkSimple,
-                        color: isDark
-                            ? const Color(AppColors.darkTextPrimary)
-                            : const Color(AppColors.textPrimary),
-                        size: 20,
+                  ),
+                ],
+
+                // Item details header
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+                  child: Row(
+                    children: [
+                      Text(
+                        _selectedCategory == 'All'
+                            ? 'Recent Reports'
+                            : 'Category: $_selectedCategory',
+                        style: TextStyle(
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.w800,
+                          color: isDark
+                              ? const Color(AppColors.darkTextPrimary)
+                              : const Color(AppColors.textPrimary),
+                        ),
                       ),
-                    ),
+                      const Spacer(),
+                      if (_selectedCategory != 'All' ||
+                          _selectedType != 'All' ||
+                          _searchQuery.isNotEmpty)
+                        TextButton(
+                          onPressed: () => _applyQuickFilter('All'),
+                          style: TextButton.styleFrom(
+                            padding: EdgeInsets.zero,
+                            minimumSize: Size.zero,
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
+                          child: const Text(
+                            'Reset Filters',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                              color: Color(AppColors.primary),
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 16),
+          // 6. Main stream builder feeding the grid
+          StreamBuilder<List<LostFoundItem>>(
+            stream: _selectedType == 'All'
+                ? firestore.allLostFound()
+                : firestore.lostFound(_selectedType),
+            builder: (context, snapshot) {
+              final rawItems = snapshot.data ?? [];
 
-            // 3. Sliding filter chips
-            SizedBox(
-              height: 48,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                itemCount: _quickFilters.length,
-                itemBuilder: (context, index) {
-                  final filter = _quickFilters[index];
-                  final isSelected = _activeQuickFilter == filter;
-                  return GestureDetector(
-                    onTap: () => _applyQuickFilter(filter),
-                    child: Container(
-                      margin: const EdgeInsets.only(right: 8),
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: isSelected
-                            ? const Color(AppColors.primary)
-                            : (isDark ? const Color(AppColors.darkCardSubtle) : Colors.white),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: isSelected
-                              ? Colors.transparent
-                              : (isDark ? const Color(AppColors.darkBorder) : const Color(0xFFEFF1F4)),
-                        ),
-                        boxShadow: isSelected
-                            ? [
-                                BoxShadow(
-                                  color: const Color(AppColors.primary).withOpacity(0.18),
-                                  blurRadius: 6,
-                                  offset: const Offset(0, 3),
-                                ),
-                              ]
-                            : null,
-                      ),
-                      child: Center(
-                        child: Text(
-                          filter,
-                          style: TextStyle(
-                            color: isSelected
-                                ? Colors.white
-                                : (isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary)),
-                            fontWeight: FontWeight.bold,
-                            fontSize: 11.5,
-                          ),
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
+              // Filter client side for category, search strings, time parameters
+              final items = rawItems.where((item) {
+                final passesCategory =
+                    _selectedCategory == 'All' ||
+                    item.category == _selectedCategory;
 
-            // 4. Categories list (Circular colorful icons)
-            if (_searchQuery.isEmpty && _selectedCategory == 'All') ...[
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 10, 20, 6),
-                child: Text(
-                  'Browse Categories',
-                  style: TextStyle(
-                    fontSize: 13.5,
-                    color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary),
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 0.2,
-                  ),
-                ),
-              ),
-              SizedBox(
-                height: 94,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  itemCount: _categories.length,
-                  itemBuilder: (context, index) {
-                    final cat = _categories[index];
-                    final isCategorySelected = _selectedCategory == cat['name'];
-                    
-                    return GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          _selectedCategory = cat['name'];
-                          _activeQuickFilter = cat['name'] == 'Student ID' ? 'ID Cards' : cat['name'];
-                        });
-                      },
-                      child: Container(
-                        margin: const EdgeInsets.only(right: 18),
-                        child: Column(
-                          children: [
-                            Container(
-                              height: 52,
-                              width: 52,
-                              decoration: BoxDecoration(
-                                color: isCategorySelected 
-                                    ? const Color(AppColors.primary) 
-                                    : (isDark ? const Color(AppColors.darkCardSubtle) : const Color(0xFFF1F5F9)),
-                                shape: BoxShape.circle,
-                              ),
-                              child: Center(
-                                child: Icon(
-                                  cat['icon'] as IconData,
-                                  color: isCategorySelected 
-                                      ? Colors.white 
-                                      : (isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary)),
-                                  size: 20,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              cat['name'] as String,
-                              style: TextStyle(
-                                fontSize: 10.5,
-                                fontWeight: isCategorySelected ? FontWeight.bold : FontWeight.w600,
-                                color: isCategorySelected
-                                    ? const Color(AppColors.primary)
-                                    : (isDark ? const Color(AppColors.darkTextPrimary) : const Color(AppColors.textPrimary)),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                final matchesSearch =
+                    item.title.toLowerCase().contains(
+                      _searchQuery.toLowerCase(),
+                    ) ||
+                    item.description.toLowerCase().contains(
+                      _searchQuery.toLowerCase(),
+                    ) ||
+                    item.location.toLowerCase().contains(
+                      _searchQuery.toLowerCase(),
+                    ) ||
+                    item.category.toLowerCase().contains(
+                      _searchQuery.toLowerCase(),
                     );
-                  },
-                ),
-              ),
-            ],
 
-            // Item details header
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
-              child: Row(
-                children: [
-                  Text(
-                    _selectedCategory == 'All' ? 'Recent Reports' : 'Category: $_selectedCategory',
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w800,
-                      color: isDark ? const Color(AppColors.darkTextPrimary) : const Color(AppColors.textPrimary),
-                    ),
-                  ),
-                  const Spacer(),
-                  if (_selectedCategory != 'All' || _selectedType != 'All' || _searchQuery.isNotEmpty)
-                    TextButton(
-                      onPressed: () => _applyQuickFilter('All'),
-                      style: TextButton.styleFrom(
-                        padding: EdgeInsets.zero,
-                        minimumSize: Size.zero,
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      ),
-                      child: const Text(
-                        'Reset Filters',
-                        style: TextStyle(
-                          fontSize: 12.5,
-                          fontWeight: FontWeight.bold,
-                          color: Color(AppColors.primary),
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
+                return passesCategory &&
+                    matchesSearch &&
+                    _passesTimeFilter(item.createdAt);
+              }).toList();
 
-            // 6. Main stream builder feeding the list
-            Expanded(
-              child: StreamBuilder<List<LostFoundItem>>(
-                stream: _selectedType == 'All'
-                    ? firestore.allLostFound()
-                    : firestore.lostFound(_selectedType),
-                builder: (context, snapshot) {
-                  final rawItems = snapshot.data ?? [];
-                  
-                  // Filter client side for category, search strings, time parameters
-                  final items = rawItems.where((item) {
-                    final passesCategory = _selectedCategory == 'All' || item.category == _selectedCategory;
-                    
-                    final matchesSearch = item.title.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-                        item.description.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-                        item.location.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-                        item.category.toLowerCase().contains(_searchQuery.toLowerCase());
-                    
-                    return passesCategory && matchesSearch && _passesTimeFilter(item.createdAt);
-                  }).toList();
+              // Sort strictly descending by createdAt to make recently posted items appear at the very top
+              items.sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
-                  // Sort strictly descending by createdAt to make recently posted items appear at the very top
-                  items.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-
-                  return AsyncStateView(
+              if (snapshot.connectionState == ConnectionState.waiting ||
+                  snapshot.hasError ||
+                  items.isEmpty) {
+                return SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: AsyncStateView(
                     connectionState: snapshot.connectionState,
                     hasError: snapshot.hasError,
                     errorMessage: snapshot.error?.toString(),
                     isEmpty: items.isEmpty,
                     emptyWidget: _buildEmptyState(),
-                    child: ListView.builder(
-                      padding: const EdgeInsets.fromLTRB(16, 4, 16, 80),
-                      itemCount: items.length,
-                      itemBuilder: (context, idx) {
-                        final item = items[idx];
-                        return _buildItemCard(context, item, currentUid, firestore);
-                      },
-                    ),
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
+                    child: const SizedBox.shrink(),
+                  ),
+                );
+              }
+
+              return SliverPadding(
+                padding: const EdgeInsets.fromLTRB(12, 4, 12, 96),
+                sliver: SliverGrid(
+                  delegate: SliverChildBuilderDelegate((context, idx) {
+                    final item = items[idx];
+                    return _buildItemCard(context, item, currentUid, firestore);
+                  }, childCount: items.length),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 12,
+                    mainAxisSpacing: 12,
+                    childAspectRatio: 0.92,
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
     );
   }
 
@@ -491,16 +647,18 @@ class _LostFoundScreenState extends State<LostFoundScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isLost = item.type == 'lost';
     final isBookmarked = item.bookmarkedBy.contains(currentUid);
-    final formattedDate = DateFormat('MMM dd, yyyy').format(item.createdAt);
+    final formattedDate = DateFormat('MMM d').format(item.createdAt);
     final formattedTime = DateFormat('h:mm a').format(item.createdAt);
 
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 8),
+      margin: const EdgeInsets.all(2),
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isDark ? const Color(AppColors.darkBorder) : const Color(AppColors.border),
+          color: isDark
+              ? const Color(AppColors.darkBorder)
+              : const Color(AppColors.border),
         ),
         boxShadow: isDark
             ? []
@@ -513,7 +671,7 @@ class _LostFoundScreenState extends State<LostFoundScreen> {
               ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(16),
         child: InkWell(
           onTap: () {
             Navigator.pushNamed(
@@ -525,22 +683,28 @@ class _LostFoundScreenState extends State<LostFoundScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Photo Area (16:9 ratio)
+              // Keep the photo close to two-thirds of the card height.
               Stack(
                 children: [
                   AspectRatio(
-                    aspectRatio: 16 / 9,
+                    aspectRatio: 1.48,
                     child: item.imageUrl != null && item.imageUrl!.isNotEmpty
                         ? Image.network(item.imageUrl!, fit: BoxFit.cover)
                         : Container(
-                            color: isDark ? const Color(AppColors.darkCardSubtle) : const Color(0xFFF1F5F9),
+                            color: isDark
+                                ? const Color(AppColors.darkCardSubtle)
+                                : const Color(0xFFF1F5F9),
                             child: Center(
                               child: Icon(
                                 PhosphorIconsRegular.image,
-                                size: 40,
+                                size: 24,
                                 color: isDark
-                                    ? const Color(AppColors.darkTextSecondary).withOpacity(0.5)
-                                    : const Color(AppColors.textSecondary).withOpacity(0.5),
+                                    ? const Color(
+                                        AppColors.darkTextSecondary,
+                                      ).withValues(alpha: 0.5)
+                                    : const Color(
+                                        AppColors.textSecondary,
+                                      ).withValues(alpha: 0.5),
                               ),
                             ),
                           ),
@@ -548,27 +712,44 @@ class _LostFoundScreenState extends State<LostFoundScreen> {
 
                   // Bookmark Button
                   Positioned(
-                    top: 12,
-                    right: 12,
+                    top: 6,
+                    right: 6,
                     child: Container(
-                      height: 38,
-                      width: 38,
+                      height: 30,
+                      width: 30,
                       decoration: BoxDecoration(
-                        color: isDark ? const Color(AppColors.darkCard) : Colors.white,
+                        color: isDark
+                            ? const Color(AppColors.darkCard)
+                            : Colors.white,
                         shape: BoxShape.circle,
                       ),
                       child: IconButton(
                         icon: Icon(
-                          isBookmarked ? PhosphorIconsFill.bookmark : PhosphorIconsRegular.bookmarkSimple,
+                          isBookmarked
+                              ? PhosphorIconsFill.bookmark
+                              : PhosphorIconsRegular.bookmarkSimple,
                           color: isBookmarked
-                              ? (isDark ? const Color(AppColors.primaryLight) : const Color(AppColors.primary))
-                              : (isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary)),
-                          size: 18,
+                              ? (isDark
+                                    ? const Color(AppColors.primaryLight)
+                                    : const Color(AppColors.primary))
+                              : (isDark
+                                    ? const Color(AppColors.darkTextSecondary)
+                                    : const Color(AppColors.textSecondary)),
+                          size: 15,
+                        ),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints.tightFor(
+                          width: 30,
+                          height: 30,
                         ),
                         onPressed: () async {
                           if (currentUid == 'guest') {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Please log in to save bookmarks.')),
+                              const SnackBar(
+                                content: Text(
+                                  'Please log in to save bookmarks.',
+                                ),
+                              ),
                             );
                             return;
                           }
@@ -580,52 +761,78 @@ class _LostFoundScreenState extends State<LostFoundScreen> {
 
                   // Positioned pills
                   Positioned(
-                    bottom: 12,
-                    left: 12,
-                    child: Row(
+                    bottom: 5,
+                    left: 5,
+                    right: 5,
+                    child: Wrap(
+                      spacing: 6,
+                      runSpacing: 4,
                       children: [
                         // Status badge (Lost/Found)
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 3,
+                          ),
                           decoration: BoxDecoration(
                             color: isLost
-                                ? (isDark ? const Color(0xFF450A0A) : const Color(0xFFFEF2F2))
-                                : (isDark ? const Color(0xFF064E3B) : const Color(0xFFECFDF5)),
+                                ? (isDark
+                                      ? const Color(0xFF450A0A)
+                                      : const Color(0xFFFEF2F2))
+                                : (isDark
+                                      ? const Color(0xFF064E3B)
+                                      : const Color(0xFFECFDF5)),
                             borderRadius: BorderRadius.circular(999),
                             border: Border.all(
                               color: isLost
-                                  ? (isDark ? const Color(0xFF991B1B) : const Color(0xFFFCA5A5))
-                                  : (isDark ? const Color(0xFF047857) : const Color(0xFF6EE7B7)),
+                                  ? (isDark
+                                        ? const Color(0xFF991B1B)
+                                        : const Color(0xFFFCA5A5))
+                                  : (isDark
+                                        ? const Color(0xFF047857)
+                                        : const Color(0xFF6EE7B7)),
                             ),
                           ),
                           child: Text(
                             isLost ? 'LOST' : 'FOUND',
                             style: TextStyle(
                               color: isLost
-                                  ? (isDark ? const Color(AppColors.darkDanger) : const Color(0xFFB91C1C))
-                                  : (isDark ? const Color(AppColors.darkSuccess) : const Color(0xFF047857)),
-                              fontSize: 9,
+                                  ? (isDark
+                                        ? const Color(AppColors.darkDanger)
+                                        : const Color(0xFFB91C1C))
+                                  : (isDark
+                                        ? const Color(AppColors.darkSuccess)
+                                        : const Color(0xFF047857)),
+                              fontSize: 7.5,
                               fontWeight: FontWeight.bold,
                               letterSpacing: 0.6,
                             ),
                           ),
                         ),
-                        const SizedBox(width: 6),
                         // Category Pill
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 3,
+                          ),
                           decoration: BoxDecoration(
-                            color: isDark ? const Color(AppColors.darkCardSubtle) : const Color(0xFFF1F5F9),
+                            color: isDark
+                                ? const Color(AppColors.darkCardSubtle)
+                                : const Color(0xFFF1F5F9),
                             borderRadius: BorderRadius.circular(999),
                             border: Border.all(
-                              color: isDark ? const Color(AppColors.darkBorder) : const Color(0xFFE2E8F0),
+                              color: isDark
+                                  ? const Color(AppColors.darkBorder)
+                                  : const Color(0xFFE2E8F0),
                             ),
                           ),
                           child: Text(
                             item.category,
                             style: TextStyle(
-                              color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary),
-                              fontSize: 9,
+                              color: isDark
+                                  ? const Color(AppColors.darkTextSecondary)
+                                  : const Color(AppColors.textSecondary),
+                              fontSize: 7.5,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -636,118 +843,110 @@ class _LostFoundScreenState extends State<LostFoundScreen> {
                 ],
               ),
 
-              // Title and Description
               Padding(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.fromLTRB(7, 4, 7, 4),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      item.title,
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: isDark ? const Color(AppColors.darkTextPrimary) : const Color(AppColors.textPrimary),
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      item.description,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 12.5,
-                        color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary),
-                        height: 1.4,
-                      ),
-                    ),
-                    const SizedBox(height: 14),
-                    Divider(
-                      color: isDark ? const Color(AppColors.darkBorder) : const Color(0xFFF1F5F9),
-                      height: 1,
-                    ),
-                    const SizedBox(height: 12),
-
-                    // Location & Reporter block
                     Row(
                       children: [
                         Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Icon(
-                                    PhosphorIconsRegular.mapPin,
-                                    color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary),
-                                    size: 13,
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Expanded(
-                                    child: Text(
-                                      item.location,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(
-                                        fontSize: 11.5,
-                                        color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary),
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 4),
-                              Row(
-                                children: [
-                                  Icon(
-                                    PhosphorIconsRegular.clock,
-                                    color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary),
-                                    size: 13,
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    '$formattedDate • $formattedTime',
-                                    style: TextStyle(
-                                      fontSize: 11,
-                                      color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
+                          child: Text(
+                            item.title,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: isDark
+                                  ? const Color(AppColors.darkTextPrimary)
+                                  : const Color(AppColors.textPrimary),
+                            ),
                           ),
                         ),
-                        // Reporter verification status badge
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: isDark
-                                ? const Color(AppColors.darkCardSubtle)
-                                : (item.isVerified ? const Color(0xFFEFF6FF) : const Color(0xFFF8FAFC)),
-                            borderRadius: BorderRadius.circular(8),
+                        const SizedBox(width: 3),
+                        Tooltip(
+                          message: item.isVerified
+                              ? 'Verified student'
+                              : 'Student',
+                          child: Icon(
+                            item.isVerified
+                                ? PhosphorIconsFill.checkCircle
+                                : PhosphorIconsRegular.userCircle,
+                            color: item.isVerified
+                                ? (isDark
+                                      ? const Color(AppColors.primaryLight)
+                                      : const Color(AppColors.primary))
+                                : (isDark
+                                      ? const Color(AppColors.darkTextSecondary)
+                                      : const Color(AppColors.textSecondary)),
+                            size: 11,
                           ),
-                          child: Row(
-                            children: [
-                              Icon(
-                                item.isVerified ? PhosphorIconsFill.checkCircle : PhosphorIconsRegular.userCircle,
-                                color: item.isVerified
-                                    ? (isDark ? const Color(AppColors.primaryLight) : const Color(AppColors.primary))
-                                    : (isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary)),
-                                size: 13,
-                              ),
-                              const SizedBox(width: 3),
-                              Text(
-                                item.isVerified ? 'VERIFIED' : 'STUDENT',
-                                style: TextStyle(
-                                  color: item.isVerified
-                                      ? (isDark ? const Color(AppColors.primaryLight) : const Color(AppColors.primary))
-                                      : (isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary)),
-                                  fontSize: 8.5,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 1),
+                    Text(
+                      item.description,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: isDark
+                            ? const Color(AppColors.darkTextSecondary)
+                            : const Color(AppColors.textSecondary),
+                        height: 1.1,
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Row(
+                      children: [
+                        Icon(
+                          PhosphorIconsRegular.mapPin,
+                          color: isDark
+                              ? const Color(AppColors.darkTextSecondary)
+                              : const Color(AppColors.textSecondary),
+                          size: 10,
+                        ),
+                        const SizedBox(width: 3),
+                        Expanded(
+                          child: Text(
+                            item.location,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 9,
+                              color: isDark
+                                  ? const Color(AppColors.darkTextSecondary)
+                                  : const Color(AppColors.textSecondary),
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 3),
+                    Row(
+                      children: [
+                        Icon(
+                          PhosphorIconsRegular.clock,
+                          color: isDark
+                              ? const Color(AppColors.darkTextSecondary)
+                              : const Color(AppColors.textSecondary),
+                          size: 10,
+                        ),
+                        const SizedBox(width: 3),
+                        Expanded(
+                          child: Text(
+                            '$formattedDate • $formattedTime',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 9,
+                              color: isDark
+                                  ? const Color(AppColors.darkTextSecondary)
+                                  : const Color(AppColors.textSecondary),
+                            ),
                           ),
                         ),
                       ],
@@ -774,12 +973,16 @@ class _LostFoundScreenState extends State<LostFoundScreen> {
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: isDark ? const Color(AppColors.darkCardSubtle) : const Color(0xFFEFF6FF),
+                color: isDark
+                    ? const Color(AppColors.darkCardSubtle)
+                    : const Color(0xFFEFF6FF),
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 PhosphorIconsRegular.magnifyingGlass,
-                color: isDark ? const Color(AppColors.primaryLight) : const Color(AppColors.primary),
+                color: isDark
+                    ? const Color(AppColors.primaryLight)
+                    : const Color(AppColors.primary),
                 size: 34,
               ),
             ),
@@ -789,7 +992,9 @@ class _LostFoundScreenState extends State<LostFoundScreen> {
               style: TextStyle(
                 fontWeight: FontWeight.w800,
                 fontSize: 16,
-                color: isDark ? const Color(AppColors.darkTextPrimary) : const Color(AppColors.textPrimary),
+                color: isDark
+                    ? const Color(AppColors.darkTextPrimary)
+                    : const Color(AppColors.textPrimary),
               ),
             ),
             const SizedBox(height: 8),
@@ -798,7 +1003,9 @@ class _LostFoundScreenState extends State<LostFoundScreen> {
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 12.5,
-                color: isDark ? const Color(AppColors.darkTextSecondary) : const Color(AppColors.textSecondary),
+                color: isDark
+                    ? const Color(AppColors.darkTextSecondary)
+                    : const Color(AppColors.textSecondary),
                 height: 1.45,
               ),
             ),

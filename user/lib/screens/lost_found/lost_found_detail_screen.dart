@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:phosphor_icons/phosphor_icons.dart';
+import 'package:smartbuk/core/theme/phosphor_compat.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -215,7 +215,7 @@ class _LostFoundDetailScreenState extends State<LostFoundDetailScreen> {
                                       child: Icon(
                                         PhosphorIconsRegular.image,
                                         size: 64,
-                                        color: const Color(AppColors.textSecondary).withOpacity(0.5),
+                                        color: const Color(AppColors.textSecondary).withValues(alpha: 0.5),
                                       ),
                                     ),
                                   ),
@@ -287,9 +287,9 @@ class _LostFoundDetailScreenState extends State<LostFoundDetailScreen> {
                                 Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                                   decoration: BoxDecoration(
-                                    color: _getCategoryColor(item.category).withOpacity(0.12),
+                                    color: _getCategoryColor(item.category).withValues(alpha: 0.12),
                                     borderRadius: BorderRadius.circular(8),
-                                    border: Border.all(color: _getCategoryColor(item.category).withOpacity(0.24)),
+                                    border: Border.all(color: _getCategoryColor(item.category).withValues(alpha: 0.24)),
                                   ),
                                   child: Text(
                                     item.category.toUpperCase(),
@@ -462,7 +462,7 @@ class _LostFoundDetailScreenState extends State<LostFoundDetailScreen> {
                   height: 40,
                   width: 40,
                   decoration: BoxDecoration(
-                    color: isDark ? const Color(AppColors.darkCard).withOpacity(0.9) : Colors.white70,
+                    color: isDark ? const Color(AppColors.darkCard).withValues(alpha: 0.9) : Colors.white70,
                     shape: BoxShape.circle,
                   ),
                   child: IconButton(

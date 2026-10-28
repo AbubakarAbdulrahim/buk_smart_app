@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:phosphor_icons/phosphor_icons.dart';
+import 'package:smartbuk/core/theme/phosphor_compat.dart';
 import '../core/theme/app_colors.dart';
 import '../core/routes/app_routes.dart';
 
@@ -99,7 +99,7 @@ class _SmartAiFabState extends State<SmartAiFab> with TickerProviderStateMixin {
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(AppColors.primaryDeeper).withOpacity(0.3),
+                    color: const Color(AppColors.primaryDeeper).withValues(alpha: 0.3),
                     blurRadius: 8 + pulseOffset,
                     spreadRadius: pulseOffset / 3,
                   ),
